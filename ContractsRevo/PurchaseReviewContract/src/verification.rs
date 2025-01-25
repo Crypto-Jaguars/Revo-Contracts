@@ -1,10 +1,10 @@
-use crate::{
-    datatypes::{},
-    interface::VerificationOperations,
-    PurchaseReviewContract, PurchaseReviewContractArgs, PurchaseReviewContractClient
-};
+// use crate::{
+//     datatypes::{},
+//     interface::VerificationOperations,
+//     PurchaseReviewContract, PurchaseReviewContractArgs, PurchaseReviewContractClient
+// };
 
 
-impl VerificationOperations for PurchaseReviewContract {
-    
-}
+// impl VerificationOperations for PurchaseReviewContract {
+//     todo!()
+// }

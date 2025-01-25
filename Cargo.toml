@@ -1,10 +1,12 @@
 [workspace]
+resolver = "2"
 members = [
-    "ContrctsRevo/ExampleContract",
-    "ContrctsRevo/PurchaseReviewContract",
-    "ContrctsRevo/RatingSystemContract",
-    "ContrctsRevo/TransactionNFTContract",
+    "ContractsRevo/ExampleContract",
+    "ContractsRevo/PurchaseReviewContract",
+    "ContractsRevo/RatingSystemContract",
+    "ContractsRevo/TransactionNFTContract",
 ]
+
 
 [workspace.dependencies]
 soroban-sdk = "22.0.0-rc.3.2"

@@ -1,5 +1,5 @@
 [package]
-name = "PurchaseReviewContract"
+name = "purchase-review-contract"
 version = "0.0.0"
 edition = "2021"
 publish = false
