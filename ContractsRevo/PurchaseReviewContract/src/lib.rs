@@ -1,17 +1,15 @@
-// #![no_std]
-// use soroban_sdk::{contract, contractimpl, Env, Address, Vec};
-// use crate::datatypes::{DataKey};
+#![no_std]
+use soroban_sdk::contract;
 
 
-// mod rating;
-// mod review;
-// mod verification;
-// mod interface;
-
-// pub use rating::Rating;
-// pub use review::Review;
-// pub use verification::Verification;
+mod rating;
+mod test;
+mod review;
+mod verification;
+mod interface;
+mod datatype;
 
 
-// #[contract]
-// pub struct PurchaseReviewContract;
+
+#[contract]
+pub struct PurchaseReviewContract;
