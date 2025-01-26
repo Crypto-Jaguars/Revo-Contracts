@@ -23,3 +23,13 @@ pub trait RatingOperations {
       product_id: u128
   ) -> Result<ProductRatings, PurchaseReviewError>;
 }
+
+
+// pub trait ReviewOperations {
+//    fn submit_review(
+//       env: Env,
+//       user: Address,
+//       product_id: u128,
+//       review: String
+//    ) -> Result<(), PurchaseReviewError>;
+// }

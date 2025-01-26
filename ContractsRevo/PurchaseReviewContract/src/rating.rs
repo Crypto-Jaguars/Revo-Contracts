@@ -47,10 +47,12 @@ impl RatingOperations for PurchaseReviewContract {
         Ok(())
     }
 
-    /// Calculates rating value adjusted by weight factor
+
+    ///Internal function Calculates rating value adjusted by weight factor
     fn calculate_weighted(env: &Env, rating: Rating, weight: u32) -> u32 {
         let rating_value = rating as u32;
-        let weighted_rating = rating_value * weight;
+        let weighted_rating = rating_value.checked_mul(weight)
+            .unwrap_or(0); // Return 0 if multiplication overflows
 
         env.events().publish(
             (
