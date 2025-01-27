@@ -35,6 +35,7 @@ pub enum DataKeys {
     Review(u128, u32),             // Specific review identified by product_id and review_id
     PurchaseVerification(u128),    // Verification status for a purchase
     ReviewReport(u128, u32),       // Report data for a specific review
+    ReviewCount(u128),
 }
 
 /// Error types that can occur during contract operations

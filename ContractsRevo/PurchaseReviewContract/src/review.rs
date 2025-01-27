@@ -29,6 +29,12 @@ impl ReviewOperations for PurchaseReviewContract {
         // Check if this purchase has already been reviewed
         Self::pre_review_purchase(env.clone(), user.clone(), product_id)?;
         
+        // Get the current review count for this product
+        let count_key = DataKeys::ReviewCount(product_id);
+        let review_id = env.storage().persistent()
+            .get::<_, u32>(&count_key)
+            .unwrap_or(0);
+
         // Create a new review with initial values
         let review = ReviewDetails {
             review_text,
@@ -40,9 +46,12 @@ impl ReviewOperations for PurchaseReviewContract {
             responses: Vec::new(&env),
         };
 
-        // Store the review in persistent storage
-        let key = DataKeys::Review(product_id, 0);
+        // Store the review with the new review_id
+        let key = DataKeys::Review(product_id, review_id);
         env.storage().persistent().set(&key, &review);
+
+        // Increment and store the new review count
+        env.storage().persistent().set(&count_key, &(review_id + 1));
         Ok(())
     }
 
@@ -107,17 +116,19 @@ impl ReviewOperations for PurchaseReviewContract {
     /// Verifies a purchase and adds a verification badge to the review
     /// * `user` - Address of the user requesting verification
     /// * `product_id` - ID of the product
+    /// * `review_id` - ID of the review to verify
     /// * `purchase_link` - Link/proof of purchase for verification
     fn verified_purchase_badge(
         env: Env,
         user: Address,
         product_id: u128,
+        review_id: u32,
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError> {
-        // Retrieve the review
-        let key = DataKeys::ProductRatings(product_id);
+        // Retrieve the review using the correct key
+        let key = DataKeys::Review(product_id, review_id);
         let mut review = env.storage().persistent().get::<_, ReviewDetails>(&key)
-            .ok_or(PurchaseReviewError::ProductNotFound)?;
+            .ok_or(PurchaseReviewError::ReviewNotFound)?;
 
         // Verify the purchase
         Self::purchase_link_verification(env.clone(), user.clone(), product_id, purchase_link)?;

@@ -66,6 +66,7 @@ pub trait ReviewOperations {
         env: Env,
         user: Address,
         product_id: u128,
+        review_id: u32,
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError>;
 
