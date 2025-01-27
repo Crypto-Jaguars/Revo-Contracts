@@ -26,14 +26,15 @@ impl ReviewOperations for PurchaseReviewContract {
         // Verify the purchase link is valid for this user and product
         Self::purchase_link_verification(env.clone(), user.clone(), product_id, purchase_link)?;
 
-        // Check if this purchase has already been reviewed
+        // Check if this purchase has already been reviewed by user
         Self::pre_review_purchase(env.clone(), user.clone(), product_id)?;
         
-        // Get the current review count for this product
+        // Atomic increment of review count
         let count_key = DataKeys::ReviewCount(product_id);
         let review_id = env.storage().persistent()
             .get::<_, u32>(&count_key)
             .unwrap_or(0);
+        env.storage().persistent().set(&count_key, &(review_id + 1));
 
         // Create a new review with initial values
         let review = ReviewDetails {
@@ -46,12 +47,10 @@ impl ReviewOperations for PurchaseReviewContract {
             responses: Vec::new(&env),
         };
 
-        // Store the review with the new review_id
+        // Store the review and increment count atomically
         let key = DataKeys::Review(product_id, review_id);
         env.storage().persistent().set(&key, &review);
-
-        // Increment and store the new review count
-        env.storage().persistent().set(&count_key, &(review_id + 1));
+        
         Ok(())
     }
 
