@@ -1,81 +1,111 @@
 use soroban_sdk::{Address, contracterror, contracttype, String, Vec};
 
-// Main categories for rating products/services
+/// Main categories for rating different aspects of products/services
+/// Used to organize and segment ratings into specific areas of evaluation
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Category {
-   Quality,
-   Shipping, 
-   CustomerService,
+    Quality,         // Product/service quality assessment
+    Shipping,        // Delivery and shipping experience
+    CustomerService, // Customer support and service interaction
 }
 
-// Star rating system (1-5 stars)
+/// Star rating system allowing users to rate from 1 to 5 stars
+/// Each variant represents a different level of satisfaction
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Rating {
-   OneStar = 1,
-   TwoStars = 2,
-   ThreeStars = 3,
-   FourStars = 4,
-   FiveStars = 5,
+    OneStar = 1,    // Poor/Unsatisfactory
+    TwoStars = 2,   // Below Average
+    ThreeStars = 3, // Average/Neutral
+    FourStars = 4,  // Above Average
+    FiveStars = 5,  // Excellent
 }
 
-// Types of attachments allowed in reviews
-#[contracttype]
-pub enum AttachmentType {
-   Image,
-   Video
-}
-
-// Structure for storing media attachments
-#[contracttype]
-pub struct Attachment {
-   attachment_type: AttachmentType,
-   hash: String,         // IPFS hash for content retrieval
-   timestamp: u64
-}
-
-// Storage keys for contract data
+/// Storage key definitions for organizing contract data in the ledger
+/// Each variant represents a different type of data storage with its associated key structure
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKeys {
-   Rating(Address),
-   CategoryRating(Address),
-   RatingStats(Address),
-   ProductRatings(u128),
-   CategoryMapping(Address),
+    Rating(Address),                // User's overall rating
+    CategoryRating(Address),        // User's rating for specific categories
+    RatingStats(Address),          // Statistical data about ratings
+    ProductRatings(u128),          // All ratings for a specific product
+    CategoryMapping(Address),       // Maps categories to products/users
+    Review(u128, u32),             // Specific review identified by product_id and review_id
+    PurchaseVerification(u128),    // Verification status for a purchase
+    ReviewReport(u128, u32),       // Report data for a specific review
 }
 
-// Error types for contract operations
+/// Error types that can occur during contract operations
+/// Each error has a unique code and represents a specific failure condition
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum PurchaseReviewError {
-   InvalidRating = 1,
-   ReviewAlreadyExists = 2,
-   ReviewNotFound = 3,
-   InvalidCategory = 4,
-   UnauthorizedAccess = 5,
-   RatingOutOfRange = 6,
-   RatingUpdateError = 7,
-   PurchaseNotVerified = 8,
-   InvalidAttachment = 9,
-   ProductNotFound = 10
+    InvalidRating = 1,          // Rating value is not within acceptable range
+    ReviewAlreadyExists = 2,    // Attempt to create duplicate review
+    ReviewNotFound = 3,         // Referenced review doesn't exist
+    InvalidCategory = 4,        // Category specified is not valid
+    UnauthorizedAccess = 5,     // User doesn't have permission for operation
+    RatingOutOfRange = 6,       // Rating value exceeds allowed range
+    RatingUpdateError = 7,      // Failed to update rating
+    PurchaseNotVerified = 8,    // Review attempted without verified purchase
+    InvalidAttachment = 9,      // Attached content is invalid
+    ProductNotFound = 10,       // Referenced product doesn't exist
+    AlreadyVerified = 11,       // Purchase already verified
+    PurchaseNotFound = 12,      // Referenced purchase doesn't exist
+    Unauthorized = 13,          // User not authorized for operation
+    EditWindowExpired = 14,     // Time window for editing has passed
+    AlreadyReviewed = 15,       // User already submitted a review
 }
 
-// Rating for a specific category with attachments
+/// Represents a rating for a specific category with additional metadata
 #[contracttype]
 pub struct CategoryRating {
-   pub category: Category,
-   pub rating: Rating,
-   pub timestamp: u64,
-   pub attachments: Attachment,
-   pub user: Address,
-   pub weight: u32
+    pub category: Category,     // The category being rated
+    pub rating: Rating,         // The star rating given
+    pub timestamp: u64,         // When the rating was submitted
+    pub attachment: String,     // Additional comments or media
+    pub user: Address,          // Address of the user who rated
+    pub weight: u32            // Weight/importance of this rating
 }
 
-// Collection of category ratings for a product
+/// Collection of category-specific ratings for a product
 #[contracttype]
 pub struct ProductRatings {
-   pub ratings: Vec<CategoryRating>
+    pub ratings: Vec<CategoryRating> // List of all category ratings
+}
+
+/// Detailed information about a product review
+#[contracttype]
+pub struct ReviewDetails {
+    pub review_text: String,         // The actual review content
+    pub reviewer: Address,           // Address of the reviewer
+    pub timestamp: u64,              // When the review was submitted
+    pub helpful_votes: u32,          // Number of helpful votes
+    pub not_helpful_votes: u32,      // Number of not helpful votes
+    pub verified_purchase: bool,      // Whether reviewer purchased the product
+    pub responses: Vec<String>       // Responses to the review
+}
+
+/// Data structure for purchase verification
+#[contracttype]
+pub struct PurchaseVerificationData {
+    pub user: Address,               // User who made the purchase
+    pub product_id: u128,            // ID of the purchased product
+    pub purchase_link: String,       // Link to purchase proof
+    pub is_verified: bool,           // Verification status
+    pub timestamp: u64,              // When purchase was made
+    pub has_review: bool,            // Whether user has reviewed
+}
+
+/// Information about reported reviews
+#[contracttype]
+pub struct ReviewReportData {
+    pub reporter: Address,           // User reporting the review
+    pub product_id: u128,            // Product ID of reported review
+    pub review_id: u32,              // ID of reported review
+    pub reason: String,              // Reason for reporting
+    pub timestamp: u64               // When report was submitted
 }
