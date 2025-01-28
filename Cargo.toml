@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "ContractsRevo/example-contract",
     "ContractsRevo/purchase-review-contract",
@@ -7,7 +8,7 @@ members = [
 ]
 
 [workspace.dependencies]
-soroban-sdk = "22.0.0-rc.3.2"
+soroban-sdk = "22.0.6"
 
 [profile.release]
 opt-level = "z"
