@@ -7,7 +7,6 @@ members = [
     "ContractsRevo/transaction-nft-contract",
 ]
 
-
 [workspace.dependencies]
 soroban-sdk = "22.0.6"
 
