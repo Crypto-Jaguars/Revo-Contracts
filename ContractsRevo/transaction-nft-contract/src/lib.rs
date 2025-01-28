@@ -54,3 +54,5 @@ impl TransactionNFTContract {
         metadata::get_metadata(&env, &tx_id)
     }
 }
+
+mod test;
