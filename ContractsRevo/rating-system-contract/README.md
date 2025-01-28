@@ -64,7 +64,7 @@ Ensure you have the following installed:
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/Crypto-Jaguars/Revo-Contracts/tree/main/ContractsRevo/rating-system-contract/src
-   cd rating-system-contract
+   cd Revo-Contracts/ContractsRevo/rating-system-contract/src
    ```
 2. **Build the Contract**
    ```bash
