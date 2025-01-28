@@ -64,11 +64,11 @@ Ensure you have the following installed:
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/Crypto-Jaguars/Revo-Contracts/tree/main/ContractsRevo/rating-system-contract/src
-   cd rating-system-contract
+   cd Revo-Contracts/ContractsRevo/rating-system-contract/src
    ```
 2. **Build the Contract**
    ```bash
-   cargo build 
+ stellar contract build
    ```
 3. **Run the Tests**
 ```bash
@@ -108,7 +108,7 @@ It is useful for:
 
 ## **Who Can Use It?**  
 
-### 🏪 **Marketplaces** (e.g., NFT, e-commerce)  
+### 🏪 **Marketplaces** 
 - Sellers build a **trust score** to attract buyers.  
 - Buyers can **check ratings before purchasing**.  
 
