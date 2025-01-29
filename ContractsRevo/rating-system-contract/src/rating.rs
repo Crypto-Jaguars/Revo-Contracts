@@ -24,7 +24,7 @@ pub fn rate_seller_system(
     feedback: Option<String>,
 ) -> bool {
     // Validate rating range
-    if rating < MIN_RATING || rating > MAX_RATING {
+    if !(MIN_RATING..=MAX_RATING).contains(&rating) {
         panic!("rating value must be in rang");
     }
 
