@@ -205,6 +205,9 @@ impl VerificationOperations for PurchaseReviewContract {
 
         // Calculate time elapsed since review creation
         let current_time = env.ledger().timestamp();
+        if current_time < review.timestamp {
+            return Err(PurchaseReviewError::InvalidTimestamp);
+        }
         let time_elapsed = current_time - review.timestamp;
 
         Ok(time_elapsed <= REVIEW_EDIT_WINDOW)
