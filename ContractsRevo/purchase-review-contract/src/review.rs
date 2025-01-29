@@ -95,6 +95,12 @@ impl ReviewOperations for PurchaseReviewContract {
         // Verify voter's authorization
         voter.require_auth();
         
+        // Check if user has already voted on this review
+        let vote_key = DataKeys::ReviewVote(product_id, review_id, voter.clone());
+        if env.storage().persistent().has(&vote_key) {
+            return Err(PurchaseReviewError::AlreadyVoted);
+        }
+        
         // Retrieve the review
         let key = DataKeys::Review(product_id, review_id);
         let mut review = env.storage().persistent().get::<_, ReviewDetails>(&key)
@@ -106,6 +112,9 @@ impl ReviewOperations for PurchaseReviewContract {
         } else {
             review.not_helpful_votes += 1;
         }
+        
+        // Record that this user has voted
+        env.storage().persistent().set(&vote_key, &helpful);
         
         // Save the updated review
         env.storage().persistent().set(&key, &review);

@@ -41,7 +41,7 @@ impl RatingOperations for PurchaseReviewContract {
             .unwrap_or_else(|| ProductRatings { ratings: Vec::new(&env) });
  
         // Calculate the weighted rating value based on the rating and weight factors
-        let weighted_rating = Self::calculate_weighted(&env, rating.clone(), weight);
+        let weighted_rating = Self::calculate_weighted(&env, rating.clone(), weight)?;
 
         // Create a new rating entry with all the provided details
         // timestamp is automatically set to the current ledger time
@@ -51,7 +51,7 @@ impl RatingOperations for PurchaseReviewContract {
             timestamp: env.ledger().timestamp(), 
             attachment,
             user,
-            weight: weighted_rating as u32
+            weight: weighted_rating
         };
  
         // Add the new rating to the product's ratings collection
@@ -69,13 +69,13 @@ impl RatingOperations for PurchaseReviewContract {
     /// - rating: The base rating value
     /// - weight: The weight factor to apply
     /// Returns: The weighted rating value as u32
-    fn calculate_weighted(env: &Env, rating: Rating, weight: u32) -> u32 {
+    fn calculate_weighted(env: &Env, rating: Rating, weight: u32) -> Result<u32, PurchaseReviewError> {
         // Convert rating enum to numeric value
         let rating_value = rating as u32;
 
         // Multiply rating by weight, handling potential overflow
         let weighted_rating = rating_value.checked_mul(weight)
-            .unwrap_or(0); // Return 0 if multiplication overflows
+            .ok_or(PurchaseReviewError::WeightedRatingOverflow)?;
 
         // Emit an event with the calculation details for transparency
         env.events().publish(
@@ -86,7 +86,7 @@ impl RatingOperations for PurchaseReviewContract {
             weighted_rating,
         );
 
-        weighted_rating
+        Ok(weighted_rating)
     }
 
     /// Retrieves all ratings for a given product ID

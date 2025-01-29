@@ -19,7 +19,7 @@ pub trait RatingOperations {
     ) -> Result<(), PurchaseReviewError>;
 
     /// Calculates the weighted rating score based on rating value and weight
-    fn calculate_weighted(env: &Env, rating: Rating, weight: u32) -> u32;
+    fn calculate_weighted(env: &Env, rating: Rating, weight: u32) -> Result<u32, PurchaseReviewError>;
 
     /// Retrieves all ratings for a specific product
     /// Returns ProductRatings containing aggregate rating data

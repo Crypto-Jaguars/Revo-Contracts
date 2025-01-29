@@ -26,22 +26,20 @@ impl VerificationOperations for PurchaseReviewContract {
         user: Address,
         product_id: u128,
     ) -> Result<bool, PurchaseReviewError> {
-
-        let key = DataKeys::PurchaseVerification(product_id);
+        // Use product_id as the key since it's unique per purchase
+        let key = DataKeys::PurchaseVerification(product_id, user.clone());
         let mut purchase_data = env.storage().persistent().get::<_, PurchaseVerificationData>(&key)
             .ok_or(PurchaseReviewError::PurchaseNotFound)?;
 
-        // Verify that the user making the request is the purchaser
+        // Verify the user matches
         if purchase_data.user != user {
-            return Err(PurchaseReviewError::Unauthorized);
+            return Err(PurchaseReviewError::UnauthorizedAccess);
         }
 
-         // Check if the purchase has already been reviewed
-         if purchase_data.has_review {
+        if purchase_data.has_review {
             return Err(PurchaseReviewError::AlreadyReviewed);
         }
 
-        // Update has_review status
         purchase_data.has_review = true;
         env.storage().persistent().set(&key, &purchase_data);
 
@@ -106,7 +104,8 @@ impl VerificationOperations for PurchaseReviewContract {
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError> {
         user.require_auth();
-        let key = DataKeys::PurchaseVerification(product_id);
+        // Create a composite key using both product_id and user address
+        let key = DataKeys::PurchaseVerification(product_id, user.clone());
         
         if env.storage().persistent().has(&key) {
             return Err(PurchaseReviewError::AlreadyVerified);
@@ -157,7 +156,7 @@ impl VerificationOperations for PurchaseReviewContract {
 
         // Verify the user is the original reviewer
         if existing_review.reviewer != user {
-            return Err(PurchaseReviewError::Unauthorized);
+            return Err(PurchaseReviewError::UnauthorizedAccess);
         }
 
         // Update the review while preserving original timestamp and reviewer

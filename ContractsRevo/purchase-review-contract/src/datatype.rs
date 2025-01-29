@@ -33,9 +33,11 @@ pub enum DataKeys {
     ProductRatings(u128),          // All ratings for a specific product
     CategoryMapping(Address),       // Maps categories to products/users
     Review(u128, u32),             // Specific review identified by product_id and review_id
-    PurchaseVerification(u128),    // Verification status for a purchase
+    PurchaseVerification(u128, Address),    // Verification status for a purchase
     ReviewReport(u128, u32),       // Report data for a specific review
     ReviewCount(u128),
+    ReviewVote(u128, u32, Address), // (product_id, review_id, voter)
+    AlreadyVoted(u128, u32, Address), // (product_id, review_id, voter)
 }
 
 /// Error types that can occur during contract operations
@@ -55,10 +57,11 @@ pub enum PurchaseReviewError {
     InvalidAttachment = 9,      // Attached content is invalid
     ProductNotFound = 10,       // Referenced product doesn't exist
     AlreadyVerified = 11,       // Purchase already verified
-    PurchaseNotFound = 12,      // Referenced purchase doesn't exist
-    Unauthorized = 13,          // User not authorized for operation
-    EditWindowExpired = 14,     // Time window for editing has passed
-    AlreadyReviewed = 15,       // User already submitted a review
+    PurchaseNotFound = 12,      // Referenced purchase doesn't exist 
+    EditWindowExpired = 13,     // Time window for editing has passed
+    AlreadyReviewed = 14,       // User already submitted a review
+    WeightedRatingOverflow = 15,
+    AlreadyVoted = 16,
 }
 
 /// Represents a rating for a specific category with additional metadata
