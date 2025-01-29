@@ -5,6 +5,7 @@ use crate::datatype::{
 };
 
 /// Handles rating-related operations for products
+#[allow(dead_code)]
 pub trait RatingOperations {
     /// Submits a new rating for a product with optional attachments
     /// Returns an error if the submission fails
@@ -30,6 +31,7 @@ pub trait RatingOperations {
 }
 
 /// Manages review-related operations including submissions, responses, and voting
+#[allow(dead_code)]
 pub trait ReviewOperations {
     /// Submits a new review with purchase verification
     /// purchase_link serves as proof of purchase
@@ -80,6 +82,7 @@ pub trait ReviewOperations {
 }
 
 /// Handles verification and moderation-related operations
+#[allow(dead_code)]
 pub trait VerificationOperations {
     /// Checks if user has already submitted a review for this purchase
     /// Prevents duplicate reviews
