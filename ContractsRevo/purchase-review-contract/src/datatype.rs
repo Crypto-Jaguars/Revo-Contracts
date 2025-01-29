@@ -1,4 +1,7 @@
-use soroban_sdk::{Address, contracterror, contracttype, String, Vec};
+use soroban_sdk::{
+    contracterror, contracttype,
+    Address, String, Vec
+};
 
 /// Main categories for rating different aspects of products/services
 /// Used to organize and segment ratings into specific areas of evaluation
@@ -12,8 +15,9 @@ pub enum Category {
 
 /// Star rating system allowing users to rate from 1 to 5 stars
 /// Each variant represents a different level of satisfaction
+#[derive(Clone, Copy)]
 #[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
 pub enum Rating {
     OneStar = 1,    // Poor/Unsatisfactory
     TwoStars = 2,   // Below Average
@@ -27,14 +31,15 @@ pub enum Rating {
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKeys {
+    Admin,                          // Contract administrator address
     Rating(Address),                // User's overall rating
     CategoryRating(Address),        // User's rating for specific categories
-    RatingStats(Address),          // Statistical data about ratings
-    ProductRatings(u128),          // All ratings for a specific product
-    CategoryMapping(Address),       // Maps categories to products/users
-    Review(u128, u32),             // Specific review identified by product_id and review_id
+    RatingStats(Address),           // Statistical data about ratings
+    ProductRatings(u128),           // All ratings for a specific product
+    CategoryMapping(Address),        // Maps categories to products/users
+    Review(u128, u32),              // Specific review identified by product_id and review_id
     PurchaseVerification(u128, Address),    // Verification status for a purchase
-    ReviewReport(u128, u32),       // Report data for a specific review
+    ReviewReport(u128, u32),        // Report data for a specific review
     ReviewCount(u128),
     ReviewVote(u128, u32, Address), // (product_id, review_id, voter)
     AlreadyVoted(u128, u32, Address), // (product_id, review_id, voter)
@@ -75,6 +80,7 @@ pub enum PurchaseReviewError {
 
 /// Represents a rating for a specific category with additional metadata
 #[contracttype]
+#[derive(Clone)]
 pub struct CategoryRating {
     pub category: Category,     // The category being rated
     pub rating: Rating,         // The star rating given
@@ -86,20 +92,22 @@ pub struct CategoryRating {
 
 /// Collection of category-specific ratings for a product
 #[contracttype]
+#[derive(Clone)]
 pub struct ProductRatings {
-    pub ratings: Vec<CategoryRating> // List of all category ratings
+    pub ratings: Vec<CategoryRating>
 }
 
 /// Detailed information about a product review
 #[contracttype]
+#[derive(Clone)]
 pub struct ReviewDetails {
-    pub review_text: String,         // The actual review content
-    pub reviewer: Address,           // Address of the reviewer
-    pub timestamp: u64,              // When the review was submitted
-    pub helpful_votes: u64,          // Number of helpful votes
-    pub not_helpful_votes: u64,      // Number of not helpful votes
-    pub verified_purchase: bool,      // Whether reviewer purchased the product
-    pub responses: Vec<String>       // Responses to the review
+    pub review_text: String,
+    pub reviewer: Address,
+    pub timestamp: u64,
+    pub helpful_votes: u64,
+    pub not_helpful_votes: u64,
+    pub verified_purchase: bool,
+    pub responses: Vec<String>
 }
 
 /// Data structure for purchase verification
@@ -121,4 +129,15 @@ pub struct ReviewReportData {
     pub review_id: u32,              // ID of reported review
     pub reason: String,              // Reason for reporting
     pub timestamp: u64               // When report was submitted
+}
+
+#[contracttype]
+#[derive(Clone)]
+pub struct Review {
+    pub reviewer: Address,
+    pub product_id: u32,
+    pub rating: Rating,
+    pub comment: String,
+    pub timestamp: u64,
+    pub verified: bool,
 }
