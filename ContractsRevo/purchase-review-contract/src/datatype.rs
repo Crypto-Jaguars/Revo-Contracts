@@ -39,6 +39,7 @@ pub enum DataKeys {
     ReviewVote(u128, u32, Address), // (product_id, review_id, voter)
     AlreadyVoted(u128, u32, Address), // (product_id, review_id, voter)
     UserReviewReport(u128, u32, Address), // (product_id, review_id, reporter)
+    VoteRateLimit(Address),
 }
 
 /// Error types that can occur during contract operations
@@ -66,6 +67,8 @@ pub enum PurchaseReviewError {
     InvalidReportReason = 17,
     AlreadyReported = 18,
     InvalidReviewText = 19,
+    InvalidTimestamp = 20,
+    RateLimitExceeded = 21,
 }
 
 /// Represents a rating for a specific category with additional metadata

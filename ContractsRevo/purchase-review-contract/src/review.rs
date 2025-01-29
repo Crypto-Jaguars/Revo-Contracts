@@ -97,6 +97,17 @@ impl ReviewOperations for PurchaseReviewContract {
         // Verify voter's authorization
         voter.require_auth();
         
+        // Check rate limiting
+        let rate_limit_key = DataKeys::VoteRateLimit(voter.clone());
+        let last_vote_time = env.storage().persistent()
+            .get::<_, u64>(&rate_limit_key)
+            .unwrap_or(0);
+        let current_time = env.ledger().timestamp();
+        
+        if current_time - last_vote_time < 300 { // 5 minutes cooldown
+            return Err(PurchaseReviewError::RateLimitExceeded);
+        }
+        
         // Check if user has already voted on this review
         let vote_key = DataKeys::ReviewVote(product_id, review_id, voter.clone());
         if env.storage().persistent().has(&vote_key) {
@@ -120,6 +131,9 @@ impl ReviewOperations for PurchaseReviewContract {
         
         // Save the updated review
         env.storage().persistent().set(&key, &review);
+        
+        // Update rate limit timestamp
+        env.storage().persistent().set(&rate_limit_key, &current_time);
         Ok(())
     }
 
