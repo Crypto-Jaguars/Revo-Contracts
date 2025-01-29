@@ -20,8 +20,12 @@ impl ReviewOperations for PurchaseReviewContract {
         review_text: String,
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError> {
-        // Ensure the user has authorized this transaction
         user.require_auth();
+
+        // Validate review text
+        if review_text.len() == 0 || review_text.len() > 1000 {  // adjust max length as needed
+            return Err(PurchaseReviewError::InvalidReviewText);
+        }
 
         // Verify the purchase link is valid for this user and product
         Self::purchase_link_verification(env.clone(), user.clone(), product_id, purchase_link)?;
@@ -29,11 +33,9 @@ impl ReviewOperations for PurchaseReviewContract {
         // Check if this purchase has already been reviewed by user
         Self::pre_review_purchase(env.clone(), user.clone(), product_id)?;
         
-        // Atomic increment of review count
+        // Get and increment review count atomically using a transaction
         let count_key = DataKeys::ReviewCount(product_id);
-        let review_id = env.storage().persistent()
-            .get::<_, u32>(&count_key)
-            .unwrap_or(0);
+        let review_id = env.storage().persistent().get(&count_key).unwrap_or(0);
         env.storage().persistent().set(&count_key, &(review_id + 1));
 
         // Create a new review with initial values
@@ -137,6 +139,11 @@ impl ReviewOperations for PurchaseReviewContract {
         let key = DataKeys::Review(product_id, review_id);
         let mut review = env.storage().persistent().get::<_, ReviewDetails>(&key)
             .ok_or(PurchaseReviewError::ReviewNotFound)?;
+
+        // Verify the user owns this review
+        if review.reviewer != user {
+            return Err(PurchaseReviewError::UnauthorizedAccess);
+        }
 
         // Verify the purchase
         Self::purchase_link_verification(env.clone(), user.clone(), product_id, purchase_link)?;

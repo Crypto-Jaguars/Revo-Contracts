@@ -38,6 +38,7 @@ pub enum DataKeys {
     ReviewCount(u128),
     ReviewVote(u128, u32, Address), // (product_id, review_id, voter)
     AlreadyVoted(u128, u32, Address), // (product_id, review_id, voter)
+    UserReviewReport(u128, u32, Address), // (product_id, review_id, reporter)
 }
 
 /// Error types that can occur during contract operations
@@ -62,6 +63,9 @@ pub enum PurchaseReviewError {
     AlreadyReviewed = 14,       // User already submitted a review
     WeightedRatingOverflow = 15,
     AlreadyVoted = 16,
+    InvalidReportReason = 17,
+    AlreadyReported = 18,
+    InvalidReviewText = 19,
 }
 
 /// Represents a rating for a specific category with additional metadata

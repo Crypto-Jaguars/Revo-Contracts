@@ -67,6 +67,17 @@ impl VerificationOperations for PurchaseReviewContract {
         // Require authentication from the reporter
         reporter.require_auth();
 
+        // Validate reason text length
+        if reason.len() == 0 || reason.len() > 500 {
+            return Err(PurchaseReviewError::InvalidReportReason);
+        }
+
+        // Check if user has already reported this review
+        let user_report_key = DataKeys::UserReviewReport(product_id, review_id, reporter.clone());
+        if env.storage().persistent().has(&user_report_key) {
+            return Err(PurchaseReviewError::AlreadyReported);
+        }
+
         // Verify review exists
         let review_key = DataKeys::Review(product_id, review_id);
         env.storage().persistent().get::<_, ReviewDetails>(&review_key)
@@ -83,6 +94,8 @@ impl VerificationOperations for PurchaseReviewContract {
 
         let report_key = DataKeys::ReviewReport(product_id, review_id);
         env.storage().persistent().set(&report_key, &report);
+        // Mark that this user has reported this review
+        env.storage().persistent().set(&user_report_key, &true);
         Ok(())
     }
 

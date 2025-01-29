@@ -102,9 +102,9 @@ impl RatingOperations for PurchaseReviewContract {
         let key = DataKeys::ProductRatings(product_id);
 
         // Retrieve ratings from storage
-        // Returns an error if no ratings are found for the product
+        // Returns empty ratings collection if none exist yet
         let product_ratings = env.storage().persistent().get::<_, ProductRatings>(&key)
-            .ok_or(PurchaseReviewError::ProductNotFound)?;
+            .unwrap_or_else(|| ProductRatings { ratings: Vec::new(&env) });
 
         Ok(product_ratings)
     }
