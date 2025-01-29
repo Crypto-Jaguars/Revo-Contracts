@@ -117,6 +117,17 @@ impl VerificationOperations for PurchaseReviewContract {
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError> {
         user.require_auth();
+
+        // Validate purchase link format
+        if purchase_link.len() == 0 || purchase_link.len() > 200 {
+            return Err(PurchaseReviewError::InvalidPurchaseLink);
+        }
+
+        // Basic format validation
+        if purchase_link.len() < 8 { // "https://" minimum length
+            return Err(PurchaseReviewError::InvalidPurchaseLink);
+        }
+
         // Create a composite key using both product_id and user address
         let key = DataKeys::PurchaseVerification(product_id, user.clone());
         
@@ -156,6 +167,11 @@ impl VerificationOperations for PurchaseReviewContract {
     ) -> Result<(), PurchaseReviewError> {
         // Require authentication from the user
         user.require_auth();
+
+        // Validate new review text
+        if new_details.review_text.len() == 0 || new_details.review_text.len() > 1000 {
+            return Err(PurchaseReviewError::InvalidReviewText);
+        }
 
         // Check if review is still editable
         if !Self::is_review_editable(env.clone(), review_id, product_id)? {
