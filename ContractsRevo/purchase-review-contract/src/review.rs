@@ -71,12 +71,17 @@ impl ReviewOperations for PurchaseReviewContract {
         // Verify the responder's authorization
         reviewer.require_auth();
         
+        // Validate response text
+        if response_text.len() == 0 || response_text.len() > 500 {
+            return Err(PurchaseReviewError::InvalidResponseText);
+        }
+
         // Retrieve the existing review
         let key = DataKeys::Review(product_id, review_id);
         let mut review = env.storage().persistent().get::<_, ReviewDetails>(&key)
             .ok_or(PurchaseReviewError::ReviewNotFound)?;
         
-        // Add the new response and update storage
+        
         review.responses.push_back(response_text);
         env.storage().persistent().set(&key, &review);
         Ok(())
@@ -131,9 +136,6 @@ impl ReviewOperations for PurchaseReviewContract {
         
         // Save the updated review
         env.storage().persistent().set(&key, &review);
-        
-        // Update rate limit timestamp
-        env.storage().persistent().set(&rate_limit_key, &current_time);
         Ok(())
     }
 

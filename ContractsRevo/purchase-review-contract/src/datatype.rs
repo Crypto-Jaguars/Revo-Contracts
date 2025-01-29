@@ -69,6 +69,8 @@ pub enum PurchaseReviewError {
     InvalidReviewText = 19,
     InvalidTimestamp = 20,
     RateLimitExceeded = 21,
+    InvalidPurchaseLink = 22,
+    InvalidResponseText = 23,
 }
 
 /// Represents a rating for a specific category with additional metadata
@@ -94,8 +96,8 @@ pub struct ReviewDetails {
     pub review_text: String,         // The actual review content
     pub reviewer: Address,           // Address of the reviewer
     pub timestamp: u64,              // When the review was submitted
-    pub helpful_votes: u32,          // Number of helpful votes
-    pub not_helpful_votes: u32,      // Number of not helpful votes
+    pub helpful_votes: u64,          // Number of helpful votes
+    pub not_helpful_votes: u64,      // Number of not helpful votes
     pub verified_purchase: bool,      // Whether reviewer purchased the product
     pub responses: Vec<String>       // Responses to the review
 }
