@@ -63,7 +63,7 @@ Ensure you have the following installed:
 ### **Installation Steps**
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/Crypto-Jaguars/Revo-Contracts/tree/main/ContractsRevo/rating-system-contract/src
+   git clone https://github.com/Crypto-Jaguars/Revo-Contracts.git
    cd Revo-Contracts/ContractsRevo/rating-system-contract/src
    ```
 2. **Build the Contract**
