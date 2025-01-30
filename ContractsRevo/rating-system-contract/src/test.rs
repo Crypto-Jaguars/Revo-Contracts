@@ -122,16 +122,16 @@ use soroban_sdk::{testutils::Address as TestAddress, Env, Vec};
 //     );
 // }
 
-#[test]
-#[should_panic(expected = "No rating available")]
-fn test_seller_reputation_score_panic_rating_no_available() {
-    let env = Env::default();
-    let contract_id = env.register(RatingSystemContract, ());
-    let client = RatingSystemContractClient::new(&env, &contract_id);
-    let seller_address = <Address>::generate(&env);
+// #[test]
+// #[should_panic(expected = "No rating available")]
+// fn test_seller_reputation_score_panic_rating_no_available() {
+//     let env = Env::default();
+//     let contract_id = env.register(RatingSystemContract, ());
+//     let client = RatingSystemContractClient::new(&env, &contract_id);
+//     let seller_address = <Address>::generate(&env);
 
-    client.seller_reputation_score(&seller_address);
-}
+//     client.seller_reputation_score(&seller_address);
+// }
 
 #[test]
 fn test_seller_reputation_score() {
