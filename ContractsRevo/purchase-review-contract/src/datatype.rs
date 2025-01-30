@@ -15,7 +15,7 @@ pub enum Category {
 
 /// Star rating system allowing users to rate from 1 to 5 stars
 /// Each variant represents a different level of satisfaction
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[contracttype]
 #[repr(u32)]
 pub enum Rating {
