@@ -317,8 +317,6 @@ fn test_pre_review_purchase() {
     assert!(result.is_err());
 }
 
-
-
 #[test]
 fn test_get_product_ratings_empty() {
     let (_, client, _, _) = setup_test();

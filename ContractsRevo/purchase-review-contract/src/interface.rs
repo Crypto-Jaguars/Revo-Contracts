@@ -1,8 +1,5 @@
+use crate::datatype::{Category, ProductRatings, PurchaseReviewError, Rating, ReviewDetails};
 use soroban_sdk::{Address, Env, String};
-use crate::datatype::{
-   Category, Rating, ProductRatings, 
-   PurchaseReviewError, ReviewDetails
-};
 
 /// Handles rating-related operations for products
 #[allow(dead_code)]
@@ -16,17 +13,21 @@ pub trait RatingOperations {
         category: Category,
         rating: Rating,
         weight: u32,
-        attachment: String
+        attachment: String,
     ) -> Result<(), PurchaseReviewError>;
 
     /// Calculates the weighted rating score based on rating value and weight
-    fn calculate_weighted(env: &Env, rating: Rating, weight: u32) -> Result<u32, PurchaseReviewError>;
+    fn calculate_weighted(
+        env: &Env,
+        rating: Rating,
+        weight: u32,
+    ) -> Result<u32, PurchaseReviewError>;
 
     /// Retrieves all ratings for a specific product
     /// Returns ProductRatings containing aggregate rating data
     fn get_product_ratings(
         env: Env,
-        product_id: u128
+        product_id: u128,
     ) -> Result<ProductRatings, PurchaseReviewError>;
 }
 

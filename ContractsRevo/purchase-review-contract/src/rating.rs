@@ -1,12 +1,9 @@
 use crate::interface::RatingOperations;
 use crate::{
+    datatype::{Category, CategoryRating, DataKeys, ProductRatings, PurchaseReviewError, Rating},
     PurchaseReviewContract, PurchaseReviewContractArgs, PurchaseReviewContractClient,
-    datatype::{
-        Category, Rating, ProductRatings, PurchaseReviewError,
-        DataKeys, CategoryRating
-    }
 };
-use soroban_sdk::{Env, contractimpl, Address, String, Vec, Symbol};
+use soroban_sdk::{contractimpl, Address, Env, String, Symbol, Vec};
 
 #[contractimpl]
 impl RatingOperations for PurchaseReviewContract {
@@ -26,14 +23,19 @@ impl RatingOperations for PurchaseReviewContract {
         category: Category,
         rating: Rating,
         weight: u32,
-        attachment: String
+        attachment: String,
     ) -> Result<(), PurchaseReviewError> {
         user.require_auth();
 
         let key = DataKeys::ProductRatings(product_id);
-        
-        let mut product_ratings = env.storage().persistent().get::<_, ProductRatings>(&key)
-            .unwrap_or_else(|| ProductRatings { ratings: Vec::new(&env) });
+
+        let mut product_ratings = env
+            .storage()
+            .persistent()
+            .get::<_, ProductRatings>(&key)
+            .unwrap_or_else(|| ProductRatings {
+                ratings: Vec::new(&env),
+            });
 
         let weighted_rating = Self::calculate_weighted(&env, rating.clone(), weight)?;
 
@@ -43,7 +45,7 @@ impl RatingOperations for PurchaseReviewContract {
             timestamp: env.ledger().timestamp(),
             attachment,
             user: user.clone(),
-            weight: weighted_rating
+            weight: weighted_rating,
         };
 
         product_ratings.ratings.push_back(category_rating);
@@ -51,7 +53,7 @@ impl RatingOperations for PurchaseReviewContract {
 
         env.events().publish(
             (Symbol::new(&env, "rating_submitted"), user),
-            (product_id, rating as u32, weighted_rating)
+            (product_id, rating as u32, weighted_rating),
         );
 
         Ok(())
@@ -63,14 +65,19 @@ impl RatingOperations for PurchaseReviewContract {
     /// - rating: The base rating value
     /// - weight: The weight factor to apply
     /// Returns: The weighted rating value as u32
-    fn calculate_weighted(env: &Env, rating: Rating, weight: u32) -> Result<u32, PurchaseReviewError> {
+    fn calculate_weighted(
+        env: &Env,
+        rating: Rating,
+        weight: u32,
+    ) -> Result<u32, PurchaseReviewError> {
         let rating_value = rating as u32;
-        let weighted_rating = rating_value.checked_mul(weight)
+        let weighted_rating = rating_value
+            .checked_mul(weight)
             .ok_or(PurchaseReviewError::WeightedRatingOverflow)?;
 
         env.events().publish(
             (Symbol::new(env, "weighted_rating_calculated"), rating_value),
-            weighted_rating
+            weighted_rating,
         );
 
         Ok(weighted_rating)
@@ -83,16 +90,21 @@ impl RatingOperations for PurchaseReviewContract {
     /// Returns: Result containing ProductRatings or an error if product not found
     fn get_product_ratings(
         env: Env,
-        product_id: u128
+        product_id: u128,
     ) -> Result<ProductRatings, PurchaseReviewError> {
         let key = DataKeys::ProductRatings(product_id);
-        
-        let product_ratings = env.storage().persistent().get::<_, ProductRatings>(&key)
-            .unwrap_or_else(|| ProductRatings { ratings: Vec::new(&env) });
+
+        let product_ratings = env
+            .storage()
+            .persistent()
+            .get::<_, ProductRatings>(&key)
+            .unwrap_or_else(|| ProductRatings {
+                ratings: Vec::new(&env),
+            });
 
         env.events().publish(
             (Symbol::new(&env, "ratings_retrieved"), product_id),
-            product_ratings.ratings.len()
+            product_ratings.ratings.len(),
         );
 
         Ok(product_ratings)
