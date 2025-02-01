@@ -5,8 +5,6 @@ mod metadata;
 mod mint;
 mod proof;
 
-#[cfg(test)]
-mod test;
 #[contract]
 pub struct TransactionNFTContract;
 

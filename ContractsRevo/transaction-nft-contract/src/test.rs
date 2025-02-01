@@ -191,9 +191,9 @@ mod tests {
         // Ensure timestamp is after contract deployment
         assert!(metadata.timestamp >= env.ledger().timestamp());
     }
-}
 
-#[test]
+
+    #[test]
 fn test_unique_nft_generation() {
     let (env, contract_id) = create_test_env();
     let client = TransactionNFTContractClient::new(&env, &contract_id);
@@ -265,4 +265,5 @@ fn test_timing_and_sequence() {
 
     // Ensure timestamp is correct
     assert_eq!(metadata.timestamp, 12345, "Timestamp should match the ledger info");
+}
 }
