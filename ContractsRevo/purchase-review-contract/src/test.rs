@@ -1,16 +1,74 @@
 #![cfg(test)]
 use super::*;
-use crate::datatype::{PurchaseReviewError, ReviewDetails};
-// use crate::interface::ReviewOperations;
-use crate::datatype::Category;
-use crate::datatype::Rating;
+use crate::{PurchaseReviewContract, PurchaseReviewContractClient};
+use crate::datatype::{PurchaseReviewError, ReviewDetails, Category, Rating};
 use soroban_sdk::{
-    testutils::{Address as _, Ledger},
-    Address, Env,
+    testutils::{Address as _, Ledger, Events},
+    Address, Env, String,
 };
-use soroban_sdk::{String, Vec};
+use soroban_sdk::Vec;
 
-// Helper function to setup test environment with admin
+// New test added as the first test in the file
+#[test]
+fn test_submit_rating_events() {
+    // Set up the test environment
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    // Set up the test user
+    let user = Address::generate(&env);
+
+    // Test data for the rating
+    let product_id: u128 = 12345;
+    let category = Category::Quality;
+    let rating = Rating::FiveStars;
+    let weight: u32 = 2;
+    let attachment = String::from_str(&env, "Great product!");
+
+    // Authorize the transaction
+    env.mock_all_auths();
+
+    // Submit the rating
+    client.submit_rating(
+        &user,
+        &product_id,
+        &category,
+        &rating,
+        &weight,
+        &attachment,
+    );
+
+    // Verify the emitted events
+    let events = env.events().all();
+    assert_eq!(events.len(), 2);  // Expect 2 events
+
+    // Verify the first event
+    let event = events.get(0).unwrap();
+    assert_eq!(event.0, contract_id);
+
+    // Verify that the event data is not empty
+    assert!(!event.2.is_void());
+
+    // Verify the second event
+    let event = events.get(1).unwrap();
+    assert_eq!(event.0, contract_id);
+    assert!(!event.2.is_void());
+
+    // Verify the stored rating
+    let stored_ratings = client.get_product_ratings(&product_id);
+    assert_eq!(stored_ratings.ratings.len(), 1);
+
+    // Verify the details of the stored rating
+    let stored_rating = stored_ratings.ratings.get(0).unwrap();
+    assert_eq!(stored_rating.category, category);
+    assert_eq!(stored_rating.rating, rating);
+    assert_eq!(stored_rating.user, user);
+    assert_eq!(stored_rating.weight, weight * (rating as u32));
+    assert_eq!(stored_rating.attachment, attachment);
+}
+
+// Helper function to set up the test environment with admin
 fn setup_test() -> (Env, PurchaseReviewContractClient<'static>, Address, Address) {
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
