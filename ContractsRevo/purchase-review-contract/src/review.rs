@@ -1,9 +1,9 @@
 use crate::interface::{ReviewOperations, VerificationOperations};
 use crate::{
+    datatype::{DataKeys, PurchaseReviewError, ReviewDetails},
     PurchaseReviewContract, PurchaseReviewContractArgs, PurchaseReviewContractClient,
-    datatype::{ReviewDetails, PurchaseReviewError, DataKeys}
 };
-use soroban_sdk::{Env, contractimpl, Address, String, Vec, Symbol};
+use soroban_sdk::{contractimpl, Address, Env, String, Symbol, Vec};
 
 #[contractimpl]
 impl ReviewOperations for PurchaseReviewContract {
@@ -29,7 +29,7 @@ impl ReviewOperations for PurchaseReviewContract {
         Self::purchase_link_verification(env.clone(), user.clone(), product_id, purchase_link)?;
 
         Self::pre_review_purchase(env.clone(), user.clone(), product_id)?;
-        
+
         // Get and increment review count
         let count_key = DataKeys::ReviewCount(product_id);
         let review_id = env.storage().persistent().get(&count_key).unwrap_or(0);
@@ -50,9 +50,9 @@ impl ReviewOperations for PurchaseReviewContract {
 
         env.events().publish(
             (Symbol::new(&env, "review_submitted"), user),
-            (product_id, review_id)
+            (product_id, review_id),
         );
-        
+
         Ok(())
     }
 
@@ -91,7 +91,10 @@ impl ReviewOperations for PurchaseReviewContract {
         }
 
         let review_key = DataKeys::Review(product_id, review_id);
-        let mut review = env.storage().persistent().get::<_, ReviewDetails>(&review_key)
+        let mut review = env
+            .storage()
+            .persistent()
+            .get::<_, ReviewDetails>(&review_key)
             .ok_or(PurchaseReviewError::ReviewNotFound)?;
 
         if helpful {
@@ -105,7 +108,7 @@ impl ReviewOperations for PurchaseReviewContract {
 
         env.events().publish(
             (Symbol::new(&env, "review_voted"), voter),
-            (product_id, review_id, helpful)
+            (product_id, review_id, helpful),
         );
 
         Ok(())
@@ -142,7 +145,7 @@ impl ReviewOperations for PurchaseReviewContract {
             helpful_votes: 0,
             not_helpful_votes: 0,
             verified_purchase: false,
-            responses: Vec::new(&env)
+            responses: Vec::new(&env),
         })
     }
 }
