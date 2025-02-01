@@ -1,3 +1,4 @@
+use crate::DataKey;
 use soroban_sdk::{contracttype, Address, Env, String, Symbol, Vec};
 // use crate::datatypes::{Error};
 
@@ -23,7 +24,7 @@ pub fn rate_seller_system(
     feedback: Option<String>,
 ) -> bool {
     // Validate rating range
-    if rating < MIN_RATING || rating > MAX_RATING {
+    if !(MIN_RATING..=MAX_RATING).contains(&rating) {
         panic!("rating value must be in rang");
     }
 
@@ -35,8 +36,10 @@ pub fn rate_seller_system(
         feedback,
     };
 
+    let key = DataKey::Rating(seller.clone());
+
     // fetch existing ratings or initialize new vector
-    let mut ratings: Vec<Rating> = match env.storage().instance().get(&seller) {
+    let mut ratings: Vec<Rating> = match env.storage().instance().get(&key) {
         Some(x) => x,
         None => Vec::new(&env),
     };
@@ -45,7 +48,7 @@ pub fn rate_seller_system(
     ratings.push_back(seller_rating);
 
     // Update seller ratings in storage
-    env.storage().instance().set(&seller, &ratings);
+    env.storage().instance().set(&key, &ratings);
 
     env.events().publish(
         (Symbol::new(&env, "buyer_rate_the_seller"), seller.clone()),
@@ -58,8 +61,10 @@ pub fn rate_seller_system(
 // update the seller weighted rating
 pub fn update_weighted_rating(env: Env, seller: Address, rating: u32, weight: u32) {
     // Fetch existing weighted rating and total weight or initialize to zero
+    let key = DataKey::WeightedRating(seller.clone());
+
     let (mut total_weighted_rating, mut total_weight): (u32, u32) =
-        match env.storage().instance().get(&seller) {
+        match env.storage().instance().get(&key) {
             Some((x, y)) => (x, y),
             None => (0, 0),
         };
@@ -71,7 +76,7 @@ pub fn update_weighted_rating(env: Env, seller: Address, rating: u32, weight: u3
     // save updated values in storage
     env.storage()
         .instance()
-        .set(&seller, &(total_weighted_rating, total_weight));
+        .set(&key, &(total_weighted_rating, total_weight));
 
     env.events().publish(
         (Symbol::new(&env, "updated_weighted_rating"), seller.clone()),
@@ -81,12 +86,13 @@ pub fn update_weighted_rating(env: Env, seller: Address, rating: u32, weight: u3
 
 // calculates the seller's weighted rating
 pub fn calculate_weighted_rating(env: Env, seller: Address) -> f32 {
+    let key = DataKey::WeightedRating(seller.clone());
     // Fetch existing total weighted rating and total weight or initialize to zero
-    let (total_weighted_rating, total_weight): (u32, u32) =
-        match env.storage().instance().get(&seller) {
-            Some((x, y)) => (x, y),
-            None => (0, 0),
-        };
+    let (total_weighted_rating, total_weight): (u32, u32) = match env.storage().instance().get(&key)
+    {
+        Some((x, y)) => (x, y),
+        None => (0, 0),
+    };
 
     // ensure there are ratings to calculate
     if total_weight == 0 {

@@ -48,6 +48,7 @@ pub fn transaction_exists(
     data.append(&seller_xdr);
     data.append(&Bytes::from_array(env, &amount_bytes));
     data.append(&product);
+    data.append(&Bytes::from_array(env, &env.ledger().timestamp().to_be_bytes()));
     data.append(&contract_address.to_xdr(env));
 
     let hash = env.crypto().sha256(&data);

@@ -1,6 +1,6 @@
 use soroban_sdk::{contracttype, Address, Env, Symbol, Vec};
 
-use crate::history;
+use crate::{history, DataKey};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[contracttype]
@@ -43,13 +43,11 @@ pub fn add_reputation_score_history(env: Env, seller: Address, score: u32) {
     reputation_history.push_back(new_record.clone());
 
     // Update the seller's reputation history in storage
-    env.storage().instance().set(&seller, &reputation_history);
+    let key = DataKey::ReputationHistory(seller.clone());
+    env.storage().instance().set(&key, &reputation_history);
 
     env.events().publish(
-        (
-            Symbol::new(&env, "added_reputation_score_in_history"),
-            seller.clone(),
-        ),
+        (Symbol::new(&env, "added_score_in_history"), seller.clone()),
         new_record,
     );
 }
