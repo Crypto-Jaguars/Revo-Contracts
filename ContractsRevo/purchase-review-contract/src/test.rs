@@ -591,7 +591,7 @@ fn test_edit_review_within_timeframe() {
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
-     // Mock all authentications and submit the initial review
+    // Mock all authentications and submit the initial review
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
@@ -609,7 +609,6 @@ fn test_edit_review_within_timeframe() {
 
     client.edit_review(&user, &product_id, &0, &new_review_details);
 }
-
 
 #[test]
 fn test_edit_review_after_timeframe() {
@@ -644,7 +643,6 @@ fn test_edit_review_after_timeframe() {
     // Check if review is no longer editable
     assert!(!client.is_review_editable(&review_id, &product_id));
 }
-
 
 #[test]
 #[should_panic(expected = "Error(Contract, #22")]
