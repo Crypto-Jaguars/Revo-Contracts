@@ -65,7 +65,7 @@ impl RatingSystemContract {
         if seller.to_string().is_empty() || seller.to_string().len() == 0 {
             panic!("Seller address is invalid");
         }
-        
+
         // calculate seller reputation score
         let reputation_score = reputation_score_calculate(env.clone(), seller.clone());
         add_reputation_score_history(env.clone(), seller.clone(), reputation_score);

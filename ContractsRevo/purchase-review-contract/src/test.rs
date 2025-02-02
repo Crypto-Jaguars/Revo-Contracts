@@ -1,12 +1,12 @@
 #![cfg(test)]
 use super::*;
+use crate::datatype::{Category, Rating, ReviewDetails};
 use crate::{PurchaseReviewContract, PurchaseReviewContractClient};
-use crate::datatype::{ReviewDetails, Category, Rating};
+use soroban_sdk::Vec;
 use soroban_sdk::{
-    testutils::{Address as _, Ledger, Events},
+    testutils::{Address as _, Events, Ledger},
     Address, Env, String,
 };
-use soroban_sdk::Vec;
 
 #[test]
 fn test_submit_rating_events() {
@@ -29,18 +29,11 @@ fn test_submit_rating_events() {
     env.mock_all_auths();
 
     // Submit the rating
-    client.submit_rating(
-        &user,
-        &product_id,
-        &category,
-        &rating,
-        &weight,
-        &attachment,
-    );
+    client.submit_rating(&user, &product_id, &category, &rating, &weight, &attachment);
 
     // Verify the emitted events
     let events = env.events().all();
-    assert_eq!(events.len(), 2);  // Expect 2 events
+    assert_eq!(events.len(), 2); // Expect 2 events
 
     // Verify the first event
     let event = events.get(0).unwrap();
@@ -445,7 +438,7 @@ fn test_valid_review_submission() {
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
     let events = env.events().all();
-    assert_eq!(events.len(), 1);  // Expect 1 events
+    assert_eq!(events.len(), 1); // Expect 1 events
 
     // Verify the first event
     let event = events.get(0).unwrap();
@@ -636,11 +629,11 @@ fn test_report_review_for_inappropriate_content() {
 #[test]
 #[should_panic(expected = "Error(Contract, #16)")]
 fn test_rate_limit_exceeded_for_voting() {
-let env = Env::default();
-let contract_id = env.register(PurchaseReviewContract, ());
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
-let user = Address::generate(&env);
+    let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");

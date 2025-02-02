@@ -153,7 +153,7 @@ impl VerificationOperations for PurchaseReviewContract {
         Ok(())
 
         // Self::is_review_editable(_env, _review_id, _product_id)?
-            // return Ok(())
+        // return Ok(())
         // }
         // return Err(PurchaseReviewError::EditWindowExpired)
     }
