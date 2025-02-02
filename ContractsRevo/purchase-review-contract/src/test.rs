@@ -295,7 +295,7 @@ fn test_report_review() {
 }
 
 #[test]
-fn test_review_edit_window() {
+fn test_edit_review_timeframe() {
     let (env, client, _, user) = setup_test();
     let product_id = 1u128;
     let review_id = 0u32;
