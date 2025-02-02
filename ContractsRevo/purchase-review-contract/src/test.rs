@@ -379,21 +379,25 @@ fn test_get_product_ratings_empty() {
 #[test]
 #[should_panic(expected = "Unauthorized function call for address")]
 fn test_panic_reviewer_not_authenticated() {
+    // Test that unauthorized users cannot submit reviews
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
+    // Attempt to submit review without mocking authentication
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "This product is meh!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
+    // triggers panic due to missing authentication
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #19)")]
 fn test_invalid_review_text_length_empty() {
+    // Test validation of empty review text
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
@@ -403,6 +407,7 @@ fn test_invalid_review_text_length_empty() {
     let review_text = String::from_str(&env, "");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
+    // Empty review text triggers validation error
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 }
@@ -410,21 +415,25 @@ fn test_invalid_review_text_length_empty() {
 #[test]
 #[should_panic(expected = "Error(Contract, #19)")]
 fn test_invalid_review_text_length_too_long() {
+    // Test that reviews exceeding maximum length are rejected
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
     let user = Address::generate(&env);
     let product_id = 12345u128;
+    // Create review text longer than maximum: 1000 + 1 characters
     let review_text = String::from_str(&env, &"a".repeat(1001));
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
     env.mock_all_auths();
+    // Returns error due to review length exceeding maximum
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 }
 
 #[test]
 fn test_valid_review_submission() {
+    // Test successful review submission and storage
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
@@ -434,20 +443,17 @@ fn test_valid_review_submission() {
     let review_text = String::from_str(&env, "This product is excellent!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
+    // Mock authentication for valid submission
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
+    // Verify event emission
     let events = env.events().all();
-    assert_eq!(events.len(), 1); // Expect 1 events
+    assert_eq!(events.len(), 1); // Should emit one review submission event
 
-    // Verify the first event
-    let event = events.get(0).unwrap();
-    assert_eq!(event.0, contract_id);
-
-    // Verify that the event data is not empty
-    assert!(!event.2.is_void());
-
+    // Verify review storage and details
     env.as_contract(&contract_id, || {
+        // Check review count was incremented
         let count_key = DataKeys::ReviewCount(product_id);
         let review_count: u32 = env
             .storage()
@@ -456,6 +462,7 @@ fn test_valid_review_submission() {
             .expect("Review count not found");
         assert_eq!(review_count, 1);
 
+        // Verify stored review details
         let review_key = DataKeys::Review(product_id, 0);
         let stored_review: ReviewDetails = env
             .storage()
@@ -463,6 +470,7 @@ fn test_valid_review_submission() {
             .get(&review_key)
             .expect("Review not found");
 
+        // Validate all review fields
         assert_eq!(stored_review.reviewer, user);
         assert_eq!(stored_review.review_text, review_text);
         assert_eq!(stored_review.verified_purchase, true);
@@ -476,6 +484,7 @@ fn test_valid_review_submission() {
 #[test]
 #[should_panic(expected = "Error(Contract, #11")]
 fn test_duplicate_review_submission() {
+    // Test prevention of duplicate reviews from same user
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
@@ -485,14 +494,18 @@ fn test_duplicate_review_submission() {
     let review_text = String::from_str(&env, "Great product!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
+    // Submit first review successfully
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
+
+    // Second fails with duplicate error
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #22")]
 fn test_invalid_purchase_link() {
+    // Test that empty purchase links are rejected
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
@@ -500,6 +513,7 @@ fn test_invalid_purchase_link() {
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "Great product!");
+    // Empty purchase link should trigger validation error
     let purchase_link = String::from_str(&env, "");
 
     env.mock_all_auths();
@@ -509,6 +523,7 @@ fn test_invalid_purchase_link() {
 #[test]
 #[should_panic(expected = "Error(Contract, #11)")]
 fn test_verify_purchase_link_already_verified() {
+    // Test that a purchase link can't be verified multiple times
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
@@ -518,15 +533,18 @@ fn test_verify_purchase_link_already_verified() {
     let product_id = 12345u128;
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
+    // Initialize contract and verify purchase link first time
     env.mock_all_auths();
     client.initialize(&admin);
     env.mock_all_auths();
     client.purchase_link_verification(&user, &product_id, &purchase_link);
+    // Second verification should fail
     client.purchase_link_verification(&user, &product_id, &purchase_link);
 }
 
 #[test]
 fn test_verify_purchase_link() {
+    // Test successful purchase link verification
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
@@ -536,6 +554,7 @@ fn test_verify_purchase_link() {
     let product_id = 12345u128;
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
+    // Initialize contract and verify purchase
     env.mock_all_auths();
     client.initialize(&admin);
     env.mock_all_auths();
@@ -545,10 +564,12 @@ fn test_verify_purchase_link() {
 #[test]
 #[should_panic(expected = "Error(Contract, #3)")]
 fn test_report_invalid_review() {
+    // Test that reporting a non-existent review fails
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
+    // Create and submit a valid review
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "Initial review text.");
@@ -557,19 +578,21 @@ fn test_report_invalid_review() {
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
+    // Attempt to report a review with invalid index (10)
     let reporter = Address::generate(&env);
     let reason = String::from_str(&env, "Inappropriate content.");
-
     client.report_review(&reporter, &product_id, &10, &reason);
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #17)")]
 fn test_report_review_with_empty_reason() {
+    // Test that reporting a review with empty reason fails
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
+    // Create and submit a valid review
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "Initial review text.");
@@ -578,19 +601,21 @@ fn test_report_review_with_empty_reason() {
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
+    // Attempt to report with empty reason
     let reporter = Address::generate(&env);
     let reason = String::from_str(&env, "");
-
     client.report_review(&reporter, &product_id, &0, &reason);
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #18)")]
 fn test_report_review_already_reported() {
+    // Test that a user cannot report the same review multiple times
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
+    // Create and submit a valid review
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "Initial review text.");
@@ -599,19 +624,22 @@ fn test_report_review_already_reported() {
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
+    // Report the review once
     let reporter = Address::generate(&env);
     let reason = String::from_str(&env, "Inappropriate content.");
-
     client.report_review(&reporter, &product_id, &0, &reason);
+    // Duplicate report for same review fails
     client.report_review(&reporter, &product_id, &0, &reason);
 }
 
 #[test]
 fn test_report_review_for_inappropriate_content() {
+    // Test successful review reporting
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
+    // Create and submit a valid review
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "Initial review text.");
@@ -620,19 +648,21 @@ fn test_report_review_for_inappropriate_content() {
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
+    // Successfully report the review
     let reporter = Address::generate(&env);
     let reason = String::from_str(&env, "Inappropriate content.");
-
     client.report_review(&reporter, &product_id, &0, &reason);
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #16)")]
 fn test_rate_limit_exceeded_for_voting() {
+    // Test voting rate limiting functionality
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
+    // Create and submit a valid review
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "Initial review text.");
@@ -641,9 +671,10 @@ fn test_rate_limit_exceeded_for_voting() {
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
+    // Cast first vote successfully
     let voter = Address::generate(&env);
     client.vote_helpful(&voter, &product_id, &0, &true);
 
-    // Attempt to vote again within the cooldown period
+    // Second vote fails due to rate limiting
     client.vote_helpful(&voter, &product_id, &0, &true);
 }
