@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Purchase Review Contract** is a smart contract designed to manage and verify purchase reviews in a decentralized way. It ensures that reviews are legitimate, associated with real transactions, and provides mechanisms to prevent fraudulent activity, enhancing trust between buyers and sellers.
+The **Purchase Review Contract** is a smart contract designed to manage and verify purchase reviews in a decentralized manner. It ensures that reviews are legitimate, associated with real transactions, and provides mechanisms to prevent fraudulent activity, enhancing trust between buyers and sellers.
 
 ## Functionality
 
@@ -16,34 +16,66 @@ The **Purchase Review Contract** is a smart contract designed to manage and veri
 - **Reporting System**: Users can report reviews that violate platform rules, which can later be reviewed for potential removal.
 - **Review Editing**: Users can edit their reviews within a specific time window (24 hours) after submission.
 
-### Key Components
+## Contract Code Implementation
 
-#### Data Structures
+### Data Structures
 
-- `ReviewDetails`: Stores review text, timestamp, helpful votes, verification status, and responses.
-- `ProductRatings`: Holds aggregated ratings for a product.
-- `PurchaseVerificationData`: Links a user's purchase verification status with a product.
-- `ReviewReportData`: Stores reports made against specific reviews.
+```rust
+#[contracttype]
+#[derive(Clone)]
+pub struct ReviewDetails {
+    pub review_text: String,
+    pub reviewer: Address,
+    pub timestamp: u64,
+    pub helpful_votes: u64,
+    pub not_helpful_votes: u64,
+    pub verified_purchase: bool,
+    pub responses: Vec<String>,
+}
+```
 
-#### Core Operations
+### Core Operations
 
-- `submit_review`: Allows users to submit a review with a verification link.
-- `get_review_details`: Retrieves a review's details by product ID and review ID.
-- `vote_helpful`: Lets users mark a review as helpful or not.
-- `report_review`: Enables users to report a review for violations.
-- `is_review_editable`: Determines if a review can still be edited within the allowed timeframe.
-- `verify_purchase`: Ensures that a purchase is valid before allowing review submission.
+```rust
+#[contractimpl]
+impl PurchaseReviewContract {
+    pub fn submit_review(
+        env: Env,
+        user: Address,
+        product_id: u128,
+        review_text: String,
+        purchase_link: String,
+    ) -> Result<(), PurchaseReviewError> {
+        user.require_auth();
+        if review_text.is_empty() || review_text.len() > 1000 {
+            return Err(PurchaseReviewError::InvalidReviewText);
+        }
+        Self::verify_purchase(env.clone(), user.clone(), product_id, purchase_link)?;
+        let review = ReviewDetails {
+            review_text,
+            reviewer: user.clone(),
+            timestamp: env.ledger().timestamp(),
+            helpful_votes: 0,
+            not_helpful_votes: 0,
+            verified_purchase: true,
+            responses: Vec::new(&env),
+        };
+        env.storage().persistent().set(&(product_id, user.clone()), &review);
+        Ok(())
+    }
 
-#### Error Handling
+    pub fn get_review(env: Env, product_id: u128, user: Address) -> Result<ReviewDetails, PurchaseReviewError> {
+        env.storage().persistent().get(&(product_id, user)).ok_or(PurchaseReviewError::ReviewNotFound)
+    }
+}
+```
 
-Various errors are implemented to prevent duplicate reviews, unauthorized access, invalid rating submissions, and excessive reporting attempts.
-
-## Deployment
+### Deployment
 
 ### Deploy Contract to Stellar Testnet
 
 ```sh
-stellar contract deploy    --wasm ./target/wasm32-unknown-unknown/release/purchase_review.wasm    --source <source_account>    --network testnet
+stellar contract deploy --wasm ./target/wasm32-unknown-unknown/release/purchase_review.wasm --source <source_account> --network testnet
 ```
 
 ### Get Contract ID
@@ -55,19 +87,19 @@ After deployment, note the contract ID, which will be used for interactions.
 ### Submit a Review
 
 ```sh
-stellar contract invoke    --id <contract_id>    --source <user_account>    --network testnet    -- function submit_review    --args '{"product_id": "123", "review": "Great product!", "rating": 5}'
+stellar contract invoke --id <contract_id> --source <user_account> --network testnet -- function submit_review --args '{"product_id": "123", "review": "Great product!", "rating": 5}'
 ```
 
 ### Retrieve Reviews
 
 ```sh
-stellar contract invoke    --id <contract_id>    --source <user_account>    --network testnet    -- function get_reviews    --args '{"product_id": "123"}'
+stellar contract invoke --id <contract_id> --source <user_account> --network testnet -- function get_reviews --args '{"product_id": "123"}'
 ```
 
 ### Verify a Review
 
 ```sh
-stellar contract invoke    --id <contract_id>    --source <user_account>    --network testnet    -- function verify_review    --args '{"review_id": "456"}'
+stellar contract invoke --id <contract_id> --source <user_account> --network testnet -- function verify_review --args '{"review_id": "456"}'
 ```
 
 ## Troubleshooting
