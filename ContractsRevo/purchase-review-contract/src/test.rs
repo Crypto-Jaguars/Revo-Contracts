@@ -301,40 +301,6 @@ fn test_report_review() {
 }
 
 #[test]
-fn test_edit_review_timeframe() {
-    let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
-    let review_id = 0u32;
-
-    // Create initial review
-    let review = ReviewDetails {
-        review_text: String::from_str(&env, "Initial review"),
-        reviewer: user.clone(),
-        timestamp: env.ledger().timestamp(),
-        helpful_votes: 0,
-        not_helpful_votes: 0,
-        verified_purchase: true,
-        responses: Vec::new(&env),
-    };
-
-    // Store the review
-    env.as_contract(&client.address, || {
-        env.storage()
-            .persistent()
-            .set(&DataKeys::Review(product_id, review_id), &review);
-    });
-
-    // Check if review is editable within window
-    assert!(client.is_review_editable(&review_id, &product_id));
-
-    // Advance time beyond edit window (24 hours + 1 second)
-    env.ledger().set_timestamp(env.ledger().timestamp() + 86401);
-
-    // Check if review is no longer editable
-    assert!(!client.is_review_editable(&review_id, &product_id));
-}
-
-#[test]
 fn test_pre_review_purchase() {
     let (env, client, _, user) = setup_test();
     let product_id = 1u128;
@@ -613,6 +579,74 @@ fn test_duplicate_review_submission() {
 }
 
 #[test]
+fn test_edit_review_within_timeframe() {
+    // Initialize a new environment for testing
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    // Generate a user address
+    let user = Address::generate(&env);
+    let product_id = 12345u128;
+    let review_text = String::from_str(&env, "Initial review text.");
+    let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
+
+     // Mock all authentications and submit the initial review
+    env.mock_all_auths();
+    client.submit_review(&user, &product_id, &review_text, &purchase_link);
+
+    // New review text
+    let new_review_text = String::from_str(&env, "Updated review text.");
+    let new_review_details = ReviewDetails {
+        review_text: new_review_text.clone(),
+        reviewer: user.clone(),
+        timestamp: env.ledger().timestamp(),
+        helpful_votes: 0,
+        not_helpful_votes: 0,
+        verified_purchase: true,
+        responses: Vec::new(&env),
+    };
+
+    client.edit_review(&user, &product_id, &0, &new_review_details);
+}
+
+
+#[test]
+fn test_edit_review_after_timeframe() {
+    let (env, client, _, user) = setup_test();
+    let product_id = 1u128;
+    let review_id = 0u32;
+
+    // Create initial review
+    let review = ReviewDetails {
+        review_text: String::from_str(&env, "Initial review"),
+        reviewer: user.clone(),
+        timestamp: env.ledger().timestamp(),
+        helpful_votes: 0,
+        not_helpful_votes: 0,
+        verified_purchase: true,
+        responses: Vec::new(&env),
+    };
+
+    // Store the review
+    env.as_contract(&client.address, || {
+        env.storage()
+            .persistent()
+            .set(&DataKeys::Review(product_id, review_id), &review);
+    });
+
+    // Check if review is editable within window
+    assert!(client.is_review_editable(&review_id, &product_id));
+
+    // Advance time beyond edit window (24 hours + 1 second)
+    env.ledger().set_timestamp(env.ledger().timestamp() + 86401);
+
+    // Check if review is no longer editable
+    assert!(!client.is_review_editable(&review_id, &product_id));
+}
+
+
+#[test]
 #[should_panic(expected = "Error(Contract, #22")]
 fn test_invalid_purchase_link() {
     // Test that empty purchase links are rejected
@@ -827,6 +861,34 @@ fn test_multiple_votes_different_reviews() {
 
     // Vote on second review succeeds
     client.vote_helpful(&voter, &product_id, &1, &true);
+}
+
+#[test]
+fn test_max_product_id() {
+    // Test review submission with maximum possible product ID
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    let user = Address::generate(&env);
+    let max_product_id = u128::MAX;
+    let review_text = String::from_str(&env, "Review for max product ID");
+    let purchase_link = String::from_str(&env, "https://example.com/purchase/max");
+
+    // Submit review with max product ID
+    env.mock_all_auths();
+    client.submit_review(&user, &max_product_id, &review_text, &purchase_link);
+
+    // Verify review count
+    env.as_contract(&contract_id, || {
+        let count_key = DataKeys::ReviewCount(max_product_id);
+        let review_count: u32 = env
+            .storage()
+            .persistent()
+            .get(&count_key)
+            .expect("Review count not found");
+        assert_eq!(review_count, 1);
+    });
 }
 
 #[test]
