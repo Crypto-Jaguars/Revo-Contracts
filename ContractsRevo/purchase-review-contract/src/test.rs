@@ -61,6 +61,12 @@ fn test_submit_rating_events() {
 }
 
 // Helper function to set up the test environment with admin
+/// Sets up the test environment with contract initialization
+/// Returns:
+/// - env: The test environment
+/// - client: The contract client
+/// - admin: The admin address
+/// - user: A test user address
 fn setup_test() -> (Env, PurchaseReviewContractClient<'static>, Address, Address) {
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
@@ -432,37 +438,56 @@ fn test_invalid_review_text_length_too_long() {
 }
 
 #[test]
-fn test_valid_review_submission() {
-    // Test successful review submission and storage
+fn test_review_event_emission() {
+    // Test that submitting a review emits the correct event
     let env = Env::default();
     let contract_id = env.register(PurchaseReviewContract, ());
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
+    // Setup test data
     let user = Address::generate(&env);
     let product_id = 12345u128;
     let review_text = String::from_str(&env, "This product is excellent!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
-    // Mock authentication for valid submission
+    // Submit review
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
 
     // Verify event emission
     let events = env.events().all();
-    assert_eq!(events.len(), 1); // Should emit one review submission event
+    assert_eq!(
+        events.len(),
+        1,
+        "Should emit exactly one review submission event"
+    );
 
-    // Verify review storage and details
+    // Verify event details
+    let event = events.get(0).unwrap();
+    assert_eq!(event.0, contract_id, "Event should be from contract");
+    assert!(!event.2.is_void(), "Event data should not be empty");
+}
+
+#[test]
+fn test_review_details_storage() {
+    // Test that review details are correctly stored
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    // Setup test data
+    let user = Address::generate(&env);
+    let product_id = 12345u128;
+    let review_text = String::from_str(&env, "This product is excellent!");
+    let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
+    let submission_time = env.ledger().timestamp();
+
+    // Submit review
+    env.mock_all_auths();
+    client.submit_review(&user, &product_id, &review_text, &purchase_link);
+
+    // Verify stored review details
     env.as_contract(&contract_id, || {
-        // Check review count was incremented
-        let count_key = DataKeys::ReviewCount(product_id);
-        let review_count: u32 = env
-            .storage()
-            .persistent()
-            .get(&count_key)
-            .expect("Review count not found");
-        assert_eq!(review_count, 1);
-
-        // Verify stored review details
         let review_key = DataKeys::Review(product_id, 0);
         let stored_review: ReviewDetails = env
             .storage()
@@ -470,14 +495,99 @@ fn test_valid_review_submission() {
             .get(&review_key)
             .expect("Review not found");
 
-        // Validate all review fields
-        assert_eq!(stored_review.reviewer, user);
-        assert_eq!(stored_review.review_text, review_text);
-        assert_eq!(stored_review.verified_purchase, true);
-        assert_eq!(stored_review.helpful_votes, 0);
-        assert_eq!(stored_review.not_helpful_votes, 0);
-        assert_eq!(stored_review.responses.len(), 0);
-        assert_eq!(stored_review.timestamp, env.ledger().timestamp());
+        // Verify each field individually with descriptive assertions
+        assert_eq!(
+            stored_review.reviewer, user,
+            "Stored reviewer should match submitter"
+        );
+        assert_eq!(
+            stored_review.review_text, review_text,
+            "Stored review text should match submitted text"
+        );
+        assert_eq!(
+            stored_review.verified_purchase, true,
+            "Review should be marked as verified purchase"
+        );
+        assert_eq!(
+            stored_review.helpful_votes, 0,
+            "Initial helpful votes should be zero"
+        );
+        assert_eq!(
+            stored_review.not_helpful_votes, 0,
+            "Initial not helpful votes should be zero"
+        );
+        assert_eq!(
+            stored_review.responses.len(),
+            0,
+            "Initial responses should be empty"
+        );
+        assert_eq!(
+            stored_review.timestamp, submission_time,
+            "Timestamp should match submission time"
+        );
+    });
+}
+
+#[test]
+fn test_review_count_increment() {
+    // Test that review count is properly incremented after submission
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    // Setup test data
+    let user = Address::generate(&env);
+    let product_id = 12345u128;
+    let review_text = String::from_str(&env, "This product is excellent!");
+    let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
+
+    // Submit review
+    env.mock_all_auths();
+    client.submit_review(&user, &product_id, &review_text, &purchase_link);
+
+    // Verify review count
+    env.as_contract(&contract_id, || {
+        let count_key = DataKeys::ReviewCount(product_id);
+        let review_count: u32 = env
+            .storage()
+            .persistent()
+            .get(&count_key)
+            .expect("Review count not found");
+        assert_eq!(review_count, 1, "Review count should be incremented to 1");
+    });
+}
+
+// Optional: Test for multiple review submissions
+#[test]
+fn test_multiple_review_count_increment() {
+    // Test that review count correctly handles multiple submissions
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    // Submit multiple reviews from different users
+    for _ in 0..3 {
+        let user = Address::generate(&env);
+        let product_id = 12345u128;
+        let review_text = String::from_str(&env, "Test review");
+        let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
+
+        env.mock_all_auths();
+        client.submit_review(&user, &product_id, &review_text, &purchase_link);
+    }
+
+    // Verify final review count
+    env.as_contract(&contract_id, || {
+        let count_key = DataKeys::ReviewCount(12345u128);
+        let review_count: u32 = env
+            .storage()
+            .persistent()
+            .get(&count_key)
+            .expect("Review count not found");
+        assert_eq!(
+            review_count, 3,
+            "Review count should match number of submissions"
+        );
     });
 }
 
@@ -677,4 +787,97 @@ fn test_rate_limit_exceeded_for_voting() {
 
     // Second vote fails due to rate limiting
     client.vote_helpful(&voter, &product_id, &0, &true);
+}
+
+#[test]
+fn test_multiple_votes_different_reviews() {
+    // Test that rate limit applies per review
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    // Setup: Create two reviews
+    let user1 = Address::generate(&env);
+    let user2 = Address::generate(&env);
+    let product_id = 12345u128;
+
+    // Submit first review
+    env.mock_all_auths();
+    client.submit_review(
+        &user1,
+        &product_id,
+        &String::from_str(&env, "First review"),
+        &String::from_str(&env, "https://example.com/purchase/1"),
+    );
+
+    // Submit second review
+    env.mock_all_auths();
+    client.submit_review(
+        &user2,
+        &product_id,
+        &String::from_str(&env, "Second review"),
+        &String::from_str(&env, "https://example.com/purchase/2"),
+    );
+
+    // Same voter can vote on different reviews
+    let voter = Address::generate(&env);
+
+    // Vote on first review
+    client.vote_helpful(&voter, &product_id, &0, &true);
+
+    // Vote on second review succeeds
+    client.vote_helpful(&voter, &product_id, &1, &true);
+}
+
+#[test]
+fn test_boundary_conditions() {
+    // Test various boundary conditions
+    let env = Env::default();
+    let contract_id = env.register(PurchaseReviewContract, ());
+    let client = PurchaseReviewContractClient::new(&env, &contract_id);
+
+    let user = Address::generate(&env);
+    let product_id = 12345u128;
+
+    // Test with minimum valid review length
+    env.mock_all_auths();
+    let min_review = String::from_str(&env, "OK"); // Assuming 2 chars is minimum
+    client.submit_review(
+        &user,
+        &product_id,
+        &min_review,
+        &String::from_str(&env, "https://example.com/purchase/min"),
+    );
+
+    // Test with maximum valid review length
+    env.mock_all_auths();
+    let max_review = String::from_str(&env, &"a".repeat(1000)); // Maximum allowed length
+    client.submit_review(
+        &user,
+        &(&product_id + &1), // Different product ID
+        &max_review,
+        &String::from_str(&env, "https://example.com/purchase/max"),
+    );
+
+    // Test with boundary timestamp values
+    let min_timestamp = 0u64;
+    let max_timestamp = u64::MAX;
+
+    env.ledger().set_timestamp(min_timestamp);
+    env.mock_all_auths();
+    client.submit_review(
+        &user,
+        &(&product_id + &2),
+        &String::from_str(&env, "Review at minimum timestamp"),
+        &String::from_str(&env, "https://example.com/purchase/time-min"),
+    );
+
+    env.ledger().set_timestamp(max_timestamp);
+    env.mock_all_auths();
+    client.submit_review(
+        &user,
+        &(&product_id + 3),
+        &String::from_str(&env, "Review at maximum timestamp"),
+        &String::from_str(&env, "https://example.com/purchase/time-max"),
+    );
 }
