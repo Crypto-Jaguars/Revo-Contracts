@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod tests {
+    use crate::mint::{mint_nft, NFTMetadata};
+    use crate::proof::{generate_transaction_proof, transaction_exists};
+    use crate::TransactionNFTContract;
+    use crate::TransactionNFTContractClient;
     use soroban_sdk::{
         testutils::{Address as _, Ledger, LedgerInfo},
         Address, Bytes, BytesN, Env,
     };
-    use crate::proof::{generate_transaction_proof, transaction_exists};
-    use crate::mint::{mint_nft, NFTMetadata};
-    use crate::TransactionNFTContract;
-    use crate::TransactionNFTContractClient;
 
     fn create_ledger_info(timestamp: u64) -> LedgerInfo {
         LedgerInfo {
@@ -40,11 +40,17 @@ mod tests {
         let product = Bytes::from_array(&env, &[1u8; 32]);
 
         let tx_id = env.as_contract(&contract_id, || {
-            generate_transaction_proof(env.clone(), buyer.clone(), seller.clone(), amount, product.clone())
+            generate_transaction_proof(
+                env.clone(),
+                buyer.clone(),
+                seller.clone(),
+                amount,
+                product.clone(),
+            )
         });
 
         assert_eq!(tx_id.len(), 32, "Transaction ID should be 32 bytes");
-        
+
         assert!(
             env.as_contract(&contract_id, || {
                 transaction_exists(&env, &buyer, &seller, amount, &product)
@@ -70,7 +76,7 @@ mod tests {
                 product.clone(),
             )
         });
-        
+
         env.ledger().set(create_ledger_info(12346));
 
         let proof2 = env.as_contract(&contract_id, || {
@@ -83,7 +89,10 @@ mod tests {
             )
         });
 
-        assert_ne!(proof1, proof2, "Proofs should be unique even with same input data");
+        assert_ne!(
+            proof1, proof2,
+            "Proofs should be unique even with same input data"
+        );
     }
 
     #[test]
@@ -100,14 +109,29 @@ mod tests {
         });
 
         let stored_metadata = env.as_contract(&contract_id, || {
-            env.storage().instance().get::<_, NFTMetadata>(&tx_id).unwrap()
+            env.storage()
+                .instance()
+                .get::<_, NFTMetadata>(&tx_id)
+                .unwrap()
         });
 
         assert_eq!(stored_metadata.buyer, buyer, "Buyer mismatch in metadata");
-        assert_eq!(stored_metadata.seller, seller, "Seller mismatch in metadata");
-        assert_eq!(stored_metadata.amount, amount, "Amount mismatch in metadata");
-        assert_eq!(stored_metadata.product, product, "Product mismatch in metadata");
-        assert_eq!(stored_metadata.timestamp, 12345, "Timestamp mismatch in metadata");
+        assert_eq!(
+            stored_metadata.seller, seller,
+            "Seller mismatch in metadata"
+        );
+        assert_eq!(
+            stored_metadata.amount, amount,
+            "Amount mismatch in metadata"
+        );
+        assert_eq!(
+            stored_metadata.product, product,
+            "Product mismatch in metadata"
+        );
+        assert_eq!(
+            stored_metadata.timestamp, 12345,
+            "Timestamp mismatch in metadata"
+        );
     }
 
     #[test]

@@ -61,6 +61,9 @@ impl VerificationOperations for PurchaseReviewContract {
         reason: String,
     ) -> Result<(), PurchaseReviewError> {
         reporter.require_auth();
+        if reason.len() == 0 {
+            return Err(PurchaseReviewError::InvalidReportReason);
+        }
 
         let review_key = DataKeys::Review(product_id, review_id);
         if !env.storage().persistent().has(&review_key) {
@@ -148,6 +151,11 @@ impl VerificationOperations for PurchaseReviewContract {
         _new_details: ReviewDetails,
     ) -> Result<(), PurchaseReviewError> {
         Ok(())
+
+        // Self::is_review_editable(_env, _review_id, _product_id)?
+        // return Ok(())
+        // }
+        // return Err(PurchaseReviewError::EditWindowExpired)
     }
 
     /// Internal function to check if a review is still within the editable time window
