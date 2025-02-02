@@ -5,25 +5,6 @@
   },
   "auth": [
     [],
-    [
-      [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-        {
-          "function": {
-            "contract_fn": {
-              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "function_name": "initialize",
-              "args": [
-                {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
-                }
-              ]
-            }
-          },
-          "sub_invocations": []
-        }
-      ]
-    ],
     [],
     []
   ],
@@ -44,7 +25,7 @@
             "key": {
               "vec": [
                 {
-                  "symbol": "PurchaseVerification"
+                  "symbol": "Review"
                 },
                 {
                   "u128": {
@@ -53,7 +34,7 @@
                   }
                 },
                 {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                  "u32": 0
                 }
               ]
             },
@@ -70,7 +51,7 @@
                 "key": {
                   "vec": [
                     {
-                      "symbol": "PurchaseVerification"
+                      "symbol": "Review"
                     },
                     {
                       "u128": {
@@ -79,7 +60,7 @@
                       }
                     },
                     {
-                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                      "u32": 0
                     }
                   ]
                 },
@@ -88,37 +69,42 @@
                   "map": [
                     {
                       "key": {
-                        "symbol": "has_review"
+                        "symbol": "helpful_votes"
                       },
                       "val": {
-                        "bool": false
+                        "u64": 0
                       }
                     },
                     {
                       "key": {
-                        "symbol": "is_verified"
+                        "symbol": "not_helpful_votes"
                       },
                       "val": {
-                        "bool": true
+                        "u64": 0
                       }
                     },
                     {
                       "key": {
-                        "symbol": "product_id"
+                        "symbol": "responses"
                       },
                       "val": {
-                        "u128": {
-                          "hi": 0,
-                          "lo": 12345
-                        }
+                        "vec": []
                       }
                     },
                     {
                       "key": {
-                        "symbol": "purchase_link"
+                        "symbol": "review_text"
                       },
                       "val": {
-                        "string": "https://example.com/purchase/12345"
+                        "string": "Updated review text."
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "reviewer"
+                      },
+                      "val": {
+                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                       }
                     },
                     {
@@ -131,10 +117,10 @@
                     },
                     {
                       "key": {
-                        "symbol": "user"
+                        "symbol": "verified_purchase"
                       },
                       "val": {
-                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                        "bool": true
                       }
                     }
                   ]
@@ -168,20 +154,7 @@
                     "executable": {
                       "wasm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
                     },
-                    "storage": [
-                      {
-                        "key": {
-                          "vec": [
-                            {
-                              "symbol": "Admin"
-                            }
-                          ]
-                        },
-                        "val": {
-                          "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
-                        }
-                      }
-                    ]
+                    "storage": null
                   }
                 }
               }
@@ -189,39 +162,6 @@
             "ext": "v0"
           },
           4095
-        ]
-      ],
-      [
-        {
-          "contract_data": {
-            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-            "key": {
-              "ledger_key_nonce": {
-                "nonce": 801925984706572462
-              }
-            },
-            "durability": "temporary"
-          }
-        },
-        [
-          {
-            "last_modified_ledger_seq": 0,
-            "data": {
-              "contract_data": {
-                "ext": "v0",
-                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-                "key": {
-                  "ledger_key_nonce": {
-                    "nonce": 801925984706572462
-                  }
-                },
-                "durability": "temporary",
-                "val": "void"
-              }
-            },
-            "ext": "v0"
-          },
-          6311999
         ]
       ],
       [
