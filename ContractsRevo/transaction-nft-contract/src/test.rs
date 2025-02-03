@@ -5,8 +5,7 @@ mod tests {
     use crate::TransactionNFTContract;
     use crate::TransactionNFTContractClient;
     use soroban_sdk::{
-        testutils::{Address as _, Ledger, LedgerInfo},
-        Address, Bytes, BytesN, Env,
+        testutils::{Address as _, Events as _, Ledger, LedgerInfo}, Address, Bytes, BytesN, Env, FromVal,
     };
 
     fn create_ledger_info(timestamp: u64) -> LedgerInfo {
@@ -215,6 +214,98 @@ mod tests {
         // Ensure timestamp is after contract deployment
         assert!(metadata.timestamp >= env.ledger().timestamp());
     }
-}
 
-// #[test]
+    #[test]
+    fn test_unique_nft_generation() {
+        let (env, contract_id) = create_test_env();
+        let client = TransactionNFTContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let amount = 100;
+        let product = BytesN::from_array(&env, &[15; 32]);
+
+        // Mint the first NFT
+        let tx_id1 = client.mint_nft(&buyer, &seller, &amount, &product);
+
+        // Mint the second NFT with different product data
+        let product2 = BytesN::from_array(&env, &[16; 32]);
+        let tx_id2 = client.mint_nft(&buyer, &seller, &amount, &product2);
+
+        // Verify that the two transaction IDs are unique
+        assert_ne!(tx_id1, tx_id2, "Transaction IDs should be unique for different products");
+    }
+
+    #[test]
+    fn test_purchase_event_handling() {
+        let (env, contract_id) = create_test_env();
+        let client = TransactionNFTContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let amount = 100;
+        let product = BytesN::from_array(&env, &[15; 32]);
+
+        // Mint the NFT
+        let tx_id = client.mint_nft(&buyer, &seller, &amount, &product);
+
+        // Check for the purchase event
+        let events = env.events().all();
+        assert!(
+            events.iter().any(|(_, _, value)| {
+                let value_as_bytes = BytesN::<32>::from_val(&env, &value);
+                value_as_bytes == tx_id
+            }),
+            "NFT minting event should be emitted"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "Buyer and seller cannot be the same address")]
+    fn test_minting_conditions_same_address() {
+        let (env, contract_id) = create_test_env();
+        let client = TransactionNFTContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let amount = 100;
+        let product = BytesN::from_array(&env, &[15; 32]);
+
+        // Test minting with buyer and seller being the same address
+        client.mint_nft(&buyer, &buyer, &amount, &product);
+    }
+
+    #[test]
+    #[should_panic(expected = "Amount must be greater than zero")]
+    fn test_minting_conditions_zero_amount() {
+        let (env, contract_id) = create_test_env();
+        let client = TransactionNFTContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let product = BytesN::from_array(&env, &[15; 32]);
+
+        // Test minting with zero amount
+        client.mint_nft(&buyer, &seller, &0, &product);
+    }
+
+    #[test]
+    fn test_timing_and_sequence() {
+        let (env, contract_id) = create_test_env();
+        let client = TransactionNFTContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let amount = 100;
+        let product = BytesN::from_array(&env, &[15; 32]);
+
+        // Mint the NFT
+        let tx_id = client.mint_nft(&buyer, &seller, &amount, &product);
+
+        // Retrieve the metadata
+        let metadata = client.get_nft_metadata(&tx_id).unwrap();
+
+        // Ensure timestamp is correct
+        assert_eq!(metadata.timestamp, 12345, "Timestamp should match the ledger info");
+    }
+
+}
