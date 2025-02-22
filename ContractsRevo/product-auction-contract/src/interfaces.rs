@@ -1,5 +1,5 @@
 use soroban_sdk::{Address, Env, String, Symbol, Vec};
-use crate::datatype::{AuctionError, Condition, Product, ProductError, Shipment, ShippingError};
+use crate::datatype::{AuctionError, Condition, DisputeStatus, Product, ProductError, Shipment, ShippingError, VerificationError};
 
 #[allow(dead_code)]
 pub trait AuctionOperations {
@@ -60,4 +60,23 @@ pub trait ShippingOperations {
     fn get_shipment(env: Env, seller:Address, tracking_number: String) -> Result<Shipment, ShippingError>;
 
     fn get_shipments(env: Env, seller: Address) -> Result<Vec<Shipment>, ShippingError>;
+}
+
+#[allow(dead_code)]
+pub trait VerificationOperations {
+    fn verify_product(env: Env, admin: Address, seller: Address, product_id: u128, is_authentic: bool) -> Result<(), VerificationError>;
+
+    fn request_seller_verification(env: Env, seller: Address) -> Result<(), VerificationError>;
+
+    fn verify_seller(env: Env, admin: Address, seller: Address, is_verified: bool) -> Result<(), VerificationError>;
+
+    fn verify_condition(env: Env, admin: Address, seller: Address, product_id: u128, condition: Condition) -> Result<(), VerificationError>;
+
+    fn open_dispute(env: Env, buyer: Address, seller: Address, product_id: u128, reason: String) -> Result<(), VerificationError>;
+
+    fn resolve_dispute(env: Env, admin: Address, seller: Address, product_id: u128, resolution: DisputeStatus) -> Result<(), VerificationError>;
+
+    fn set_return_policy(env: Env, seller: Address, policy: String) -> Result<(), VerificationError>;
+
+    fn request_return(env: Env, buyer: Address, seller: Address, product_id: u128, reason: String) -> Result<(), VerificationError>;
 }

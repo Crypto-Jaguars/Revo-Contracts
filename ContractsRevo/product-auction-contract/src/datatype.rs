@@ -35,6 +35,10 @@ pub enum DataKeys {
     Product(Address, u128), // Product related to Seller
     ShipmentList(Address), // ShipmentList of Seller
     Shipment(Address, String), // Shipment related to Seller
+    SellerVerification(Address), // Seller Verification
+    Dispute(Address, u128), // Dispute related to Buyer
+    ReturnPolicy(Address), // Return Policy of Seller,
+    ReturnRequest(Address, u128), // Return Request related to Seller
 
 }
 
@@ -72,6 +76,7 @@ pub struct Product {
     pub stock: u32,
     pub images: Vec<String>,
     pub weight_grams: u64,
+    pub verified: bool,
 }
 
 #[contracttype]
@@ -90,8 +95,56 @@ pub struct Shipment {
 #[contracterror]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ShippingError {
-    RestrictedLocation = 1,
-    ShipmentNotFound = 2,
-    ShipmentAlreadyExists = 3,
-    InvalidBuyerZone = 4,
+    RestrictedLocation=1,
+    ShipmentNotFound=2,
+    ShipmentAlreadyExists=3,
+    InvalidBuyerZone=4,
+}
+
+#[contracttype]
+#[derive(Clone)]
+pub struct Dispute {
+    pub buyer: Address,
+    pub seller: Address,
+    pub product_id: u128,
+    pub reason: String,
+    pub status: DisputeStatus,
+}
+
+#[contracttype]
+#[derive(Clone)]
+pub struct ReturnRequest {
+    pub buyer: Address,
+    pub seller: Address,
+    pub product_id: u128,
+    pub reason: String,
+    pub status: Symbol,
+}
+
+#[contracterror]
+#[derive(Clone)]
+pub enum VerificationError {
+    ProductNotFound=1,
+    AlreadyRequested=2,
+    NoVerificationRequest=3,
+    DisputeAlreadyExists=4,
+    DisputeNotFound=5,
+    ReturnAlreadyRequested=6,
+    RestrictedLocation=7,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub enum SellerVerificationStatus {
+    Rejected,
+    Verified,
+    Pending,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub enum DisputeStatus {
+    Rejected,
+    Approved,
+    Pending,
 }

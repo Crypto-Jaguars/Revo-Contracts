@@ -54,6 +54,7 @@ impl ProductListing for ProductAuctionContract {
             stock,
             images,
             weight_grams,
+            verified: false,
         };
 
         // Retrieve or initialize the product list for the seller
