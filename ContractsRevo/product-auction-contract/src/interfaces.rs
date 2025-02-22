@@ -1,5 +1,5 @@
 use soroban_sdk::{Address, Env, String, Symbol, Vec};
-use crate::datatype::{AuctionError, Condition, Product, ProductError};
+use crate::datatype::{AuctionError, Condition, Product, ProductError, Shipment, ShippingError};
 
 #[allow(dead_code)]
 pub trait AuctionOperations {
@@ -37,4 +37,27 @@ pub trait ProductListing {
     fn get_product(env: Env, seller: Address, product_id: u128) -> Result<Product, ProductError>;
 
     fn update_stock(env: Env, seller: Address, product_id: u128, new_stock: u32) -> Result<(), ProductError>;
+}
+
+#[allow(dead_code)]
+pub trait ShippingOperations {
+    fn calculate_shipping_cost(weight_grams: u32, distance_km: u32) -> u64;
+
+    fn estimate_delivery_time(distance_km: u32) -> u32;
+
+    fn create_shipment(
+        env: Env,
+        seller: Address,
+        buyer: Address,
+        buyer_zone: String,
+        weight_grams: u32,
+        distance_km: u32,
+        tracking_number: String
+    ) -> Result<String, ShippingError>;
+
+    fn update_shipping_status(env: Env, tracking_number: String, seller: Address, new_status: Symbol) -> Result<(), ShippingError>;
+
+    fn get_shipment(env: Env, seller:Address, tracking_number: String) -> Result<Shipment, ShippingError>;
+
+    fn get_shipments(env: Env, seller: Address) -> Result<Vec<Shipment>, ShippingError>;
 }

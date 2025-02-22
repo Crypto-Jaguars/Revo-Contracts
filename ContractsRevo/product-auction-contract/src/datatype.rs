@@ -33,6 +33,9 @@ pub enum DataKeys {
     Auction(Address, u128), // Sellers Created Auctions
     ProductList(Address), // ProductList of Seller
     Product(Address, u128), // Product related to Seller
+    ShipmentList(Address), // ShipmentList of Seller
+    Shipment(Address, String), // Shipment related to Seller
+
 }
 
 #[contracterror]
@@ -69,4 +72,26 @@ pub struct Product {
     pub stock: u32,
     pub images: Vec<String>,
     pub weight_grams: u64,
+}
+
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct Shipment {
+    pub seller: Address,
+    pub buyer: Address,
+    pub weight_grams: u32,
+    pub distance_km: u32,
+    pub shipping_cost: u64,
+    pub delivery_estimate_days: u32,
+    pub status: Symbol,
+    pub tracking_number: String,
+}
+
+#[contracterror]
+#[derive(Debug, Clone, PartialEq)]
+pub enum ShippingError {
+    RestrictedLocation = 1,
+    ShipmentNotFound = 2,
+    ShipmentAlreadyExists = 3,
+    InvalidBuyerZone = 4,
 }

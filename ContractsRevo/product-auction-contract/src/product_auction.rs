@@ -5,15 +5,12 @@ use crate::{datatype::{Auction, AuctionError, DataKeys, Product}, interfaces::Au
 #[contractimpl]
 impl AuctionOperations for ProductAuctionContract {
     fn create_auction(env: Env, seller: Address, reserve_price: u64, auction_end_time: u64, product_id: u128) -> Result<(), AuctionError> {
+        seller.require_auth();
         let key = &DataKeys::Auction(seller.clone(), product_id);
-
-        // Ensure an auction does not exist for the given product ID
-        let existing_auction: Option<Auction> = env.storage().instance().get(key);
-
-        if let Some(existing_auction) = existing_auction {
-            if existing_auction.product_id == product_id {
+    
+        // Ensure shipment does not already exist
+        if env.storage().persistent().has(key) {
             return Err(AuctionError::AuctionAlreadyExists);
-            }
         }
 
         // Create a new auction
