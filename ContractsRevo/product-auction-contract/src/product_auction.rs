@@ -1,6 +1,6 @@
 use soroban_sdk::{contractimpl, Address, Env};
 
-use crate::{datatype::{Auction, AuctionError, DataKeys}, interfaces::AuctionOperations, ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient};
+use crate::{datatype::{Auction, AuctionError, DataKeys, Product}, interfaces::AuctionOperations, ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient};
 
 #[contractimpl]
 impl AuctionOperations for ProductAuctionContract {
@@ -114,6 +114,57 @@ impl AuctionOperations for ProductAuctionContract {
         env.storage().instance().set(&key, &auction);
     
         env.events().publish((seller.clone(), "AuctionExtended", product_id), &new_end_time);
+    
+        Ok(())
+    }
+    
+    fn finalize_auction(env: Env, seller: Address, product_id: u128) -> Result<(), AuctionError> {
+        seller.require_auth();
+    
+        let auction_key = DataKeys::Auction(seller.clone(), product_id.clone());
+    
+        // Fetch auction details
+        let auction: Auction = env
+            .storage()
+            .instance()
+            .get(&auction_key)
+            .ok_or(AuctionError::AuctionNotFound)?;
+    
+        let current_time = env.ledger().timestamp();
+    
+        // Ensure auction has ended
+        if auction.auction_end_time > current_time {
+            return Err(AuctionError::AuctionNotYetEnded);
+        }
+    
+        // Ensure there is a winning bidder
+        let winner = auction.highest_bidder.ok_or(AuctionError::NoBidsPlaced)?;
+    
+        let product_key = DataKeys::Product(seller.clone(), product_id.clone());
+    
+        // Fetch product from storage
+        let mut product: Product = env
+            .storage()
+            .instance()
+            .get(&product_key)
+            .ok_or(AuctionError::ProductNotFound)?;
+    
+        // Ensure there is enough stock to fulfill the auction
+        if product.stock == 0 {
+            return Err(AuctionError::OutOfStock);
+        }
+    
+        // Deduct product from inventory
+        product.stock -= 1;
+    
+        // Update product storage
+        env.storage().instance().set(&product_key, &product);
+    
+        // Remove auction from storage (auction is complete)
+        env.storage().instance().remove(&auction_key);
+    
+        // Emit event to notify that the auction is finalized
+        env.events().publish((seller.clone(), "AuctionFinalized", product.name), &winner);
     
         Ok(())
     }

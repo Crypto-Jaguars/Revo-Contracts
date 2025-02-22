@@ -18,9 +18,8 @@ pub trait AuctionOperations {
     fn finalize_auction(env: Env, seller: Address, product_id: u128) -> Result<(), AuctionError>;
 }
 
-
+#[allow(dead_code)]
 pub trait ProductListing {
-
     fn add_product(
         env: Env,
         seller: Address,
@@ -38,5 +37,4 @@ pub trait ProductListing {
     fn get_product(env: Env, seller: Address, product_id: u128) -> Result<Product, ProductError>;
 
     fn update_stock(env: Env, seller: Address, product_id: u128, new_stock: u32) -> Result<(), ProductError>;
-
 }

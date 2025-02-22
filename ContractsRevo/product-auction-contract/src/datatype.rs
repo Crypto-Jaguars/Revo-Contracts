@@ -1,18 +1,19 @@
 use soroban_sdk::{contracterror, contracttype, Address, String, Symbol, Vec};
 
 #[contracterror]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq)]
     pub enum AuctionError {
-        InvalidProductId = 1,
-        BidTooLow = 2 ,
-        AuctionEnded = 3,
-        AuctionAlreadyExists = 4,
-        InvalidBidder = 5,
-        AuctionNotFound = 6,
-        TooLateToExtend = 7, 
-        InvalidAuctionEndTime = 8,
-        AuctionNotYetEnded = 9,
-        NoBidsPlaced = 10,
+        BidTooLow = 1,
+        AuctionEnded = 2,
+        AuctionAlreadyExists = 3,
+        InvalidBidder = 4,
+        AuctionNotFound = 5,
+        TooLateToExtend = 6, 
+        InvalidAuctionEndTime = 7,
+        AuctionNotYetEnded = 8,
+        NoBidsPlaced = 9,
+        ProductNotFound = 10,
+        OutOfStock = 11,
     }
 
 #[contracttype]
@@ -32,23 +33,20 @@ pub enum DataKeys {
     Auction(Address, u128), // Sellers Created Auctions
     ProductList(Address), // ProductList of Seller
     Product(Address, u128), // Product related to Seller
-    ProductCounter(Address), // Product Counter
 }
 
 #[contracterror]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ProductError {
     InvalidDescription=1,
-    InvalidCondition=2,
-    InvalidPrice=3,
-    InvalidWeight=4,
-    OutOfStock=5,
-    InvalidImageCount=6,
-    ProductNotFound=7,
-    Unauthorized=8,
+    InvalidPrice=2,
+    InvalidWeight=3,
+    OutOfStock=4,
+    InvalidImageCount=5,
+    ProductNotFound=6,
+    Unauthorized=7,
 }
 
-// Condition categories for products
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Condition {
@@ -59,7 +57,6 @@ pub enum Condition {
     Refurbished,
 }
 
-// Product structure
 #[contracttype]
 #[derive(Clone, Debug)]
 pub struct Product {

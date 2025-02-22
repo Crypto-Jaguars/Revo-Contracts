@@ -30,16 +30,6 @@ impl ProductListing for ProductAuctionContract {
             return Err(ProductError::InvalidPrice);
         }
 
-        // Ensure condition is a valid enum variant
-        match condition {
-            Condition::New
-            | Condition::OpenBox
-            | Condition::UsedGood
-            | Condition::UsedAcceptable
-            | Condition::Refurbished => {}
-            _ => return Err(ProductError::InvalidCondition),
-        }
-
         // Ensure there is at least one image and not more than 10
         if images.is_empty() || images.len() > 10 {
             return Err(ProductError::InvalidImageCount);
