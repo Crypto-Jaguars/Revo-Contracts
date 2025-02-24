@@ -26,7 +26,7 @@ impl ProductAuctionContract {
         env.storage().instance().set(&DataKeys::Admin, &admin);
 
         env.events().publish(
-            (Symbol::new(&env, "contract_ProductAuctionContract_initialized"), admin.clone()),
+            (Symbol::new(&env, "contract_initialized"), admin.clone()),
             env.ledger().timestamp(),
         );
 
@@ -63,7 +63,7 @@ impl ProductAuctionContract {
         let key = DataKeys::Product(seller.clone(), product_id);
 
         let product = env.storage()
-            .instance()
+            .persistent()
             .get(&key)
             .ok_or(ProductError::ProductNotFound)?;
 

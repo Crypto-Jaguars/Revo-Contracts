@@ -16,7 +16,7 @@ impl ProductListing for ProductAuctionContract {
         stock: u32,
         images: Vec<String>,
         weight_grams: u64,
-    ) -> Result<(), ProductError> {
+    ) -> Result<u128, ProductError> {
         // Ensure the seller is authorized
         seller.require_auth();
 
@@ -30,8 +30,8 @@ impl ProductListing for ProductAuctionContract {
             return Err(ProductError::InvalidPrice);
         }
 
-        // Ensure there is at least one image and not more than 10
-        if images.is_empty() || images.len() > 10 {
+        // Ensure there is at least one image
+        if images.is_empty() {
             return Err(ProductError::InvalidImageCount);
         }
 
@@ -81,7 +81,7 @@ impl ProductListing for ProductAuctionContract {
             product.clone(),
         );
 
-        Ok(())
+        return Ok(product_id);
     }
 
     fn update_stock(env: Env, seller: Address, product_id: u128, new_stock: u32) -> Result<(), ProductError> {
@@ -90,13 +90,13 @@ impl ProductListing for ProductAuctionContract {
         let key = DataKeys::Product(seller.clone(), product_id);
 
         let mut product: Product = env.storage()
-            .instance()
+            .persistent()
             .get(&key)
             .ok_or(ProductError::ProductNotFound)?;
 
 
         product.stock = new_stock;
-        env.storage().instance().set(&key, &product);
+        env.storage().persistent().set(&key, &product);
         
         Ok(())
     }

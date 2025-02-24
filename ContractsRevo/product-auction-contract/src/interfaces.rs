@@ -30,7 +30,7 @@ pub trait ProductListing {
         stock: u32,
         images: Vec<String>,
         weight_grams: u64
-    ) -> Result<(), ProductError>; 
+    ) -> Result<u128, ProductError>; 
 
     fn update_stock(env: Env, seller: Address, product_id: u128, new_stock: u32) -> Result<(), ProductError>;
 }
