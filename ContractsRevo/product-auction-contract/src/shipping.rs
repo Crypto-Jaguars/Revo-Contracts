@@ -107,23 +107,4 @@ impl ShippingOperations for ProductAuctionContract {
 
         Ok(())
     }
-
-    fn get_shipment(env: Env, seller: Address, tracking_number: String) -> Result<Shipment, ShippingError> {
-        let shipment_key = DataKeys::Shipment(seller, tracking_number);
-        env.storage().instance().get(&shipment_key).ok_or(ShippingError::ShipmentNotFound)
-    }
-
-    fn get_shipments(env: Env, seller: Address) -> Result<Vec<Shipment>, ShippingError> {
-        let key = DataKeys::ShipmentList(seller.clone());
-
-        let shipments = env
-            .storage()
-            .persistent()
-            .get::<_, Vec<Shipment>>(&key)
-            .unwrap_or_else(||
-                Vec::new(&env),
-            );
-        
-        return Ok(shipments);
-    }
 }

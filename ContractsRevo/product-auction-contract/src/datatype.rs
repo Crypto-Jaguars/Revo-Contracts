@@ -2,6 +2,13 @@ use soroban_sdk::{contracterror, contracttype, Address, String, Symbol, Vec};
 
 #[contracterror]
 #[derive(Debug, Clone, PartialEq)]
+    pub enum AdminError {
+        AlreadyVerified = 1,
+        UnauthorizedAccess = 2,
+    }
+
+#[contracterror]
+#[derive(Debug, Clone, PartialEq)]
     pub enum AuctionError {
         BidTooLow = 1,
         AuctionEnded = 2,
@@ -30,6 +37,7 @@ pub struct Auction {
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKeys {
+    Admin,
     Auction(Address, u128), // Sellers Created Auctions
     ProductList(Address), // ProductList of Seller
     Product(Address, u128), // Product related to Seller

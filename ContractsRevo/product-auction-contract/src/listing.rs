@@ -84,31 +84,6 @@ impl ProductListing for ProductAuctionContract {
         Ok(())
     }
 
-    fn get_products(env: Env, seller: Address) -> Result<Vec<Product>, ProductError> {
-        let key = DataKeys::ProductList(seller.clone());
-
-        let products = env
-            .storage()
-            .persistent()
-            .get::<_, Vec<Product>>(&key)
-            .unwrap_or_else(||
-                Vec::new(&env),
-            );
-        
-        return Ok(products);
-    }
-
-    fn get_product(env: Env, seller: Address, product_id: u128) -> Result<Product, ProductError> {
-        let key = DataKeys::Product(seller.clone(), product_id);
-
-        let product = env.storage()
-            .instance()
-            .get(&key)
-            .ok_or(ProductError::ProductNotFound)?;
-
-        Ok(product)
-    }
-
     fn update_stock(env: Env, seller: Address, product_id: u128, new_stock: u32) -> Result<(), ProductError> {
         seller.require_auth();
 
