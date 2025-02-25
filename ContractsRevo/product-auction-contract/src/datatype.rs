@@ -100,6 +100,9 @@ pub struct Shipment {
     pub tracking_number: String,
 }
 
+pub const COST_PER_POUND: u64 = 6;
+pub const COST_PER_KM: u64 = 1;
+
 #[contracterror]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ShippingError {

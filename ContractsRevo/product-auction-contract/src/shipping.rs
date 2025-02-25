@@ -1,14 +1,13 @@
 use soroban_sdk::{contractimpl, Address, Env, String, Symbol, Vec};
 
-use crate::{datatype::{DataKeys, Shipment, ShippingError}, interfaces::ShippingOperations, ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient};
+use crate::{datatype::{DataKeys, Shipment, ShippingError, COST_PER_KM, COST_PER_POUND}, interfaces::ShippingOperations, ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient};
 
 #[contractimpl]
 impl ShippingOperations for ProductAuctionContract {
-    fn calculate_shipping_cost(weight_grams: u32, distance_km: u32) -> u64 {
-        let cost_per_gram = 1;
-        let cost_per_km = 1;
-        let weight_cost = weight_grams as u64 * cost_per_gram;
-        let distance_cost = distance_km as u64 * cost_per_km;
+    fn calculate_shipping_cost(weight_pounds: u32, distance_km: u32) -> u64 {
+        
+        let weight_cost = weight_pounds as u64 * COST_PER_POUND;
+        let distance_cost = distance_km as u64 * COST_PER_KM;
         weight_cost + distance_cost
     }
 
@@ -46,7 +45,7 @@ impl ShippingOperations for ProductAuctionContract {
         // Ensure the buyer is in a restricted zone
         let restricted_locations = Vec::from_array(&env, [
             String::from_str(&env, "RestrictedZone1"),
-            String::from_str(&env, "RestrictedZone2"),
+            String::from_str(&env, "RestrictedZone2"), //Could this be a list of restricted zones that is stored in the contract?
         ]);
         
         if restricted_locations.iter().any(|location| location == buyer_zone) {

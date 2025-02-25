@@ -37,7 +37,7 @@ pub trait ProductListing {
 
 #[allow(dead_code)]
 pub trait ShippingOperations {
-    fn calculate_shipping_cost(weight_grams: u32, distance_km: u32) -> u64;
+    fn calculate_shipping_cost(weight_pounds: u32, distance_km: u32) -> u64;
 
     fn estimate_delivery_time(distance_km: u32) -> u32;
 

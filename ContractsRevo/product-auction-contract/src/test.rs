@@ -619,3 +619,172 @@ fn test_finalize_auction_out_of_stock(){
     client.finalize_auction(&seller, &product_id);
 }
 
+#[test]
+fn test_calculate_shipping_cost() {
+    let (_, client, _, _) = setup_test(true);
+
+    let weight_pounds = 10u32;
+    let distance_km = 32u32;
+
+    let shipping_cost = client.calculate_shipping_cost(&weight_pounds, &distance_km);
+
+    assert_eq!(shipping_cost, distance_km as u64 + weight_pounds as u64 * 6);
+}
+
+#[test]
+fn test_estimate_delivery_time() {
+    let (_, client, _, _) = setup_test(true);
+
+    let distance_km = 10u32;
+    let delivery_time = client.estimate_delivery_time(&distance_km);
+
+    assert_eq!(delivery_time, 1);
+
+    let distance_km = 100u32;
+    let delivery_time = client.estimate_delivery_time(&distance_km);
+
+    assert_eq!(delivery_time, 3);
+
+    let distance_km = 300u32;
+    let delivery_time = client.estimate_delivery_time(&distance_km);
+
+    assert_eq!(delivery_time, 5);
+
+    let distance_km = 1000u32;
+    let delivery_time = client.estimate_delivery_time(&distance_km);
+
+    assert_eq!(delivery_time, 7);
+}
+
+#[test]
+fn test_create_shipment(){
+    let (env, client, _, seller) = setup_test(true);
+
+    let buyer = Address::generate(&env);
+    let buyer_zone = &String::from_str(&env, "Zone1");
+    let weight_grams = &1000u32;
+    let distance_km = &100u32;
+    let tracking_number = &String::from_str(&env, "123456");
+
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+
+    let key = DataKeys::Shipment(seller.clone(), tracking_number.clone());
+    
+    env.as_contract(&client.address, || {
+        let stored_shipment: Shipment = env
+        .storage()
+        .persistent()
+        .get(&key)
+        .expect("Shipment not found in storage");
+        assert_eq!(stored_shipment.seller, seller);
+        assert_eq!(stored_shipment.buyer, buyer);
+        assert_eq!(stored_shipment.weight_grams, *weight_grams);
+        assert_eq!(stored_shipment.distance_km, *distance_km);
+        assert_eq!(stored_shipment.shipping_cost, *distance_km as u64 + *weight_grams as u64 * 6);
+        assert_eq!(stored_shipment.delivery_estimate_days, 3);
+        assert_eq!(stored_shipment.status, Symbol::new(&env, "Pending"));
+        assert_eq!(stored_shipment.tracking_number, *tracking_number);
+    });
+}
+
+#[test]
+fn test_get_shipment(){
+    let (env, client, _, seller) = setup_test(true);
+
+    let buyer = Address::generate(&env);
+    let buyer_zone = &String::from_str(&env, "Zone1");
+    let weight_grams = &1000u32;
+    let distance_km = &100u32;
+    let tracking_number = &String::from_str(&env, "123456");
+
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+
+    let shipment = client.get_shipment(&seller, &tracking_number);
+
+    assert_eq!(shipment.seller, seller);
+    assert_eq!(shipment.buyer, buyer);
+    assert_eq!(shipment.weight_grams, *weight_grams);
+    assert_eq!(shipment.distance_km, *distance_km);
+    assert_eq!(shipment.shipping_cost, *distance_km as u64 + *weight_grams as u64 * 6);
+    assert_eq!(shipment.delivery_estimate_days, 3);
+    assert_eq!(shipment.status, Symbol::new(&env, "Pending"));
+    assert_eq!(shipment.tracking_number, *tracking_number);
+}
+
+#[test]
+fn test_get_shipments() {
+    let (env, client, _, seller) = setup_test(true);
+
+    let buyer = Address::generate(&env);
+    let buyer_zone = &String::from_str(&env, "Zone1");
+    let weight_grams = &1000u32;
+    let distance_km = &100u32;
+    let tracking_number = &String::from_str(&env, "123456");
+    let tracking_number2 = &String::from_str(&env, "654321");
+
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number2);
+
+    let shipments = client.get_shipments(&seller);
+
+    assert_eq!(shipments.len(), 2);
+}
+
+#[test]
+#[should_panic(expected = "Unauthorized function call for address")]
+fn test_create_shipment_unauthorized(){
+    let (env, client, _, seller) = setup_test(false);
+
+    let buyer = Address::generate(&env);
+    let buyer_zone = &String::from_str(&env, "Zone1");
+    let weight_grams = &1000u32;
+    let distance_km = &100u32;
+    let tracking_number = &String::from_str(&env, "123456");
+
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #3)")]
+fn test_create_shipment_already_exists(){
+    let (env, client, _, seller) = setup_test(true);
+
+    let buyer = Address::generate(&env);
+    let buyer_zone = &String::from_str(&env, "Zone1");
+    let weight_grams = &1000u32;
+    let distance_km = &100u32;
+    let tracking_number = &String::from_str(&env, "123456");
+
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #4)")]
+fn test_create_shipment_invalid_buyer_zone(){
+    let (env, client, _, seller) = setup_test(true);
+
+    let buyer = Address::generate(&env);
+    let buyer_zone = &String::from_str(&env, "");
+    let weight_grams = &1000u32;
+    let distance_km = &100u32;
+    let tracking_number = &String::from_str(&env, "123456");
+
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #1)")]
+fn test_create_shipment_restricted_location(){
+    let (env, client, _, seller) = setup_test(true);
+
+    let buyer = Address::generate(&env);
+    let buyer_zone = &String::from_str(&env, "RestrictedZone1");
+    let weight_grams = &1000u32;
+    let distance_km = &100u32;
+    let tracking_number = &String::from_str(&env, "123456");
+
+    client.create_shipment(&seller, &buyer, buyer_zone, weight_grams, distance_km, tracking_number);
+}
+
+

@@ -72,7 +72,7 @@ impl ProductAuctionContract {
     
     pub fn get_shipment(env: Env, seller: Address, tracking_number: String) -> Result<Shipment, ShippingError> {
         let shipment_key = DataKeys::Shipment(seller, tracking_number);
-        env.storage().instance().get(&shipment_key).ok_or(ShippingError::ShipmentNotFound)
+        env.storage().persistent().get(&shipment_key).ok_or(ShippingError::ShipmentNotFound)
     }
 
     pub fn get_shipments(env: Env, seller: Address) -> Result<Vec<Shipment>, ShippingError> {
