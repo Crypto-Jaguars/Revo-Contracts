@@ -32,15 +32,15 @@ pub enum DataKeys {
     Rating(Address),                     // User's overall rating
     CategoryRating(Address),             // User's rating for specific categories
     RatingStats(Address),                // Statistical data about ratings
-    ProductRatings(u128),                // All ratings for a specific product
+    ProductRatings(u64),                // All ratings for a specific product
     CategoryMapping(Address),            // Maps categories to products/users
-    Review(u128, u32),                   // Specific review identified by product_id and review_id
-    PurchaseVerification(u128, Address), // Verification status for a purchase
-    ReviewReport(u128, u32),             // Report data for a specific review
-    ReviewCount(u128),
-    ReviewVote(u128, u32, Address),   // (product_id, review_id, voter)
-    AlreadyVoted(u128, u32, Address), // (product_id, review_id, voter)
-    UserReviewReport(u128, u32, Address), // (product_id, review_id, reporter)
+    Review(u64, u32),                   // Specific review identified by product_id and review_id
+    PurchaseVerification(u64, Address), // Verification status for a purchase
+    ReviewReport(u64, u32),             // Report data for a specific review
+    ReviewCount(u64),
+    ReviewVote(u64, u32, Address),   // (product_id, review_id, voter)
+    AlreadyVoted(u64, u32, Address), // (product_id, review_id, voter)
+    UserReviewReport(u64, u32, Address), // (product_id, review_id, reporter)
     VoteRateLimit(Address),
 }
 
@@ -111,7 +111,7 @@ pub struct ReviewDetails {
 #[contracttype]
 pub struct PurchaseVerificationData {
     pub user: Address,         // User who made the purchase
-    pub product_id: u128,      // ID of the purchased product
+    pub product_id: u64,      // ID of the purchased product
     pub purchase_link: String, // Link to purchase proof
     pub is_verified: bool,     // Verification status
     pub timestamp: u64,        // When purchase was made
@@ -122,7 +122,7 @@ pub struct PurchaseVerificationData {
 #[contracttype]
 pub struct ReviewReportData {
     pub reporter: Address, // User reporting the review
-    pub product_id: u128,  // Product ID of reported review
+    pub product_id: u64,  // Product ID of reported review
     pub review_id: u32,    // ID of reported review
     pub reason: String,    // Reason for reporting
     pub timestamp: u64,    // When report was submitted

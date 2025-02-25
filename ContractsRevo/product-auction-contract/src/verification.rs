@@ -15,7 +15,7 @@ impl VerificationOperations for ProductAuctionContract {
         env: Env,
         admin: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         is_authentic: bool,
     ) -> Result<(), VerificationError> {
         admin.require_auth();
@@ -87,7 +87,7 @@ impl VerificationOperations for ProductAuctionContract {
         env: Env,
         admin: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         condition: Condition,
     ) -> Result<(), VerificationError> {
         admin.require_auth();
@@ -112,7 +112,7 @@ impl VerificationOperations for ProductAuctionContract {
         env: Env,
         buyer: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         reason: String,
     ) -> Result<(), VerificationError> {
         buyer.require_auth();
@@ -144,7 +144,7 @@ impl VerificationOperations for ProductAuctionContract {
         admin: Address,
         buyer: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         resolution: DisputeStatus,
     ) -> Result<(), VerificationError> {
         admin.require_auth();
@@ -186,7 +186,7 @@ impl VerificationOperations for ProductAuctionContract {
         env: Env,
         buyer: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         reason: String,
     ) -> Result<(), VerificationError> {
         buyer.require_auth();
@@ -217,7 +217,7 @@ impl VerificationOperations for ProductAuctionContract {
         env: Env,
         admin: Address,
         buyer: Address,
-        product_id: u128,
+        product_id: u64,
         resolution: Symbol,
     ) -> Result<(), VerificationError> {
         admin.require_auth();

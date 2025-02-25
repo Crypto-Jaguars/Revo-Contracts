@@ -123,7 +123,7 @@ fn test_get_product() {
 fn test_get_product_invalid_product() {
     let (_, client, _, seller) = setup_test(true);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     client.get_product(&seller, &product_id);
 }
@@ -328,7 +328,7 @@ fn test_update_stock() {
 fn test_update_stock_invalid_product() {
     let (_, client, _, seller) = setup_test(true);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let new_stock = &20u32;
     client.update_stock(&seller, &product_id, new_stock);
@@ -337,7 +337,7 @@ fn test_update_stock_invalid_product() {
 #[test]
 fn test_create_auction() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -363,7 +363,7 @@ fn test_create_auction() {
 #[test]
 fn test_get_auction() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -383,7 +383,7 @@ fn test_get_auction() {
 #[should_panic(expected = "Unauthorized function call for address")]
 fn test_create_auction_unauthorized() {
     let (env, client, _, seller) = setup_test(false);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -394,7 +394,7 @@ fn test_create_auction_unauthorized() {
 #[should_panic(expected = "Error(Contract, #3)")]
 fn test_create_auction_already_exists() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -406,7 +406,7 @@ fn test_create_auction_already_exists() {
 #[test]
 fn test_place_bid() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -433,7 +433,7 @@ fn test_place_bid() {
 #[should_panic(expected = "Error(Contract, #4)")]
 fn test_place_bid_invalid_bidder() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -447,7 +447,7 @@ fn test_place_bid_invalid_bidder() {
 #[should_panic(expected = "Error(Contract, #5)")]
 fn test_place_bid_auction_not_found() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let bidder = Address::generate(&env);
     let bid_amount = &100u64;
@@ -458,7 +458,7 @@ fn test_place_bid_auction_not_found() {
 #[should_panic(expected = "Error(Contract, #2)")]
 fn test_place_bid_auction_ended() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp();
@@ -474,7 +474,7 @@ fn test_place_bid_auction_ended() {
 #[should_panic(expected = "Error(Contract, #1)")]
 fn test_place_bid_bid_too_low() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp();
@@ -488,7 +488,7 @@ fn test_place_bid_bid_too_low() {
 #[test]
 fn test_extend_auction() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -513,7 +513,7 @@ fn test_extend_auction() {
 #[should_panic(expected = "Unauthorized function call for address")]
 fn test_extend_auction_unauthorized() {
     let (env, client, _, seller) = setup_test(false);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -527,7 +527,7 @@ fn test_extend_auction_unauthorized() {
 #[should_panic(expected = "Error(Contract, #5)")]
 fn test_extend_auction_not_found() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let new_end_time = &env.ledger().timestamp() + 2000;
     client.extend_auction(&seller, &product_id, &new_end_time);
@@ -537,7 +537,7 @@ fn test_extend_auction_not_found() {
 #[should_panic(expected = "Error(Contract, #2)")]
 fn test_extend_auction_ended() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1;
@@ -554,7 +554,7 @@ fn test_extend_auction_ended() {
 #[should_panic(expected = "Error(Contract, #6)")]
 fn test_extend_auction_too_late_to_extend() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &1200u64; // In 20 minutes
@@ -571,7 +571,7 @@ fn test_extend_auction_too_late_to_extend() {
 #[should_panic(expected = "Error(Contract, #7)")]
 fn test_extend_auction_invalid_auction_end_time() {
     let (env, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp() + 1000;
@@ -663,7 +663,7 @@ fn test_finalize_auction_unauthorized() {
 #[should_panic(expected = "Error(Contract, #5)")]
 fn test_finalize_auction_not_found() {
     let (_, client, _, seller) = setup_test(true);
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     client.finalize_auction(&seller, &product_id);
 }
@@ -673,7 +673,7 @@ fn test_finalize_auction_not_found() {
 fn test_finalize_auction_not_ended() {
     let (env, client, _, seller) = setup_test(true);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = 100u64;
@@ -688,7 +688,7 @@ fn test_finalize_auction_not_ended() {
 fn test_finalize_auction_no_bids() {
     let (env, client, _, seller) = setup_test(true);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp();
@@ -1050,7 +1050,7 @@ fn test_verify_product_unverified() {
 fn test_verify_product_unauthorized() {
     let (_, client, _, seller) = setup_test(false);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     client.verify_product(&seller, &seller, &product_id, &true);
 }
@@ -1060,7 +1060,7 @@ fn test_verify_product_unauthorized() {
 fn test_verify_product_invalid_product() {
     let (_, client, admin, seller) = setup_test(true);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     client.verify_product(&admin, &seller, &product_id, &true);
 }
@@ -1204,7 +1204,7 @@ fn test_verify_condition() {
 fn test_verify_condition_unauthorized() {
     let (_, client, _, seller) = setup_test(false);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
     let actual_condition = Condition::UsedGood;
     client.verify_condition(&seller, &seller, &product_id, &actual_condition);
 }
@@ -1214,7 +1214,7 @@ fn test_verify_condition_unauthorized() {
 fn test_verify_condition_invalid_product() {
     let (_, client, admin, seller) = setup_test(true);
 
-    let product_id = 1u128;
+    let product_id = 1u64;
     let actual_condition = Condition::UsedGood;
     client.verify_condition(&admin, &seller, &product_id, &actual_condition);
 }
@@ -1224,7 +1224,7 @@ fn test_open_dispute() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let reason = &String::from_str(&env, "This is a dispute");
 
     client.open_dispute(&buyer, &seller, &product_id, reason);
@@ -1251,7 +1251,7 @@ fn test_open_dispute_already_exists() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let reason = &String::from_str(&env, "This is a dispute");
 
     client.open_dispute(&buyer, &seller, &product_id, reason);
@@ -1263,7 +1263,7 @@ fn test_resolve_dispute() {
     let (env, client, admin, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let reason = &String::from_str(&env, "This is a dispute");
 
     client.open_dispute(&buyer, &seller, &product_id, reason);
@@ -1290,7 +1290,7 @@ fn test_resolve_dispute_unauthorized() {
     let (env, client, _, seller) = setup_test(false);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let reason = &String::from_str(&env, "This is a dispute");
 
     client.open_dispute(&buyer, &seller, &product_id, reason);
@@ -1306,7 +1306,7 @@ fn test_resolve_dispute_invalid_dispute() {
     let (env, client, admin, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let resolution = DisputeStatus::Approved;
 
     client.resolve_dispute(&admin, &buyer, &seller, &product_id, &resolution);
@@ -1368,7 +1368,7 @@ fn test_request_return() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let reason = &String::from_str(&env, "This is a return request");
 
     client.request_return(&buyer, &seller, &product_id, reason);
@@ -1395,7 +1395,7 @@ fn test_request_return_already_exists() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let reason = &String::from_str(&env, "This is a return request");
 
     client.request_return(&buyer, &seller, &product_id, reason);
@@ -1407,7 +1407,7 @@ fn test_resolve_return() {
     let (env, client, admin, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let reason = &String::from_str(&env, "This is a return request");
 
     client.request_return(&buyer, &seller, &product_id, reason);
@@ -1434,7 +1434,7 @@ fn test_resolve_return_unauthorized() {
     let (env, client, _, seller) = setup_test(false);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let resolution = Symbol::new(&env, "Approved");
 
     client.resolve_return(&seller, &buyer, &product_id, &resolution);
@@ -1446,7 +1446,7 @@ fn test_resolve_return_invalid_request() {
     let (env, client, admin, _) = setup_test(true);
 
     let buyer = Address::generate(&env);
-    let product_id = 1u128;
+    let product_id = 1u64;
     let resolution = Symbol::new(&env, "Approved");
 
     client.resolve_return(&admin, &buyer, &product_id, &resolution);

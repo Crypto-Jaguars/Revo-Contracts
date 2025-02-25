@@ -26,7 +26,7 @@ pub enum AuctionError {
 #[contracttype]
 #[derive(Clone)]
 pub struct Auction {
-    pub product_id: u128,
+    pub product_id: u64,
     pub highest_bid: u64,
     pub highest_bidder: Option<Address>,
     pub reserve_price: u64,
@@ -38,15 +38,15 @@ pub struct Auction {
 #[derive(Clone)]
 pub enum DataKeys {
     Admin,
-    Auction(Address, u128),          // Sellers Created Auctions
-    ProductList(Address),            // ProductList of Seller
-    Product(Address, u128),          // Product related to Seller
-    ShipmentList(Address),           // ShipmentList of Seller
-    Shipment(Address, String),       // Shipment related to Seller
-    SellerVerification(Address),     // Seller Verification
-    Dispute(Address, Address, u128), // Dispute related to Buyer and Seller and Product_id
-    ReturnPolicy(Address),           // Return Policy of Seller,
-    ReturnRequest(Address, u128),    // Return Request related to Seller
+    Auction(Address, u64),          // Sellers Created Auctions
+    ProductList(Address),           // ProductList of Seller
+    Product(Address, u64),          // Product related to Seller
+    ShipmentList(Address),          // ShipmentList of Seller
+    Shipment(Address, String),      // Shipment related to Seller
+    SellerVerification(Address),    // Seller Verification
+    Dispute(Address, Address, u64), // Dispute related to Buyer and Seller and Product_id
+    ReturnPolicy(Address),          // Return Policy of Seller,
+    ReturnRequest(Address, u64),    // Return Request related to Seller
 }
 
 #[contracterror]
@@ -75,7 +75,7 @@ pub enum Condition {
 #[contracttype]
 #[derive(Clone, Debug)]
 pub struct Product {
-    pub id: u128,
+    pub id: u64,
     pub seller: Address,
     pub name: Symbol,
     pub description: String,
@@ -117,7 +117,7 @@ pub enum ShippingError {
 pub struct Dispute {
     pub buyer: Address,
     pub seller: Address,
-    pub product_id: u128,
+    pub product_id: u64,
     pub reason: String,
     pub status: DisputeStatus,
 }
@@ -127,7 +127,7 @@ pub struct Dispute {
 pub struct ReturnRequest {
     pub buyer: Address,
     pub seller: Address,
-    pub product_id: u128,
+    pub product_id: u64,
     pub reason: String,
     pub status: Symbol,
 }

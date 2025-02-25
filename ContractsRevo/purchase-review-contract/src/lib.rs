@@ -46,7 +46,7 @@ impl PurchaseReviewContract {
     pub fn verify_purchase(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         purchase_link: String,
     ) -> Result<bool, PurchaseReviewError> {
         let admin = Self::get_admin(env.clone())?;
@@ -75,7 +75,7 @@ impl PurchaseReviewContract {
     pub fn is_purchase_verified(
         env: Env,
         _user: Address,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<bool, PurchaseReviewError> {
         let verification_data = env
             .storage()
@@ -88,7 +88,7 @@ impl PurchaseReviewContract {
 
     pub fn get_product_rating(
         env: Env,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<(u32, u32), PurchaseReviewError> {
         let mut total_rating = 0u32;
         let mut total_reviews = 0u32;
@@ -114,7 +114,7 @@ impl PurchaseReviewContract {
 
     pub fn get_review(
         env: Env,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
     ) -> Result<ReviewDetails, PurchaseReviewError> {
         env.storage()

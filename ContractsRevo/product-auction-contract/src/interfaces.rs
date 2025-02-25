@@ -10,12 +10,12 @@ pub trait AuctionOperations {
         seller: Address,
         reserve_price: u64,
         auction_end_time: u64,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<(), AuctionError>;
 
     fn place_bid(
         env: Env,
-        product_id: u128,
+        product_id: u64,
         bid_amount: u64,
         bidder: Address,
         seller: Address,
@@ -24,11 +24,11 @@ pub trait AuctionOperations {
     fn extend_auction(
         env: Env,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         new_end_time: u64,
     ) -> Result<(), AuctionError>;
 
-    fn finalize_auction(env: Env, seller: Address, product_id: u128) -> Result<(), AuctionError>;
+    fn finalize_auction(env: Env, seller: Address, product_id: u64) -> Result<(), AuctionError>;
 }
 
 #[allow(dead_code)]
@@ -43,12 +43,12 @@ pub trait ProductListing {
         stock: u32,
         images: Vec<String>,
         weight_grams: u64,
-    ) -> Result<u128, ProductError>;
+    ) -> Result<u64, ProductError>;
 
     fn update_stock(
         env: Env,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         new_stock: u32,
     ) -> Result<(), ProductError>;
 }
@@ -83,7 +83,7 @@ pub trait VerificationOperations {
         env: Env,
         admin: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         is_authentic: bool,
     ) -> Result<(), VerificationError>;
 
@@ -100,7 +100,7 @@ pub trait VerificationOperations {
         env: Env,
         admin: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         condition: Condition,
     ) -> Result<(), VerificationError>;
 
@@ -108,7 +108,7 @@ pub trait VerificationOperations {
         env: Env,
         buyer: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         reason: String,
     ) -> Result<(), VerificationError>;
 
@@ -117,7 +117,7 @@ pub trait VerificationOperations {
         admin: Address,
         buyer: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         resolution: DisputeStatus,
     ) -> Result<(), VerificationError>;
 
@@ -131,7 +131,7 @@ pub trait VerificationOperations {
         env: Env,
         buyer: Address,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         reason: String,
     ) -> Result<(), VerificationError>;
 
@@ -139,7 +139,7 @@ pub trait VerificationOperations {
         env: Env,
         admin: Address,
         buyer: Address,
-        product_id: u128,
+        product_id: u64,
         resolution: Symbol,
     ) -> Result<(), VerificationError>;
 }

@@ -19,7 +19,7 @@ impl RatingOperations for PurchaseReviewContract {
     fn submit_rating(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         category: Category,
         rating: Rating,
         weight: u32,
@@ -90,7 +90,7 @@ impl RatingOperations for PurchaseReviewContract {
     /// Returns: Result containing ProductRatings or an error if product not found
     fn get_product_ratings(
         env: Env,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<ProductRatings, PurchaseReviewError> {
         let key = DataKeys::ProductRatings(product_id);
 

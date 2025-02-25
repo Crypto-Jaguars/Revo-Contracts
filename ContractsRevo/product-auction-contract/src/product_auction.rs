@@ -13,7 +13,7 @@ impl AuctionOperations for ProductAuctionContract {
         seller: Address,
         reserve_price: u64,
         auction_end_time: u64,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<(), AuctionError> {
         seller.require_auth();
         let key = &DataKeys::Auction(seller.clone(), product_id);
@@ -44,7 +44,7 @@ impl AuctionOperations for ProductAuctionContract {
 
     fn place_bid(
         env: Env,
-        product_id: u128,
+        product_id: u64,
         bid_amount: u64,
         bidder: Address,
         seller: Address,
@@ -92,7 +92,7 @@ impl AuctionOperations for ProductAuctionContract {
     fn extend_auction(
         env: Env,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         new_end_time: u64,
     ) -> Result<(), AuctionError> {
         seller.require_auth();
@@ -137,7 +137,7 @@ impl AuctionOperations for ProductAuctionContract {
         Ok(())
     }
 
-    fn finalize_auction(env: Env, seller: Address, product_id: u128) -> Result<(), AuctionError> {
+    fn finalize_auction(env: Env, seller: Address, product_id: u64) -> Result<(), AuctionError> {
         seller.require_auth();
 
         let auction_key = DataKeys::Auction(seller.clone(), product_id.clone());

@@ -16,7 +16,7 @@ impl ReviewOperations for PurchaseReviewContract {
     fn submit_review(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         review_text: String,
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError> {
@@ -64,7 +64,7 @@ impl ReviewOperations for PurchaseReviewContract {
     fn add_response(
         _env: Env,
         _reviewer: Address,
-        _product_id: u128,
+        _product_id: u64,
         _review_id: u32,
         _response_text: String,
     ) -> Result<(), PurchaseReviewError> {
@@ -79,7 +79,7 @@ impl ReviewOperations for PurchaseReviewContract {
     fn vote_helpful(
         env: Env,
         voter: Address,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
         helpful: bool,
     ) -> Result<(), PurchaseReviewError> {
@@ -122,7 +122,7 @@ impl ReviewOperations for PurchaseReviewContract {
     fn verified_purchase_badge(
         _env: Env,
         _user: Address,
-        _product_id: u128,
+        _product_id: u64,
         _review_id: u32,
         _purchase_link: String,
     ) -> Result<(), PurchaseReviewError> {
@@ -135,7 +135,7 @@ impl ReviewOperations for PurchaseReviewContract {
     /// Returns Result<ReviewDetails, PurchaseReviewError>
     fn get_review_details(
         env: Env,
-        _product_id: u128,
+        _product_id: u64,
         _review_id: u32,
     ) -> Result<ReviewDetails, PurchaseReviewError> {
         Ok(ReviewDetails {

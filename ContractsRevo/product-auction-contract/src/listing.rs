@@ -1,5 +1,4 @@
 use soroban_sdk::{contractimpl, Address, Env, String, Symbol, Vec};
-use uuid::Uuid;
 
 use crate::{
     datatype::{Condition, DataKeys, Product, ProductError},
@@ -19,7 +18,7 @@ impl ProductListing for ProductAuctionContract {
         stock: u32,
         images: Vec<String>,
         weight_pounds: u64,
-    ) -> Result<u128, ProductError> {
+    ) -> Result<u64, ProductError> {
         // Ensure the seller is authorized
         seller.require_auth();
 
@@ -43,8 +42,8 @@ impl ProductListing for ProductAuctionContract {
             return Err(ProductError::InvalidWeight);
         }
 
-        // Generate a unique product ID using UUID
-        let product_id = Uuid::new_v4().as_u128();
+        // Generate a unique product ID
+        let product_id: u64 = env.prng().gen();
 
         // Create the product
         let product = Product {
@@ -90,7 +89,7 @@ impl ProductListing for ProductAuctionContract {
     fn update_stock(
         env: Env,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
         new_stock: u32,
     ) -> Result<(), ProductError> {
         seller.require_auth();

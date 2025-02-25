@@ -45,7 +45,7 @@ impl ProductAuctionContract {
     pub fn get_auction(
         env: Env,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<Auction, AuctionError> {
         let key = &DataKeys::Auction(seller.clone(), product_id);
         env.storage()
@@ -69,7 +69,7 @@ impl ProductAuctionContract {
     pub fn get_product(
         env: Env,
         seller: Address,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<Product, ProductError> {
         let key = DataKeys::Product(seller.clone(), product_id);
 
