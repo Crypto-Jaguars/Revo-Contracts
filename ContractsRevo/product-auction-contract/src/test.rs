@@ -2,7 +2,10 @@
 use crate::datatype::{Condition, Dispute, DisputeStatus, ReturnRequest, SellerVerificationStatus};
 
 use super::*;
-use soroban_sdk::{testutils::{Address as _, Ledger}, vec, Address, Env};
+use soroban_sdk::{
+    testutils::{Address as _, Ledger},
+    vec, Address, Env,
+};
 
 fn setup_test(mock_auths: bool) -> (Env, ProductAuctionContractClient<'static>, Address, Address) {
     let env = Env::default();
@@ -40,23 +43,32 @@ fn test_initialize_contract() {
 fn test_add_product() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &100u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     let key = DataKeys::Product(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let stored_product: Product = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Product not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Product not found in storage");
         assert_eq!(stored_product.id, product_id);
         assert_eq!(stored_product.seller, seller);
         assert_eq!(stored_product.name, *name);
@@ -71,19 +83,27 @@ fn test_add_product() {
 }
 
 #[test]
-fn test_get_product(){
+fn test_get_product() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &100u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
-    
     let product = client.get_product(&seller, &product_id);
 
     assert_eq!(product.id, product_id);
@@ -100,7 +120,7 @@ fn test_get_product(){
 
 #[test]
 #[should_panic(expected = "Error(Contract, #6)")]
-fn test_get_product_invalid_product(){
+fn test_get_product_invalid_product() {
     let (_, client, _, seller) = setup_test(true);
 
     let product_id = 1u128;
@@ -112,21 +132,38 @@ fn test_get_product_invalid_product(){
 fn test_get_products() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &100u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
-    client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
+    client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     let products = client.get_products(&seller);
 
     assert_eq!(products.len(), 2);
 }
-
 
 #[test]
 #[should_panic(expected = "Unauthorized function call for address")]
@@ -134,14 +171,23 @@ fn test_add_product_unauthorized() {
     let (env, client, _, seller) = setup_test(false);
 
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &100u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 }
 
 #[test]
@@ -149,14 +195,23 @@ fn test_add_product_unauthorized() {
 fn test_add_product_invalid_description() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"Short");
+    let description = &String::from_str(&env, "Short");
     let price = &100u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 }
 
 #[test]
@@ -164,14 +219,23 @@ fn test_add_product_invalid_description() {
 fn test_add_product_invalid_price() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &0u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 }
 
 #[test]
@@ -179,14 +243,23 @@ fn test_add_product_invalid_price() {
 fn test_add_product_invalid_image() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &5u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env];
     let weight_pounds = &1000u64;
 
-    client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 }
 
 #[test]
@@ -194,40 +267,58 @@ fn test_add_product_invalid_image() {
 fn test_add_product_invalid_weight() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &5u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &0u64;
 
-    client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 }
 
 #[test]
 fn test_update_stock() {
     let (env, client, _, seller) = setup_test(true);
     let name = &Symbol::new(&env, "Product1");
-    let description = &String::from_str(&env,"This is a product");
+    let description = &String::from_str(&env, "This is a product");
     let price = &100u64;
     let condition = &Condition::New;
     let stock = &10u32;
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     let new_stock = &20u32;
     client.update_stock(&seller, &product_id, new_stock);
 
     let key = DataKeys::Product(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let stored_product: Product = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Product not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Product not found in storage");
         assert_eq!(stored_product.stock, *new_stock);
     });
 }
@@ -253,13 +344,13 @@ fn test_create_auction() {
     client.create_auction(&seller, &*reserve_price, &auction_end_time, &product_id);
 
     let key = DataKeys::Auction(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let stored_auction: Auction = env
-        .storage()
-        .instance()
-        .get(&key)
-        .expect("Auction not found in storage");
+            .storage()
+            .instance()
+            .get(&key)
+            .expect("Auction not found in storage");
         assert_eq!(stored_auction.product_id, product_id);
         assert_eq!(stored_auction.highest_bid, 0);
         assert_eq!(stored_auction.highest_bidder, None);
@@ -326,13 +417,13 @@ fn test_place_bid() {
     client.place_bid(&product_id, &bid_amount, &bidder, &seller);
 
     let key = DataKeys::Auction(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let stored_auction: Auction = env
-        .storage()
-        .instance()
-        .get(&key)
-        .expect("Auction not found in storage");
+            .storage()
+            .instance()
+            .get(&key)
+            .expect("Auction not found in storage");
         assert_eq!(stored_auction.highest_bid, *bid_amount);
         assert_eq!(stored_auction.highest_bidder, Some(bidder));
     });
@@ -354,7 +445,7 @@ fn test_place_bid_invalid_bidder() {
 
 #[test]
 #[should_panic(expected = "Error(Contract, #5)")]
-fn test_place_bid_auction_not_found(){
+fn test_place_bid_auction_not_found() {
     let (env, client, _, seller) = setup_test(true);
     let product_id = 1u128;
 
@@ -365,10 +456,10 @@ fn test_place_bid_auction_not_found(){
 
 #[test]
 #[should_panic(expected = "Error(Contract, #2)")]
-fn test_place_bid_auction_ended(){
+fn test_place_bid_auction_ended() {
     let (env, client, _, seller) = setup_test(true);
     let product_id = 1u128;
-    
+
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp();
     env.ledger().set_timestamp(1000);
@@ -381,7 +472,7 @@ fn test_place_bid_auction_ended(){
 
 #[test]
 #[should_panic(expected = "Error(Contract, #1)")]
-fn test_place_bid_bid_too_low(){
+fn test_place_bid_bid_too_low() {
     let (env, client, _, seller) = setup_test(true);
     let product_id = 1u128;
 
@@ -407,13 +498,13 @@ fn test_extend_auction() {
     client.extend_auction(&seller, &product_id, &new_end_time);
 
     let key = DataKeys::Auction(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let stored_auction: Auction = env
-        .storage()
-        .instance()
-        .get(&key)
-        .expect("Auction not found in storage");
+            .storage()
+            .instance()
+            .get(&key)
+            .expect("Auction not found in storage");
         assert_eq!(stored_auction.auction_end_time, new_end_time);
     });
 }
@@ -434,7 +525,7 @@ fn test_extend_auction_unauthorized() {
 
 #[test]
 #[should_panic(expected = "Error(Contract, #5)")]
-fn test_extend_auction_not_found(){
+fn test_extend_auction_not_found() {
     let (env, client, _, seller) = setup_test(true);
     let product_id = 1u128;
 
@@ -502,7 +593,16 @@ fn test_finalize_auction() {
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp();
@@ -516,13 +616,10 @@ fn test_finalize_auction() {
     client.finalize_auction(&seller, &product_id);
 
     let key = DataKeys::Auction(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
-        let auction_exists = env
-        .storage()
-        .instance()
-        .has(&key);
-        assert!(auction_exists==false);
+        let auction_exists = env.storage().instance().has(&key);
+        assert!(auction_exists == false);
     });
 }
 
@@ -539,7 +636,16 @@ fn test_finalize_auction_unauthorized() {
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp();
@@ -594,7 +700,7 @@ fn test_finalize_auction_no_bids() {
 
 #[test]
 #[should_panic(expected = "Error(Contract, #11)")]
-fn test_finalize_auction_out_of_stock(){
+fn test_finalize_auction_out_of_stock() {
     let (env, client, _, seller) = setup_test(true);
 
     let name = &Symbol::new(&env, "Product1");
@@ -605,7 +711,16 @@ fn test_finalize_auction_out_of_stock(){
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &1000u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     let reserve_price = &50u64;
     let auction_end_time = &env.ledger().timestamp();
@@ -657,7 +772,7 @@ fn test_estimate_delivery_time() {
 }
 
 #[test]
-fn test_create_shipment(){
+fn test_create_shipment() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
@@ -666,21 +781,31 @@ fn test_create_shipment(){
     let distance_km = &100u32;
     let tracking_number = &String::from_str(&env, "123456");
 
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
 
     let key = DataKeys::Shipment(seller.clone(), tracking_number.clone());
-    
+
     env.as_contract(&client.address, || {
         let stored_shipment: Shipment = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Shipment not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Shipment not found in storage");
         assert_eq!(stored_shipment.seller, seller);
         assert_eq!(stored_shipment.buyer, buyer);
         assert_eq!(stored_shipment.weight_pounds, *weight_pounds);
         assert_eq!(stored_shipment.distance_km, *distance_km);
-        assert_eq!(stored_shipment.shipping_cost, *distance_km as u64 + *weight_pounds as u64 * 6);
+        assert_eq!(
+            stored_shipment.shipping_cost,
+            *distance_km as u64 + *weight_pounds as u64 * 6
+        );
         assert_eq!(stored_shipment.delivery_estimate_days, 3);
         assert_eq!(stored_shipment.status, Symbol::new(&env, "Pending"));
         assert_eq!(stored_shipment.tracking_number, *tracking_number);
@@ -688,7 +813,7 @@ fn test_create_shipment(){
 }
 
 #[test]
-fn test_get_shipment(){
+fn test_get_shipment() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
@@ -697,7 +822,14 @@ fn test_get_shipment(){
     let distance_km = &100u32;
     let tracking_number = &String::from_str(&env, "123456");
 
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
 
     let shipment = client.get_shipment(&seller, &tracking_number);
 
@@ -705,7 +837,10 @@ fn test_get_shipment(){
     assert_eq!(shipment.buyer, buyer);
     assert_eq!(shipment.weight_pounds, *weight_pounds);
     assert_eq!(shipment.distance_km, *distance_km);
-    assert_eq!(shipment.shipping_cost, *distance_km as u64 + *weight_pounds as u64 * 6);
+    assert_eq!(
+        shipment.shipping_cost,
+        *distance_km as u64 + *weight_pounds as u64 * 6
+    );
     assert_eq!(shipment.delivery_estimate_days, 3);
     assert_eq!(shipment.status, Symbol::new(&env, "Pending"));
     assert_eq!(shipment.tracking_number, *tracking_number);
@@ -722,8 +857,22 @@ fn test_get_shipments() {
     let tracking_number = &String::from_str(&env, "123456");
     let tracking_number2 = &String::from_str(&env, "654321");
 
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number2);
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number2,
+    );
 
     let shipments = client.get_shipments(&seller);
 
@@ -732,7 +881,7 @@ fn test_get_shipments() {
 
 #[test]
 #[should_panic(expected = "Unauthorized function call for address")]
-fn test_create_shipment_unauthorized(){
+fn test_create_shipment_unauthorized() {
     let (env, client, _, seller) = setup_test(false);
 
     let buyer = Address::generate(&env);
@@ -741,12 +890,19 @@ fn test_create_shipment_unauthorized(){
     let distance_km = &100u32;
     let tracking_number = &String::from_str(&env, "123456");
 
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #3)")]
-fn test_create_shipment_already_exists(){
+fn test_create_shipment_already_exists() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
@@ -755,13 +911,27 @@ fn test_create_shipment_already_exists(){
     let distance_km = &100u32;
     let tracking_number = &String::from_str(&env, "123456");
 
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #4)")]
-fn test_create_shipment_invalid_buyer_zone(){
+fn test_create_shipment_invalid_buyer_zone() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
@@ -770,12 +940,19 @@ fn test_create_shipment_invalid_buyer_zone(){
     let distance_km = &100u32;
     let tracking_number = &String::from_str(&env, "123456");
 
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
 }
 
 #[test]
 #[should_panic(expected = "Error(Contract, #1)")]
-fn test_create_shipment_restricted_location(){
+fn test_create_shipment_restricted_location() {
     let (env, client, _, seller) = setup_test(true);
 
     let buyer = Address::generate(&env);
@@ -784,7 +961,14 @@ fn test_create_shipment_restricted_location(){
     let distance_km = &100u32;
     let tracking_number = &String::from_str(&env, "123456");
 
-    client.create_shipment(&seller, &buyer, buyer_zone, weight_pounds, distance_km, tracking_number);
+    client.create_shipment(
+        &seller,
+        &buyer,
+        buyer_zone,
+        weight_pounds,
+        distance_km,
+        tracking_number,
+    );
 }
 
 #[test]
@@ -799,18 +983,27 @@ fn test_verify_product_verified() {
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &10u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     client.verify_product(&admin, &seller, &product_id, &true);
 
     let key = DataKeys::Product(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let stored_product: Product = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Product not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Product not found in storage");
         assert_eq!(stored_product.verified, true);
     });
 }
@@ -827,18 +1020,27 @@ fn test_verify_product_unverified() {
     let images = &vec![&env, String::from_str(&env, "image1")];
     let weight_pounds = &10u64;
 
-    let product_id = client.add_product(&seller, name, description, price, condition, stock, images, weight_pounds);
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        condition,
+        stock,
+        images,
+        weight_pounds,
+    );
 
     client.verify_product(&admin, &seller, &product_id, &false);
 
     let key = DataKeys::Product(seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let stored_product: Product = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Product not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Product not found in storage");
         assert_eq!(stored_product.verified, false);
     });
 }
@@ -870,13 +1072,13 @@ fn test_request_seller_verification() {
     client.request_seller_verification(&seller);
 
     let key = DataKeys::SellerVerification(seller.clone());
-    
+
     env.as_contract(&client.address, || {
         let status: SellerVerificationStatus = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Seller not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Seller not found in storage");
         assert_eq!(status, SellerVerificationStatus::Pending);
     });
 }
@@ -889,13 +1091,13 @@ fn test_request_seller_verification_already_verified() {
     client.request_seller_verification(&seller);
 
     let key = DataKeys::SellerVerification(seller.clone());
-    
+
     env.as_contract(&client.address, || {
         let status: SellerVerificationStatus = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Seller not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Seller not found in storage");
         assert_eq!(status, SellerVerificationStatus::Pending);
     });
 
@@ -914,10 +1116,10 @@ fn test_verify_seller() {
 
     env.as_contract(&client.address, || {
         let status: SellerVerificationStatus = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Seller not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Seller not found in storage");
         assert_eq!(status, SellerVerificationStatus::Verified);
     });
 }
@@ -934,10 +1136,10 @@ fn test_verify_seller_unverified() {
 
     env.as_contract(&client.address, || {
         let status: SellerVerificationStatus = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Seller not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Seller not found in storage");
         assert_eq!(status, SellerVerificationStatus::Rejected);
     });
 }
@@ -970,9 +1172,18 @@ fn test_verify_condition() {
     let stock = &10u32;
     let images = &vec![&client.env, String::from_str(&client.env, "image1")];
     let weight_pounds = &10u64;
-    
-    let product_id = client.add_product(&seller, name, description, price, &Condition::New, stock, images, weight_pounds);
-    
+
+    let product_id = client.add_product(
+        &seller,
+        name,
+        description,
+        price,
+        &Condition::New,
+        stock,
+        images,
+        weight_pounds,
+    );
+
     let actual_condition = Condition::UsedGood;
     client.verify_condition(&admin, &seller, &product_id, &actual_condition);
 
@@ -980,13 +1191,12 @@ fn test_verify_condition() {
         let key = DataKeys::Product(seller.clone(), product_id);
 
         let product: Product = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Product not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Product not found in storage");
         assert_eq!(product.condition, actual_condition);
     });
-    
 }
 
 #[test]
@@ -1020,13 +1230,13 @@ fn test_open_dispute() {
     client.open_dispute(&buyer, &seller, &product_id, reason);
 
     let key = DataKeys::Dispute(buyer.clone(), seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let dispute: Dispute = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Dispute not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Dispute not found in storage");
         assert_eq!(dispute.buyer, buyer);
         assert_eq!(dispute.seller, seller);
         assert_eq!(dispute.product_id, product_id);
@@ -1063,13 +1273,13 @@ fn test_resolve_dispute() {
     client.resolve_dispute(&admin, &buyer, &seller, &product_id, &resolution);
 
     let key = DataKeys::Dispute(buyer.clone(), seller.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let dispute: Dispute = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Dispute not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Dispute not found in storage");
         assert_eq!(dispute.status, resolution);
     });
 }
@@ -1111,13 +1321,13 @@ fn test_set_return_policy() {
     client.set_return_policy(&seller, return_policy);
 
     let key = DataKeys::ReturnPolicy(seller.clone());
-    
+
     env.as_contract(&client.address, || {
         let policy: String = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Return policy not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Return policy not found in storage");
         assert_eq!(policy, *return_policy);
     });
 }
@@ -1164,13 +1374,13 @@ fn test_request_return() {
     client.request_return(&buyer, &seller, &product_id, reason);
 
     let key = DataKeys::ReturnRequest(buyer.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let request: ReturnRequest = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Return request not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Return request not found in storage");
         assert_eq!(request.buyer, buyer);
         assert_eq!(request.seller, seller);
         assert_eq!(request.product_id, product_id);
@@ -1207,13 +1417,13 @@ fn test_resolve_return() {
     client.resolve_return(&admin, &buyer, &product_id, &resolution);
 
     let key = DataKeys::ReturnRequest(buyer.clone(), product_id);
-    
+
     env.as_contract(&client.address, || {
         let request: ReturnRequest = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .expect("Return request not found in storage");
+            .storage()
+            .persistent()
+            .get(&key)
+            .expect("Return request not found in storage");
         assert_eq!(request.status, resolution);
     });
 }

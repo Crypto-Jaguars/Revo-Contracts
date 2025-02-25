@@ -1,20 +1,37 @@
 use soroban_sdk::{contractimpl, Address, Env, String, Symbol};
 
-use crate::{datatype::{Condition, DataKeys, Dispute, DisputeStatus, Product, ReturnRequest, SellerVerificationStatus, VerificationError}, interfaces::VerificationOperations, ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient};
+use crate::{
+    datatype::{
+        Condition, DataKeys, Dispute, DisputeStatus, Product, ReturnRequest,
+        SellerVerificationStatus, VerificationError,
+    },
+    interfaces::VerificationOperations,
+    ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient,
+};
 
 #[contractimpl]
 impl VerificationOperations for ProductAuctionContract {
-    fn verify_product(env: Env, admin: Address, seller: Address, product_id: u128, is_authentic: bool) -> Result<(), VerificationError> {
+    fn verify_product(
+        env: Env,
+        admin: Address,
+        seller: Address,
+        product_id: u128,
+        is_authentic: bool,
+    ) -> Result<(), VerificationError> {
         admin.require_auth();
 
         let product_key = DataKeys::Product(seller.clone(), product_id);
-        let mut product: Product = env.storage().persistent().get(&product_key)
+        let mut product: Product = env
+            .storage()
+            .persistent()
+            .get(&product_key)
             .ok_or(VerificationError::ProductNotFound)?;
 
         product.verified = is_authentic;
         env.storage().persistent().set(&product_key, &product);
 
-        env.events().publish(("ProductVerified", product_id), is_authentic);
+        env.events()
+            .publish(("ProductVerified", product_id), is_authentic);
 
         Ok(())
     }
@@ -28,14 +45,22 @@ impl VerificationOperations for ProductAuctionContract {
             return Err(VerificationError::AlreadyRequested);
         }
 
-        env.storage().persistent().set(&verification_key, &SellerVerificationStatus::Pending);
+        env.storage()
+            .persistent()
+            .set(&verification_key, &SellerVerificationStatus::Pending);
 
-        env.events().publish(("SellerVerificationRequested", seller.clone()), ());
+        env.events()
+            .publish(("SellerVerificationRequested", seller.clone()), ());
 
         Ok(())
     }
 
-    fn verify_seller(env: Env, admin: Address, seller: Address, is_verified: bool) -> Result<(), VerificationError> {
+    fn verify_seller(
+        env: Env,
+        admin: Address,
+        seller: Address,
+        is_verified: bool,
+    ) -> Result<(), VerificationError> {
         admin.require_auth();
 
         let verification_key = DataKeys::SellerVerification(seller.clone());
@@ -52,27 +77,44 @@ impl VerificationOperations for ProductAuctionContract {
 
         env.storage().persistent().set(&verification_key, &status);
 
-        env.events().publish(("SellerVerified", seller.clone()), status);
+        env.events()
+            .publish(("SellerVerified", seller.clone()), status);
 
         Ok(())
     }
 
-    fn verify_condition(env: Env, admin: Address, seller: Address, product_id: u128, condition: Condition) -> Result<(), VerificationError> {
+    fn verify_condition(
+        env: Env,
+        admin: Address,
+        seller: Address,
+        product_id: u128,
+        condition: Condition,
+    ) -> Result<(), VerificationError> {
         admin.require_auth();
 
         let product_key = DataKeys::Product(seller.clone(), product_id);
-        let mut product: Product = env.storage().persistent().get(&product_key)
+        let mut product: Product = env
+            .storage()
+            .persistent()
+            .get(&product_key)
             .ok_or(VerificationError::ProductNotFound)?;
 
         product.condition = condition.clone();
         env.storage().persistent().set(&product_key, &product);
 
-        env.events().publish(("ConditionVerified", product_id), condition);
+        env.events()
+            .publish(("ConditionVerified", product_id), condition);
 
         Ok(())
     }
 
-    fn open_dispute(env: Env, buyer: Address, seller: Address, product_id: u128, reason: String) -> Result<(), VerificationError> {
+    fn open_dispute(
+        env: Env,
+        buyer: Address,
+        seller: Address,
+        product_id: u128,
+        reason: String,
+    ) -> Result<(), VerificationError> {
         buyer.require_auth();
 
         let dispute_key = DataKeys::Dispute(buyer.clone(), seller.clone(), product_id);
@@ -91,39 +133,62 @@ impl VerificationOperations for ProductAuctionContract {
 
         env.storage().persistent().set(&dispute_key, &dispute);
 
-        env.events().publish(("DisputeOpened", product_id), dispute.clone());
+        env.events()
+            .publish(("DisputeOpened", product_id), dispute.clone());
 
         Ok(())
     }
 
-    fn resolve_dispute(env: Env, admin: Address, buyer: Address, seller: Address, product_id: u128, resolution: DisputeStatus) -> Result<(), VerificationError> {
+    fn resolve_dispute(
+        env: Env,
+        admin: Address,
+        buyer: Address,
+        seller: Address,
+        product_id: u128,
+        resolution: DisputeStatus,
+    ) -> Result<(), VerificationError> {
         admin.require_auth();
 
         let dispute_key = DataKeys::Dispute(buyer.clone(), seller.clone(), product_id);
-        let mut dispute: Dispute = env.storage().persistent().get(&dispute_key)
+        let mut dispute: Dispute = env
+            .storage()
+            .persistent()
+            .get(&dispute_key)
             .ok_or(VerificationError::DisputeNotFound)?;
 
         dispute.status = resolution.clone();
         env.storage().persistent().set(&dispute_key, &dispute);
 
-        env.events().publish(("DisputeResolved", product_id), resolution);
+        env.events()
+            .publish(("DisputeResolved", product_id), resolution);
 
         Ok(())
     }
 
-    fn set_return_policy(env: Env, seller: Address, policy: String) -> Result<(), VerificationError> {
+    fn set_return_policy(
+        env: Env,
+        seller: Address,
+        policy: String,
+    ) -> Result<(), VerificationError> {
         seller.require_auth();
 
         let return_key = DataKeys::ReturnPolicy(seller.clone());
 
         env.storage().persistent().set(&return_key, &policy);
 
-        env.events().publish(("ReturnPolicySet", seller.clone()), policy);
+        env.events()
+            .publish(("ReturnPolicySet", seller.clone()), policy);
 
         Ok(())
     }
 
-    fn request_return(env: Env, buyer: Address, seller: Address, product_id: u128, reason: String) -> Result<(), VerificationError> {
+    fn request_return(
+        env: Env,
+        buyer: Address,
+        seller: Address,
+        product_id: u128,
+        reason: String,
+    ) -> Result<(), VerificationError> {
         buyer.require_auth();
 
         let return_key = DataKeys::ReturnRequest(buyer.clone(), product_id);
@@ -142,22 +207,33 @@ impl VerificationOperations for ProductAuctionContract {
 
         env.storage().persistent().set(&return_key, &return_request);
 
-        env.events().publish(("ReturnRequested", product_id), return_request.clone());
+        env.events()
+            .publish(("ReturnRequested", product_id), return_request.clone());
 
         Ok(())
     }
 
-    fn resolve_return(env: Env, admin: Address, buyer: Address, product_id: u128, resolution: Symbol) -> Result<(), VerificationError> {
+    fn resolve_return(
+        env: Env,
+        admin: Address,
+        buyer: Address,
+        product_id: u128,
+        resolution: Symbol,
+    ) -> Result<(), VerificationError> {
         admin.require_auth();
 
         let return_key = DataKeys::ReturnRequest(buyer.clone(), product_id);
-        let mut return_request: ReturnRequest = env.storage().persistent().get(&return_key)
+        let mut return_request: ReturnRequest = env
+            .storage()
+            .persistent()
+            .get(&return_key)
             .ok_or(VerificationError::ReturnRequestNotFound)?;
 
         return_request.status = resolution.clone();
         env.storage().persistent().set(&return_key, &return_request);
 
-        env.events().publish(("ReturnResolved", product_id), resolution);
+        env.events()
+            .publish(("ReturnResolved", product_id), resolution);
 
         Ok(())
     }

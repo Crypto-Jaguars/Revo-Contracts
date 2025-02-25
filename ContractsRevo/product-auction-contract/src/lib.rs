@@ -1,13 +1,15 @@
 #![no_std]
-use datatype::{AdminError, Auction, AuctionError, DataKeys, Product, ProductError, Shipment, ShippingError};
+use datatype::{
+    AdminError, Auction, AuctionError, DataKeys, Product, ProductError, Shipment, ShippingError,
+};
 use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol, Vec};
 
-mod product_auction;
-mod listing;
-mod shipping;
-mod verification;
 mod datatype;
 mod interfaces;
+mod listing;
+mod product_auction;
+mod shipping;
+mod verification;
 
 #[cfg(test)]
 mod test;
@@ -40,9 +42,16 @@ impl ProductAuctionContract {
             .ok_or(AdminError::UnauthorizedAccess)
     }
 
-    pub fn get_auction(env: Env, seller: Address, product_id: u128) -> Result<Auction, AuctionError> {
+    pub fn get_auction(
+        env: Env,
+        seller: Address,
+        product_id: u128,
+    ) -> Result<Auction, AuctionError> {
         let key = &DataKeys::Auction(seller.clone(), product_id);
-        env.storage().instance().get(key).ok_or(AuctionError::AuctionNotFound)
+        env.storage()
+            .instance()
+            .get(key)
+            .ok_or(AuctionError::AuctionNotFound)
     }
 
     pub fn get_products(env: Env, seller: Address) -> Result<Vec<Product>, ProductError> {
@@ -52,27 +61,37 @@ impl ProductAuctionContract {
             .storage()
             .persistent()
             .get::<_, Vec<Product>>(&key)
-            .unwrap_or_else(||
-                Vec::new(&env),
-            );
-        
+            .unwrap_or_else(|| Vec::new(&env));
+
         return Ok(products);
     }
 
-    pub fn get_product(env: Env, seller: Address, product_id: u128) -> Result<Product, ProductError> {
+    pub fn get_product(
+        env: Env,
+        seller: Address,
+        product_id: u128,
+    ) -> Result<Product, ProductError> {
         let key = DataKeys::Product(seller.clone(), product_id);
 
-        let product = env.storage()
+        let product = env
+            .storage()
             .persistent()
             .get(&key)
             .ok_or(ProductError::ProductNotFound)?;
 
         Ok(product)
     }
-    
-    pub fn get_shipment(env: Env, seller: Address, tracking_number: String) -> Result<Shipment, ShippingError> {
+
+    pub fn get_shipment(
+        env: Env,
+        seller: Address,
+        tracking_number: String,
+    ) -> Result<Shipment, ShippingError> {
         let shipment_key = DataKeys::Shipment(seller, tracking_number);
-        env.storage().persistent().get(&shipment_key).ok_or(ShippingError::ShipmentNotFound)
+        env.storage()
+            .persistent()
+            .get(&shipment_key)
+            .ok_or(ShippingError::ShipmentNotFound)
     }
 
     pub fn get_shipments(env: Env, seller: Address) -> Result<Vec<Shipment>, ShippingError> {
@@ -82,15 +101,16 @@ impl ProductAuctionContract {
             .storage()
             .persistent()
             .get::<_, Vec<Shipment>>(&key)
-            .unwrap_or_else(||
-                Vec::new(&env),
-            );
-        
+            .unwrap_or_else(|| Vec::new(&env));
+
         return Ok(shipments);
     }
 
     pub fn get_return_policy(env: Env, seller: Address) -> Result<String, ProductError> {
         let key = DataKeys::ReturnPolicy(seller.clone());
-        env.storage().persistent().get(&key).ok_or(ProductError::ReturnPolicyNotFound)
+        env.storage()
+            .persistent()
+            .get(&key)
+            .ok_or(ProductError::ReturnPolicyNotFound)
     }
 }

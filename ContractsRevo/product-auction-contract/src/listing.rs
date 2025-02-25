@@ -1,8 +1,11 @@
 use soroban_sdk::{contractimpl, Address, Env, String, Symbol, Vec};
 use uuid::Uuid;
 
-use crate::{datatype::{Condition, DataKeys, Product, ProductError}, interfaces::ProductListing, ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient};
-
+use crate::{
+    datatype::{Condition, DataKeys, Product, ProductError},
+    interfaces::ProductListing,
+    ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient,
+};
 
 #[contractimpl]
 impl ProductListing for ProductAuctionContract {
@@ -84,20 +87,25 @@ impl ProductListing for ProductAuctionContract {
         return Ok(product_id);
     }
 
-    fn update_stock(env: Env, seller: Address, product_id: u128, new_stock: u32) -> Result<(), ProductError> {
+    fn update_stock(
+        env: Env,
+        seller: Address,
+        product_id: u128,
+        new_stock: u32,
+    ) -> Result<(), ProductError> {
         seller.require_auth();
 
         let key = DataKeys::Product(seller.clone(), product_id);
 
-        let mut product: Product = env.storage()
+        let mut product: Product = env
+            .storage()
             .persistent()
             .get(&key)
             .ok_or(ProductError::ProductNotFound)?;
 
-
         product.stock = new_stock;
         env.storage().persistent().set(&key, &product);
-        
+
         Ok(())
     }
 }

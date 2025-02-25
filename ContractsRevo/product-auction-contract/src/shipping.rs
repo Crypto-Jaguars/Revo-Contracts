@@ -1,11 +1,14 @@
 use soroban_sdk::{contractimpl, Address, Env, String, Symbol, Vec};
 
-use crate::{datatype::{DataKeys, Shipment, ShippingError, COST_PER_KM, COST_PER_POUND}, interfaces::ShippingOperations, ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient};
+use crate::{
+    datatype::{DataKeys, Shipment, ShippingError, COST_PER_KM, COST_PER_POUND},
+    interfaces::ShippingOperations,
+    ProductAuctionContract, ProductAuctionContractArgs, ProductAuctionContractClient,
+};
 
 #[contractimpl]
 impl ShippingOperations for ProductAuctionContract {
     fn calculate_shipping_cost(weight_pounds: u32, distance_km: u32) -> u64 {
-        
         let weight_cost = weight_pounds as u64 * COST_PER_POUND;
         let distance_cost = distance_km as u64 * COST_PER_KM;
         weight_cost + distance_cost
@@ -27,7 +30,7 @@ impl ShippingOperations for ProductAuctionContract {
         buyer_zone: String,
         weight_pounds: u32,
         distance_km: u32,
-        tracking_number: String
+        tracking_number: String,
     ) -> Result<String, ShippingError> {
         seller.require_auth();
 
@@ -40,15 +43,21 @@ impl ShippingOperations for ProductAuctionContract {
 
         if buyer_zone.is_empty() {
             return Err(ShippingError::InvalidBuyerZone);
-        }        
+        }
 
         // Ensure the buyer is in a restricted zone
-        let restricted_locations = Vec::from_array(&env, [
-            String::from_str(&env, "RestrictedZone1"),
-            String::from_str(&env, "RestrictedZone2"), //Could this be a list of restricted zones that is stored in the contract?
-        ]);
-        
-        if restricted_locations.iter().any(|location| location == buyer_zone) {
+        let restricted_locations = Vec::from_array(
+            &env,
+            [
+                String::from_str(&env, "RestrictedZone1"),
+                String::from_str(&env, "RestrictedZone2"), //Could this be a list of restricted zones that is stored in the contract?
+            ],
+        );
+
+        if restricted_locations
+            .iter()
+            .any(|location| location == buyer_zone)
+        {
             return Err(ShippingError::RestrictedLocation);
         }
 
@@ -84,12 +93,20 @@ impl ShippingOperations for ProductAuctionContract {
         // Save the individual shipment under its own key
         env.storage().persistent().set(&shipment_key, &shipment);
 
-        env.events().publish(("ShipmentCreated", tracking_number.clone()), shipment.clone());
+        env.events().publish(
+            ("ShipmentCreated", tracking_number.clone()),
+            shipment.clone(),
+        );
 
         Ok(tracking_number)
     }
 
-    fn update_shipping_status(env: Env, tracking_number: String, seller: Address, new_status: Symbol) -> Result<(), ShippingError> {
+    fn update_shipping_status(
+        env: Env,
+        tracking_number: String,
+        seller: Address,
+        new_status: Symbol,
+    ) -> Result<(), ShippingError> {
         seller.require_auth();
 
         let shipment_key = DataKeys::Shipment(seller, tracking_number.clone());
@@ -102,7 +119,8 @@ impl ShippingOperations for ProductAuctionContract {
         shipment.status = new_status.clone();
         env.storage().instance().set(&shipment_key, &shipment);
 
-        env.events().publish(("StatusUpdated", tracking_number), new_status);
+        env.events()
+            .publish(("StatusUpdated", tracking_number), new_status);
 
         Ok(())
     }
