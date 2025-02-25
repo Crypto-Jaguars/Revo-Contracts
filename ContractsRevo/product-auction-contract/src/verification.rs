@@ -75,7 +75,7 @@ impl VerificationOperations for ProductAuctionContract {
     fn open_dispute(env: Env, buyer: Address, seller: Address, product_id: u128, reason: String) -> Result<(), VerificationError> {
         buyer.require_auth();
 
-        let dispute_key = DataKeys::Dispute(buyer.clone(), product_id);
+        let dispute_key = DataKeys::Dispute(buyer.clone(), seller.clone(), product_id);
 
         if env.storage().persistent().has(&dispute_key) {
             return Err(VerificationError::DisputeAlreadyExists);
@@ -96,10 +96,10 @@ impl VerificationOperations for ProductAuctionContract {
         Ok(())
     }
 
-    fn resolve_dispute(env: Env, admin: Address, seller: Address, product_id: u128, resolution: DisputeStatus) -> Result<(), VerificationError> {
+    fn resolve_dispute(env: Env, admin: Address, buyer: Address, seller: Address, product_id: u128, resolution: DisputeStatus) -> Result<(), VerificationError> {
         admin.require_auth();
 
-        let dispute_key = DataKeys::Dispute(seller.clone(), product_id);
+        let dispute_key = DataKeys::Dispute(buyer.clone(), seller.clone(), product_id);
         let mut dispute: Dispute = env.storage().persistent().get(&dispute_key)
             .ok_or(VerificationError::DisputeNotFound)?;
 
@@ -143,6 +143,21 @@ impl VerificationOperations for ProductAuctionContract {
         env.storage().persistent().set(&return_key, &return_request);
 
         env.events().publish(("ReturnRequested", product_id), return_request.clone());
+
+        Ok(())
+    }
+
+    fn resolve_return(env: Env, admin: Address, buyer: Address, product_id: u128, resolution: Symbol) -> Result<(), VerificationError> {
+        admin.require_auth();
+
+        let return_key = DataKeys::ReturnRequest(buyer.clone(), product_id);
+        let mut return_request: ReturnRequest = env.storage().persistent().get(&return_key)
+            .ok_or(VerificationError::ReturnRequestNotFound)?;
+
+        return_request.status = resolution.clone();
+        env.storage().persistent().set(&return_key, &return_request);
+
+        env.events().publish(("ReturnResolved", product_id), resolution);
 
         Ok(())
     }

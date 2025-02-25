@@ -44,7 +44,7 @@ pub enum DataKeys {
     ShipmentList(Address), // ShipmentList of Seller
     Shipment(Address, String), // Shipment related to Seller
     SellerVerification(Address), // Seller Verification
-    Dispute(Address, u128), // Dispute related to Buyer
+    Dispute(Address, Address, u128), // Dispute related to Buyer and Seller and Product_id
     ReturnPolicy(Address), // Return Policy of Seller,
     ReturnRequest(Address, u128), // Return Request related to Seller
 
@@ -60,6 +60,7 @@ pub enum ProductError {
     InvalidImageCount=5,
     ProductNotFound=6,
     Unauthorized=7,
+    ReturnPolicyNotFound=8,
 }
 
 #[contracttype]
@@ -83,7 +84,7 @@ pub struct Product {
     pub condition: Condition,
     pub stock: u32,
     pub images: Vec<String>,
-    pub weight_grams: u64,
+    pub weight_pounds: u64,
     pub verified: bool,
 }
 
@@ -92,7 +93,7 @@ pub struct Product {
 pub struct Shipment {
     pub seller: Address,
     pub buyer: Address,
-    pub weight_grams: u32,
+    pub weight_pounds: u32,
     pub distance_km: u32,
     pub shipping_cost: u64,
     pub delivery_estimate_days: u32,
@@ -142,6 +143,7 @@ pub enum VerificationError {
     DisputeNotFound=5,
     ReturnAlreadyRequested=6,
     RestrictedLocation=7,
+    ReturnRequestNotFound=8,
 }
 
 #[contracttype]

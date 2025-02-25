@@ -25,7 +25,7 @@ impl ShippingOperations for ProductAuctionContract {
         seller: Address,
         buyer: Address,
         buyer_zone: String,
-        weight_grams: u32,
+        weight_pounds: u32,
         distance_km: u32,
         tracking_number: String
     ) -> Result<String, ShippingError> {
@@ -52,14 +52,14 @@ impl ShippingOperations for ProductAuctionContract {
             return Err(ShippingError::RestrictedLocation);
         }
 
-        let shipping_cost = Self::calculate_shipping_cost(weight_grams, distance_km);
+        let shipping_cost = Self::calculate_shipping_cost(weight_pounds, distance_km);
         let delivery_time = Self::estimate_delivery_time(distance_km);
 
         //Create new shipment
         let shipment = Shipment {
             seller: seller.clone(),
             buyer: buyer.clone(),
-            weight_grams,
+            weight_pounds,
             distance_km,
             shipping_cost,
             delivery_estimate_days: delivery_time,

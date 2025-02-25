@@ -15,7 +15,7 @@ impl ProductListing for ProductAuctionContract {
         condition: Condition,
         stock: u32,
         images: Vec<String>,
-        weight_grams: u64,
+        weight_pounds: u64,
     ) -> Result<u128, ProductError> {
         // Ensure the seller is authorized
         seller.require_auth();
@@ -36,7 +36,7 @@ impl ProductListing for ProductAuctionContract {
         }
 
         // Validate product weight (must be > 0)
-        if weight_grams == 0 {
+        if weight_pounds == 0 {
             return Err(ProductError::InvalidWeight);
         }
 
@@ -53,7 +53,7 @@ impl ProductListing for ProductAuctionContract {
             condition,
             stock,
             images,
-            weight_grams,
+            weight_pounds,
             verified: false,
         };
 

@@ -88,4 +88,9 @@ impl ProductAuctionContract {
         
         return Ok(shipments);
     }
+
+    pub fn get_return_policy(env: Env, seller: Address) -> Result<String, ProductError> {
+        let key = DataKeys::ReturnPolicy(seller.clone());
+        env.storage().persistent().get(&key).ok_or(ProductError::ReturnPolicyNotFound)
+    }
 }

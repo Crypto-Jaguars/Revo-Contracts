@@ -66,9 +66,11 @@ pub trait VerificationOperations {
 
     fn open_dispute(env: Env, buyer: Address, seller: Address, product_id: u128, reason: String) -> Result<(), VerificationError>;
 
-    fn resolve_dispute(env: Env, admin: Address, seller: Address, product_id: u128, resolution: DisputeStatus) -> Result<(), VerificationError>;
+    fn resolve_dispute(env: Env, admin: Address, buyer: Address, seller: Address, product_id: u128, resolution: DisputeStatus) -> Result<(), VerificationError>;
 
     fn set_return_policy(env: Env, seller: Address, policy: String) -> Result<(), VerificationError>;
 
     fn request_return(env: Env, buyer: Address, seller: Address, product_id: u128, reason: String) -> Result<(), VerificationError>;
+
+    fn resolve_return(env: Env, admin: Address, buyer: Address, product_id: u128, resolution: Symbol) -> Result<(), VerificationError>;
 }
