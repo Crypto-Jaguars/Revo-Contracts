@@ -8,8 +8,8 @@ impl AuctionOperations for ProductAuctionContract {
         seller.require_auth();
         let key = &DataKeys::Auction(seller.clone(), product_id);
     
-        // Ensure shipment does not already exist
-        if env.storage().persistent().has(key) {
+        // Ensure auction does not already exist
+        if env.storage().instance().has(key) {
             return Err(AuctionError::AuctionAlreadyExists);
         }
 
@@ -95,7 +95,7 @@ impl AuctionOperations for ProductAuctionContract {
         
         // Prevent last-minute extensions
         let min_extension_time = 600; // 10 minutes
-        if auction.auction_end_time - current_time < min_extension_time {
+        if auction.auction_end_time - current_time <= min_extension_time {
         return Err(AuctionError::TooLateToExtend);
     }
 
@@ -142,7 +142,7 @@ impl AuctionOperations for ProductAuctionContract {
         // Fetch product from storage
         let mut product: Product = env
             .storage()
-            .instance()
+            .persistent()
             .get(&product_key)
             .ok_or(AuctionError::ProductNotFound)?;
     
@@ -155,7 +155,7 @@ impl AuctionOperations for ProductAuctionContract {
         product.stock -= 1;
     
         // Update product storage
-        env.storage().instance().set(&product_key, &product);
+        env.storage().persistent().set(&product_key, &product);
     
         // Remove auction from storage (auction is complete)
         env.storage().instance().remove(&auction_key);
@@ -165,5 +165,4 @@ impl AuctionOperations for ProductAuctionContract {
     
         Ok(())
     }
-    
 }
