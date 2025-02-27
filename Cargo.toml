@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-    "ContractsRevo/example-contract",
     "ContractsRevo/purchase-review-contract",
     "ContractsRevo/rating-system-contract",
     "ContractsRevo/transaction-nft-contract",
+    "ContractsRevo/product-auction-contract"
 ]
 
 [workspace.dependencies]

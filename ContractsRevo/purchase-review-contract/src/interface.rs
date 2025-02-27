@@ -9,7 +9,7 @@ pub trait RatingOperations {
     fn submit_rating(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         category: Category,
         rating: Rating,
         weight: u32,
@@ -27,7 +27,7 @@ pub trait RatingOperations {
     /// Returns ProductRatings containing aggregate rating data
     fn get_product_ratings(
         env: Env,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<ProductRatings, PurchaseReviewError>;
 }
 
@@ -39,7 +39,7 @@ pub trait ReviewOperations {
     fn submit_review(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         review_text: String,
         purchase_link: String, // Transaction/order ID
     ) -> Result<(), PurchaseReviewError>;
@@ -49,7 +49,7 @@ pub trait ReviewOperations {
     fn add_response(
         env: Env,
         reviewer: Address,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
         response_text: String,
     ) -> Result<(), PurchaseReviewError>;
@@ -59,7 +59,7 @@ pub trait ReviewOperations {
     fn vote_helpful(
         env: Env,
         voter: Address,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
         helpful: bool,
     ) -> Result<(), PurchaseReviewError>;
@@ -68,7 +68,7 @@ pub trait ReviewOperations {
     fn verified_purchase_badge(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError>;
@@ -77,7 +77,7 @@ pub trait ReviewOperations {
     /// Including verification status and helpfulness votes
     fn get_review_details(
         env: Env,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
     ) -> Result<ReviewDetails, PurchaseReviewError>;
 }
@@ -90,7 +90,7 @@ pub trait VerificationOperations {
     fn pre_review_purchase(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<bool, PurchaseReviewError>;
 
     /// Verifies if a review is still within the editable timeframe
@@ -98,7 +98,7 @@ pub trait VerificationOperations {
     fn is_review_editable(
         env: Env,
         review_id: u32,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<bool, PurchaseReviewError>;
 
     /// Allows users to report reviews for moderation
@@ -106,7 +106,7 @@ pub trait VerificationOperations {
     fn report_review(
         env: Env,
         reporter: Address,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
         reason: String,
     ) -> Result<(), PurchaseReviewError>;
@@ -115,7 +115,7 @@ pub trait VerificationOperations {
     fn purchase_link_verification(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError>;
 
@@ -123,7 +123,7 @@ pub trait VerificationOperations {
     fn edit_review(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
         new_details: ReviewDetails,
     ) -> Result<(), PurchaseReviewError>;

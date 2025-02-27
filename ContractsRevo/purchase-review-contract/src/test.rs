@@ -19,7 +19,7 @@ fn test_submit_rating_events() {
     let user = Address::generate(&env);
 
     // Test data for the rating
-    let product_id: u128 = 12345;
+    let product_id: u64 = 12345;
     let category = Category::Quality;
     let rating = Rating::FiveStars;
     let weight: u32 = 2;
@@ -104,7 +104,7 @@ fn test_initialize_contract() {
 #[test]
 fn test_verify_purchase() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
     let purchase_link = String::from_str(&env, "https://valid-purchase.com/123");
 
     // Test purchase verification by admin
@@ -118,7 +118,7 @@ fn test_verify_purchase() {
 #[test]
 fn test_get_product_rating() {
     let (_, client, _, _) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     // Test empty product rating
     let (avg_rating, total_reviews) = client.get_product_rating(&product_id);
@@ -129,7 +129,7 @@ fn test_get_product_rating() {
 #[test]
 fn test_get_review() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
     let review_id = 0u32;
 
     // Create review details
@@ -166,7 +166,7 @@ fn test_get_review() {
 #[test]
 fn test_submit_rating() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     env.mock_all_auths();
 
@@ -194,7 +194,7 @@ fn test_submit_rating() {
 #[test]
 fn test_submit_multiple_category_ratings() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     env.mock_all_auths();
 
@@ -233,7 +233,7 @@ fn test_submit_multiple_category_ratings() {
 #[test]
 fn test_weighted_rating_calculation() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     env.mock_all_auths();
 
@@ -255,7 +255,7 @@ fn test_weighted_rating_calculation() {
 #[test]
 fn test_report_review() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
     let review_id = 0u32;
 
     // First create a review to report
@@ -303,7 +303,7 @@ fn test_report_review() {
 #[test]
 fn test_pre_review_purchase() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
 
     // Verify purchase first
     env.mock_all_auths();
@@ -342,7 +342,7 @@ fn test_pre_review_purchase() {
 #[test]
 fn test_get_product_ratings_empty() {
     let (_, client, _, _) = setup_test();
-    let product_id = 999u128; // Using a product ID that hasn't been rated
+    let product_id = 999u64; // Using a product ID that hasn't been rated
 
     let ratings = client.get_product_ratings(&product_id);
     assert_eq!(ratings.ratings.len(), 0);
@@ -358,7 +358,7 @@ fn test_panic_reviewer_not_authenticated() {
 
     // Attempt to submit review without mocking authentication
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "This product is meh!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -375,7 +375,7 @@ fn test_invalid_review_text_length_empty() {
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -393,7 +393,7 @@ fn test_invalid_review_text_length_too_long() {
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     // Create review text longer than maximum: 1000 + 1 characters
     let review_text = String::from_str(&env, &"a".repeat(1001));
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
@@ -412,7 +412,7 @@ fn test_review_event_emission() {
 
     // Setup test data
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "This product is excellent!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -443,7 +443,7 @@ fn test_review_details_storage() {
 
     // Setup test data
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "This product is excellent!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
     let submission_time = env.ledger().timestamp();
@@ -503,7 +503,7 @@ fn test_review_count_increment() {
 
     // Setup test data
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "This product is excellent!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -534,7 +534,7 @@ fn test_multiple_review_count_increment() {
     // Submit multiple reviews from different users
     for _ in 0..3 {
         let user = Address::generate(&env);
-        let product_id = 12345u128;
+        let product_id = 12345u64;
         let review_text = String::from_str(&env, "Test review");
         let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
 
@@ -544,7 +544,7 @@ fn test_multiple_review_count_increment() {
 
     // Verify final review count
     env.as_contract(&contract_id, || {
-        let count_key = DataKeys::ReviewCount(12345u128);
+        let count_key = DataKeys::ReviewCount(12345u64);
         let review_count: u32 = env
             .storage()
             .persistent()
@@ -566,7 +566,7 @@ fn test_duplicate_review_submission() {
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Great product!");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -587,7 +587,7 @@ fn test_edit_review_within_timeframe() {
 
     // Generate a user address
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -613,7 +613,7 @@ fn test_edit_review_within_timeframe() {
 #[test]
 fn test_edit_review_after_timeframe() {
     let (env, client, _, user) = setup_test();
-    let product_id = 1u128;
+    let product_id = 1u64;
     let review_id = 0u32;
 
     // Create initial review
@@ -653,7 +653,7 @@ fn test_invalid_purchase_link() {
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Great product!");
     // Empty purchase link should trigger validation error
     let purchase_link = String::from_str(&env, "");
@@ -672,7 +672,7 @@ fn test_verify_purchase_link_already_verified() {
 
     let user = Address::generate(&env);
     let admin = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
     // Initialize contract and verify purchase link first time
@@ -693,7 +693,7 @@ fn test_verify_purchase_link() {
 
     let user = Address::generate(&env);
     let admin = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
     // Initialize contract and verify purchase
@@ -713,7 +713,7 @@ fn test_report_invalid_review() {
 
     // Create and submit a valid review
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -736,7 +736,7 @@ fn test_report_review_with_empty_reason() {
 
     // Create and submit a valid review
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -759,7 +759,7 @@ fn test_report_review_already_reported() {
 
     // Create and submit a valid review
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -783,7 +783,7 @@ fn test_report_review_for_inappropriate_content() {
 
     // Create and submit a valid review
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -806,7 +806,7 @@ fn test_rate_limit_exceeded_for_voting() {
 
     // Create and submit a valid review
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
     let review_text = String::from_str(&env, "Initial review text.");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
@@ -831,7 +831,7 @@ fn test_multiple_votes_different_reviews() {
     // Setup: Create two reviews
     let user1 = Address::generate(&env);
     let user2 = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
 
     // Submit first review
     env.mock_all_auths();
@@ -869,7 +869,7 @@ fn test_max_product_id() {
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
     let user = Address::generate(&env);
-    let max_product_id = u128::MAX;
+    let max_product_id = u64::MAX;
     let review_text = String::from_str(&env, "Review for max product ID");
     let purchase_link = String::from_str(&env, "https://example.com/purchase/max");
 
@@ -897,7 +897,7 @@ fn test_boundary_conditions() {
     let client = PurchaseReviewContractClient::new(&env, &contract_id);
 
     let user = Address::generate(&env);
-    let product_id = 12345u128;
+    let product_id = 12345u64;
 
     // Test with minimum valid review length
     env.mock_all_auths();

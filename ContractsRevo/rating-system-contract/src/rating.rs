@@ -25,7 +25,7 @@ pub fn rate_seller_system(
 ) -> bool {
     // Validate rating range
     if !(MIN_RATING..=MAX_RATING).contains(&rating) {
-        panic!("rating value must be in rang");
+        panic!("rating value must be in range 1 to 5");
     }
 
     // Create a new rating record

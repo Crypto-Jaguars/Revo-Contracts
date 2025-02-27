@@ -26,7 +26,7 @@ impl VerificationOperations for PurchaseReviewContract {
     fn pre_review_purchase(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<bool, PurchaseReviewError> {
         let key = DataKeys::PurchaseVerification(product_id, user.clone());
 
@@ -56,7 +56,7 @@ impl VerificationOperations for PurchaseReviewContract {
     fn report_review(
         env: Env,
         reporter: Address,
-        product_id: u128,
+        product_id: u64,
         review_id: u32,
         reason: String,
     ) -> Result<(), PurchaseReviewError> {
@@ -106,7 +106,7 @@ impl VerificationOperations for PurchaseReviewContract {
     fn purchase_link_verification(
         env: Env,
         user: Address,
-        product_id: u128,
+        product_id: u64,
         purchase_link: String,
     ) -> Result<(), PurchaseReviewError> {
         if purchase_link.len() == 0 {
@@ -146,7 +146,7 @@ impl VerificationOperations for PurchaseReviewContract {
     fn edit_review(
         _env: Env,
         _user: Address,
-        _product_id: u128,
+        _product_id: u64,
         _review_id: u32,
         _new_details: ReviewDetails,
     ) -> Result<(), PurchaseReviewError> {
@@ -169,7 +169,7 @@ impl VerificationOperations for PurchaseReviewContract {
     fn is_review_editable(
         env: Env,
         review_id: u32,
-        product_id: u128,
+        product_id: u64,
     ) -> Result<bool, PurchaseReviewError> {
         let key = DataKeys::Review(product_id, review_id);
         if let Some(review) = env.storage().persistent().get::<_, ReviewDetails>(&key) {
