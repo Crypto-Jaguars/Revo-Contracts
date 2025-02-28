@@ -87,7 +87,7 @@ impl ResourceSharing for CooperativeManagementContract {
         owner: Address,
         details: String,
     ) -> Result<(), CooperativeError> {
-        let maintenance_log_key = DataKey::Resource(owner);
+        let maintenance_log_key = DataKey::MaintenanceLog(owner);
         let mut logs = env
             .storage()
             .persistent()

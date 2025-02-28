@@ -9,6 +9,7 @@ pub enum CooperativeError {
     ProposalNotFound,
     ProposalRejected,
     InsufficientFunds,
+    InvalidInput,
 }
 
 #[derive(Debug)]
@@ -17,10 +18,10 @@ pub enum DataKey {
     Admin,
     Member(Address),
     Resource(Address),
+    MaintenanceLog(Address),
     Investment(Address),
     Balance(Address),
     Expense(Address),
-    // FinancialRecord(Address),
     Proposal(Address),
     ProposalVotes(Address),
     Emergency,
@@ -46,10 +47,17 @@ pub struct Resource {
 }
 
 #[contracttype]
+pub enum RecordType {
+    Expense,
+    Investment,
+    Profit,
+}
+
+#[contracttype]
 pub struct FinancialRecord {
     pub member: Address,
     pub amount: u64,
-    pub record_type: String, // "expense", "investment", "profit"
+    pub record_type: RecordType,
 }
 
 #[contracttype]

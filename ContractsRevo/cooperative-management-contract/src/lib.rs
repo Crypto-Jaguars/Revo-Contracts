@@ -1,14 +1,14 @@
 #![no_std]
 
 use datatype::DataKey;
-use soroban_sdk::{contract, contractimpl, Address, Env};
+use soroban_sdk::{Address, Env, contract, contractimpl};
 
-mod interface;
 mod datatype;
-mod membership;
-mod resource_sharing;
-mod profit_distribution;
 mod governance;
+mod interface;
+mod membership;
+mod profit_distribution;
+mod resource_sharing;
 
 #[contract]
 pub struct CooperativeManagementContract;
@@ -17,6 +17,9 @@ pub struct CooperativeManagementContract;
 impl CooperativeManagementContract {
     pub fn init(env: Env, admin: Address) {
         admin.require_auth();
+        if env.storage().persistent().has(&DataKey::Admin) {
+            panic!("Contract is already initialized");
+        }
         env.storage().persistent().set(&DataKey::Admin, &admin);
     }
 }

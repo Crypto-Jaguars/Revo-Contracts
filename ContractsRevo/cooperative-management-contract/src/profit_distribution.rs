@@ -10,6 +10,9 @@ impl ProfitDistribution for CooperativeManagementContract {
         members: Vec<Address>,
     ) -> Result<Map<Address, i128>, CooperativeError> {
         let mut distribution = Map::new(&env);
+        if members.is_empty() {
+            return Err(CooperativeError::InvalidInput);
+        }
         let share = profits / (members.len() as i128);
         for member in members.iter() {
             distribution.set(member.clone(), share);
@@ -23,6 +26,9 @@ impl ProfitDistribution for CooperativeManagementContract {
         members: Vec<Address>,
     ) -> Result<Map<Address, i128>, CooperativeError> {
         let mut expenses = Map::new(&env);
+        if members.is_empty() {
+            return Err(CooperativeError::InvalidInput);
+        }
         let share = total_expense / (members.len() as i128);
         for member in members.iter() {
             expenses.set(member.clone(), share);
@@ -62,5 +68,4 @@ impl ProfitDistribution for CooperativeManagementContract {
         }
         Ok(())
     }
-
 }
