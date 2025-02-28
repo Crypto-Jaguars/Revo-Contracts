@@ -6,18 +6,20 @@ pub trait Membership {
     fn register_member(env: Env, member: Address, name: String);
     fn verify_member(env: Env, admin: Address, address: Address) -> Result<(), CooperativeError>;
     fn track_contribution(env: Env, address: Address, amount: u32) -> Result<(), CooperativeError>;
-    fn update_reputation(env: Env, address: Address, points: u32) -> Result<(), CooperativeError>;
+    fn update_reputation(env: Env, admin: Address, address: Address, points: u32) -> Result<(), CooperativeError>;
 }
 
 #[allow(dead_code)]
 pub trait ResourceSharing {
-    fn register_resource(env: Env, owner: Address, description: String);
-    fn borrow_resource(env: Env, borrower: Address, owner: Address)
+    fn register_resource(env: Env, owner: Address, description: String) -> Result<(), CooperativeError>;
+    fn get_resources_by_owner(env: Env, owner: Address) -> Vec<u32>;
+    fn borrow_resource(env: Env, borrower: Address, owner: Address, counter: u32)
     -> Result<(), CooperativeError>;
-    fn return_resource(env: Env, owner: Address) -> Result<(), CooperativeError>;
+    fn return_resource(env: Env, owner: Address, counter: u32) -> Result<(), CooperativeError>;
     fn schedule_resource(
         env: Env,
         owner: Address,
+        counter: u32,
         borrower: Address,
         time_slot: String,
     ) -> Result<(), CooperativeError>;
@@ -52,7 +54,7 @@ pub trait Governance {
         proposer: Address,
         proposal: String,
     ) -> Result<(), CooperativeError>;
-    fn vote_on_proposal(env: Env, proposer: Address, approve: bool)
+    fn vote_on_proposal(env: Env, voter: Address, proposer: Address, approve: bool)
     -> Result<(), CooperativeError>;
     fn execute_decision(env: Env, proposer: Address) -> Result<(), CooperativeError>;
     fn trigger_emergency(env: Env, reason: String) -> Result<(), CooperativeError>;

@@ -4,7 +4,26 @@ use crate::CooperativeManagementContract;
 use soroban_sdk::{Address, Env, String, Vec};
 
 impl ResourceSharing for CooperativeManagementContract {
-    fn register_resource(env: Env, owner: Address, description: String) {
+    // fn register_resource(env: Env, owner: Address, description: String) {
+    //     let resource = Resource {
+    //         owner: owner.clone(),
+    //         description,
+    //         available: true,
+    //         borrower: None,
+    //         schedule: Vec::new(&env),
+    //     };
+    //     env.storage()
+    //         .persistent()
+    //         .set(&DataKey::Resource(owner), &resource);
+    // }
+
+    fn register_resource(env: Env, owner: Address, description: String) -> Result<(), CooperativeError> {
+        let counter_key = DataKey::ResourceCounter;
+        let mut counter = env.storage().persistent().get::<DataKey, u32>(&counter_key).unwrap_or(0);
+        counter += 1; // Increment counter for unique ID
+    
+        let resource_key = DataKey::Resource(owner.clone(), counter); // Unique resource key
+    
         let resource = Resource {
             owner: owner.clone(),
             description,
@@ -12,17 +31,33 @@ impl ResourceSharing for CooperativeManagementContract {
             borrower: None,
             schedule: Vec::new(&env),
         };
-        env.storage()
-            .persistent()
-            .set(&DataKey::Resource(owner), &resource);
+    
+        env.storage().persistent().set(&resource_key, &resource);
+        env.storage().persistent().set(&counter_key, &counter); // Update counter
+    
+        // Store the resource ID under the owner's entry
+        let owner_key = DataKey::OwnerResources(owner.clone());
+        let mut owned_resources = env.storage().persistent().get::<DataKey, Vec<u32>>(&owner_key).unwrap_or(Vec::new(&env));
+        
+        owned_resources.push_back(counter);
+        env.storage().persistent().set(&owner_key, &owned_resources);
+    
+        Ok(())
     }
+    
+    fn get_resources_by_owner(env: Env, owner: Address) -> Vec<u32> {
+        let owner_key = DataKey::OwnerResources(owner);
+        env.storage().persistent().get::<DataKey, Vec<u32>>(&owner_key).unwrap_or(Vec::new(&env))
+    }
+    
 
     fn borrow_resource(
         env: Env,
         borrower: Address,
         owner: Address,
+        counter: u32,
     ) -> Result<(), CooperativeError> {
-        let owner_key = DataKey::Resource(owner);
+        let owner_key = DataKey::Resource(owner, counter);
         if let Some(mut resource) = env
             .storage()
             .persistent()
@@ -41,8 +76,8 @@ impl ResourceSharing for CooperativeManagementContract {
         }
     }
 
-    fn return_resource(env: Env, owner: Address) -> Result<(), CooperativeError> {
-        let owner_key = DataKey::Resource(owner);
+    fn return_resource(env: Env, owner: Address, counter: u32) -> Result<(), CooperativeError> {
+        let owner_key = DataKey::Resource(owner, counter);
         if let Some(mut resource) = env
             .storage()
             .persistent()
@@ -60,10 +95,11 @@ impl ResourceSharing for CooperativeManagementContract {
     fn schedule_resource(
         env: Env,
         owner: Address,
+        counter: u32,
         borrower: Address,
         time_slot: String,
     ) -> Result<(), CooperativeError> {
-        let owner_key = DataKey::Resource(owner);
+        let owner_key = DataKey::Resource(owner, counter);
         if let Some(mut resource) = env
             .storage()
             .persistent()

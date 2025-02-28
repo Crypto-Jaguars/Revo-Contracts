@@ -58,9 +58,13 @@ impl Membership for CooperativeManagementContract {
 
     fn update_reputation(
         env: Env,
+        admin: Address,
         address: Address,
         points: u32,
     ) -> Result<(), CooperativeError> {
+        // Ensure admin authorization
+        admin.require_auth();
+    
         let address_key = DataKey::Member(address);
         if let Some(mut member) = env
             .storage()
@@ -74,4 +78,5 @@ impl Membership for CooperativeManagementContract {
             Err(CooperativeError::MemberNotFound)
         }
     }
+    
 }
