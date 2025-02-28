@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol};
+use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol, Map};
 
 use crate::datatype::{
     DataKeys, ProductRatings, PurchaseReviewError, PurchaseVerificationData, ReviewDetails,
