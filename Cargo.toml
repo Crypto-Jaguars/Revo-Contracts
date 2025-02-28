@@ -4,7 +4,8 @@ members = [
     "ContractsRevo/purchase-review-contract",
     "ContractsRevo/rating-system-contract",
     "ContractsRevo/transaction-nft-contract",
-    "ContractsRevo/product-auction-contract"
+    "ContractsRevo/product-auction-contract",
+    "ContractsRevo/agricultural-quality-contract",
 ]
 
 [workspace.dependencies]
