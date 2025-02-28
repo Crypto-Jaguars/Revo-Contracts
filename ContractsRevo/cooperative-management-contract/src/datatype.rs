@@ -4,7 +4,10 @@ use soroban_sdk::{contracttype, Address, String, Vec};
 #[contracttype]
 pub enum CooperativeError {
     MemberNotFound,
+    MemberAlreadyExists,
     ResourceNotAvailable,
+    ResourceNotFound,
+    TimeSlotConflict,
     Unauthorized,
     NotAMember,
     ProposalNotFound,

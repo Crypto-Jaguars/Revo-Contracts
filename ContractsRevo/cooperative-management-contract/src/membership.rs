@@ -4,7 +4,14 @@ use crate::CooperativeManagementContract;
 use soroban_sdk::{Address, Env, String};
 
 impl Membership for CooperativeManagementContract {
-    fn register_member(env: Env, address: Address, name: String) {
+    fn register_member(env: Env, address: Address, name: String) -> Result<(), CooperativeError> {
+        let key = DataKey::Member(address.clone());
+    
+        // Check if the member is already registered
+        if env.storage().persistent().has(&key) {
+            return Err(CooperativeError::MemberAlreadyExists);
+        }
+    
         let member = Member {
             address: address.clone(),
             name,
@@ -12,10 +19,12 @@ impl Membership for CooperativeManagementContract {
             contributions: 0,
             verified: false,
         };
-        env.storage()
-            .persistent()
-            .set(&DataKey::Member(address), &member);
+    
+        env.storage().persistent().set(&key, &member);
+    
+        Ok(())
     }
+    
 
     fn verify_member(
         env: Env,
