@@ -56,7 +56,7 @@ pub enum DisputeStatus {
 }
 
 #[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ResolutionOutcome {
     Upheld,             // Original certification stands
     Revoked,            // Certification revoked
