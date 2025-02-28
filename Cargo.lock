@@ -3,6 +3,13 @@
 version = 4
 
 [[package]]
+name = "agricultural-quality-contract"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "ahash"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"

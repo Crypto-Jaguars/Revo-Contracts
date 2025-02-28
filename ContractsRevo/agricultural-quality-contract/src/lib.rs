@@ -172,4 +172,4 @@ impl ResolutionOps for AgricQualityContract {
     ) -> Result<(), AgricQualityError> {
         resolution::track_enforcement(&env, &authority, &dispute_id, enforced, notes)
     }
-} 
+}

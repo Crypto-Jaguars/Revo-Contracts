@@ -1,5 +1,6 @@
 use soroban_sdk::{Address, Bytes, BytesN, Env, String, Symbol, Vec, vec};
 use soroban_sdk::xdr::ToXdr;
+
 use crate::datatypes::*;
 
 // Helper function to generate a unique certification ID
@@ -66,6 +67,8 @@ pub fn submit_for_certification(
         return Err(AgricQualityError::AlreadyExists);
     }
 
+    let empty_string: &str = "0";
+
     // Create certification data
     let certification = CertificationData {
         holder: holder.clone(),
@@ -73,7 +76,7 @@ pub fn submit_for_certification(
         status: CertificationStatus::Pending,
         issue_date: env.ledger().timestamp(),
         expiry_date: 0,
-        issuer: Address::from_array(env, &[0; 32]),
+        issuer: Address::from_str(&env, &empty_string),
         audit_score: 0,
         conditions,
     };
