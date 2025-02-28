@@ -73,7 +73,7 @@ pub fn file_dispute(
         env.ledger().timestamp(),
     );
 
-    // Create dispute data
+    // Create dispute data with default/empty values for non-Option fields
     let dispute = DisputeData {
         id: dispute_id.clone(),
         certification: certification_id.clone(),
@@ -82,9 +82,9 @@ pub fn file_dispute(
         timestamp: env.ledger().timestamp(),
         status: DisputeStatus::Filed,
         evidence,
-        mediator: None,
-        resolution: None,
-        appeal_deadline: None,
+        mediator: env.current_contract_address(), // Use contract address as default
+        resolution: ResolutionOutcome::Pending,
+        appeal_deadline: 0, // Use 0 as default/none value
     };
 
     // Store dispute data
@@ -198,8 +198,8 @@ pub fn assign_mediator(
 
     // Update dispute
     dispute.status = DisputeStatus::UnderReview;
-    dispute.mediator = Some(mediator.clone());
-    dispute.appeal_deadline = Some(env.ledger().timestamp() + 7 * 24 * 60 * 60); // 7 days for appeal
+    dispute.mediator = mediator.clone();
+    dispute.appeal_deadline = env.ledger().timestamp() + 7 * 24 * 60 * 60; // 7 days for appeal
 
     // Store updated dispute
     env.storage().instance().set(&DataKey::Dispute(dispute_id.clone()), &dispute);

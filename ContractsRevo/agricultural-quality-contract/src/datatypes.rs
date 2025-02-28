@@ -63,6 +63,7 @@ pub enum ResolutionOutcome {
     Modified,           // Certification modified
     RequireReinspection, // New inspection needed
     Dismissed,          // Dispute rejected
+    Pending,           // Use instead of None
 }
 
 #[contracttype]
@@ -110,9 +111,9 @@ pub struct DisputeData {
     pub timestamp: u64,
     pub status: DisputeStatus,
     pub evidence: Vec<BytesN<32>>,
-    pub mediator: Option<Address>,
-    pub resolution: Option<ResolutionOutcome>,
-    pub appeal_deadline: Option<u64>,
+    pub mediator: Address,
+    pub resolution: ResolutionOutcome,
+    pub appeal_deadline: u64,
 }
 
 #[contracttype]

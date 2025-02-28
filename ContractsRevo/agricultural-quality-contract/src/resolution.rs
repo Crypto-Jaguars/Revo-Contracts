@@ -38,6 +38,7 @@ fn calculate_compensation_amount(
             25_000
         },
         ResolutionOutcome::Dismissed => 0,
+        ResolutionOutcome::Pending => 0, // No compensation while pending
     }
 }
 
@@ -46,7 +47,7 @@ pub fn resolve_dispute(
     mediator: &Address,
     dispute_id: &BytesN<32>,
     outcome: ResolutionOutcome,
-    notes: String,
+    _notes: String, // Prefix with underscore since unused
 ) -> Result<(), AgricQualityError> {
     // Verify mediator authorization
     verify_mediator(env, mediator)?;
@@ -57,7 +58,7 @@ pub fn resolve_dispute(
         .ok_or(AgricQualityError::NotFound)?;
 
     // Verify mediator is assigned to this dispute
-    if dispute.mediator != Some(mediator.clone()) {
+    if dispute.mediator != *mediator {
         return Err(AgricQualityError::Unauthorized);
     }
 
@@ -90,11 +91,14 @@ pub fn resolve_dispute(
         ResolutionOutcome::Dismissed => {
             certification.status = CertificationStatus::Active;
         },
+        ResolutionOutcome::Pending => {
+            return Err(AgricQualityError::InvalidStatus);
+        },
     }
 
     // Update dispute status
     dispute.status = DisputeStatus::Resolved;
-    dispute.resolution = Some(outcome.clone());
+    dispute.resolution = outcome;
 
     // Store updated data
     env.storage().instance().set(&DataKey::Certification(dispute.certification.clone()), &certification);
@@ -114,7 +118,7 @@ pub fn process_appeal(
     appellant: &Address,
     dispute_id: &BytesN<32>,
     new_evidence: Vec<BytesN<32>>,
-    justification: String,
+    _justification: String, 
 ) -> Result<(), AgricQualityError> {
     // Get dispute data
     let mut dispute: DisputeData = env.storage().instance()
@@ -127,12 +131,11 @@ pub fn process_appeal(
     }
 
     // Check appeal deadline
-    if let Some(deadline) = dispute.appeal_deadline {
-        if env.ledger().timestamp() > deadline {
-            return Err(AgricQualityError::DeadlinePassed);
-        }
-    } else {
+    if dispute.appeal_deadline == 0 {
         return Err(AgricQualityError::NotEligible);
+    }
+    if env.ledger().timestamp() > dispute.appeal_deadline {
+        return Err(AgricQualityError::DeadlinePassed);
     }
 
     // Ensure dispute is resolved (can only appeal resolved disputes)
@@ -178,11 +181,7 @@ pub fn calculate_compensation(
         .ok_or(AgricQualityError::NotFound)?;
 
     // Calculate compensation based on resolution outcome
-    let amount = if let Some(outcome) = &dispute.resolution {
-        calculate_compensation_amount(env, &certification, &dispute, outcome)
-    } else {
-        0
-    };
+    let amount = calculate_compensation_amount(env, &certification, &dispute, &dispute.resolution);
 
     Ok(amount)
 }
@@ -192,7 +191,7 @@ pub fn track_enforcement(
     authority: &Address,
     dispute_id: &BytesN<32>,
     enforced: bool,
-    notes: String,
+    _notes: String, // Prefix with underscore since unused
 ) -> Result<(), AgricQualityError> {
     // Verify authority
     let authorities: Vec<Address> = env.storage().instance()
