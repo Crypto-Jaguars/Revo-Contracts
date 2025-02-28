@@ -216,7 +216,6 @@ impl AuctionOperations for AgriculturalAuctionContract {
             .instance()
             .get(&key)
             .ok_or(AuctionError::AuctionNotFound)?;
-        // Continuing auction_core.rs from where it was cut off
 
         // Check if the auction has already ended
         let current_time = env.ledger().timestamp();
@@ -303,7 +302,6 @@ impl AuctionOperations for AgriculturalAuctionContract {
             .ok_or(AuctionError::ProductNotFound)?;
 
         // Update product quantity (assuming the entire available quantity was sold)
-        // This could be modified to handle partial sales based on bid quantity
         product.quantity = product.quantity.saturating_sub(auction.quantity_available);
 
         // Save the updated product

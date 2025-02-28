@@ -70,7 +70,6 @@ impl ProductListing for AgriculturalAuctionContract {
         farmer: Address,
         product_details: ProductDetails,
     ) -> Result<u64, ProductError> {
-        // Ensure the farmer is authorized
         farmer.require_auth();
 
         // Validate description length
@@ -261,8 +260,8 @@ impl ProductListing for AgriculturalAuctionContract {
             return Ok(status);
         }
 
+        // This should likely query an oracle or external data source
         // If no data available, assume it's year-round (default)
-        // In a real system, this would likely query an oracle or external data source
         let default_status = SeasonalStatus::YearRound;
 
         // Store this for future reference
@@ -359,7 +358,6 @@ fn calculate_freshness(harvest_date: u64, current_time: u64) -> FreshnessRating 
     }
 }
 
-// Helper function to adjust price based on freshness
 fn adjust_price_by_freshness(base_price: u64, freshness: &FreshnessRating) -> u64 {
     match freshness {
         FreshnessRating::Premium => base_price + (base_price * 20 / 100), // +20%
@@ -371,7 +369,6 @@ fn adjust_price_by_freshness(base_price: u64, freshness: &FreshnessRating) -> u6
     }
 }
 
-// Helper function to adjust price based on quality grade
 fn adjust_price_by_quality(current_price: u64, quality: &QualityGrade) -> u64 {
     match quality {
         QualityGrade::Premium => current_price + (current_price * 30 / 100), // +30%
