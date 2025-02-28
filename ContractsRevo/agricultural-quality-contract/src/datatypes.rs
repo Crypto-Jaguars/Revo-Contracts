@@ -129,6 +129,7 @@ pub struct Evidence {
 #[contracttype]
 pub enum DataKey {
     // Instance storage (small, frequently accessed data)
+    Admin,                                  // -> Address
     Authorities,                            // -> Vec<Address>
     Inspectors,                            // -> Vec<Address>
     Mediators,                             // -> Vec<Address>
@@ -165,5 +166,13 @@ pub enum AgricQualityError {
     InsufficientAuthority = 13,
     InvalidTimestamp = 14,
     DuplicateSubmission = 15,
+}
+
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum AdminError {
+    AlreadyInitialized = 1,
+    UnauthorizedAccess = 2,
 }
 

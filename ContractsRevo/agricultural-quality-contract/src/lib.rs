@@ -15,6 +15,32 @@ use interface::*;
 pub struct AgricQualityContract;
 
 #[contractimpl]
+impl AgricQualityContract {
+    pub fn initialize(env: Env, admin: Address) -> Result<(), AdminError> {
+        if env.storage().instance().has(&DataKey::Admin) {
+            return Err(AdminError::AlreadyInitialized);
+        }
+
+        admin.require_auth();
+        env.storage().instance().set(&DataKey::Admin, &admin);
+
+        env.events().publish(
+            (Symbol::new(&env, "contract_initialized"), admin.clone()),
+            env.ledger().timestamp(),
+        );
+
+        Ok(())
+    }
+
+    pub fn get_admin(env: Env) -> Result<Address, AdminError> {
+        env.storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(AdminError::UnauthorizedAccess)
+    }
+}
+
+#[contractimpl]
 impl QualityStandardsOps for AgricQualityContract {
     fn register_metric(
         env: Env,
