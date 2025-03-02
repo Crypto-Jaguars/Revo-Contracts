@@ -140,7 +140,7 @@ stellar contract invoke \
 ## Practical Example 👩🏻‍💻
 
 ### Installation 📦: 
-Install all [prerequisites](#prerequisites),If not installed. 
+Install all [prerequisites](#-prerequisites),If not installed. 
 ### Create New Project 🎨:
 Create a new project using the init command to create a soroban-hello-world project.
 ```bash
