@@ -34,7 +34,6 @@ pub fn register_equipment(
     env: &Env,
     id: BytesN<32>,
     equipment_type: String,
-    owner: Address,
     rental_price_per_day: i128,
     location: String,
 ) {
@@ -46,6 +45,7 @@ pub fn register_equipment(
     if equipment_map.contains_key(&id) {
         panic!("Equipment already registered");
     }
+    let owner = env.invoker();
     let equipment = Equipment {
         id: id.clone(),
         equipment_type,
@@ -89,6 +89,22 @@ pub fn update_maintenance_status(env: &Env, id: BytesN<32>, caller: Address, sta
     equipment.maintenance_status = status;
     equipment_map.set(id, equipment);
     env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+}
+
+/// List all equipment IDs, optionally filtering only available equipment
+pub fn list_equipment(env: &Env, only_available: bool) -> Vec<BytesN<32>> {
+    let equipment_map: Map<BytesN<32>, Equipment> = env
+        .storage()
+        .persistent()
+        .get(&EQUIPMENT_STORAGE)
+        .unwrap_or(Map::new(env));
+    let mut result = Vec::new(env);
+    for (id, equipment) in equipment_map.iter() {
+        if !only_available || equipment.available {
+            result.push(id);
+        }
+    }
+    result
 }
 
 /// Retrieve equipment details by ID

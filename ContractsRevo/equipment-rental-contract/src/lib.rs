@@ -19,11 +19,10 @@ impl EquipmentRentalContract {
         env: Env,
         id: BytesN<32>,
         equipment_type: String,
-        owner: Address,
         rental_price_per_day: i128,
         location: String,
     ) {
-        crate::equipment::register_equipment(&env, id, equipment_type, owner, rental_price_per_day, location);
+        equipment::register_equipment(&env, id, equipment_type, rental_price_per_day, location)
     }
     /// Change the availability status of equipment
     pub fn update_availability(env: Env, id: BytesN<32>, available: bool) {
@@ -93,9 +92,18 @@ impl EquipmentRentalContract {
         start_date: u64,
         end_date: u64,
         proposed_price: i128,
-    ) -> Result<(), &'static str> {
-        let eq = crate::equipment::get_equipment(&env, equipment_id).ok_or("Equipment not found")?;
-        crate::pricing::validate_price(&eq, start_date, end_date, proposed_price)
+        tolerance: i128,
+    ) -> Result<(), String> {
+        let equipment = equipment::get_equipment(&env, equipment_id)
+            .ok_or("Equipment not found")?;
+        pricing::validate_price(
+            &equipment,
+            start_date,
+            end_date,
+            proposed_price,
+            tolerance,
+        )
+        .map_err(|e| format!("Price validation failed: {:?}", e))
     }
 
     // Maintenance
