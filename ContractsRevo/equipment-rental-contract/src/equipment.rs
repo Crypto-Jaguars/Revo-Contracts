@@ -1,0 +1,96 @@
+use soroban_sdk::{Address, BytesN, Env, Symbol, Map, contracttype};
+
+/// Status of equipment maintenance
+#[derive(Clone, Debug, Eq, PartialEq, contracttype)]
+pub enum MaintenanceStatus {
+    Good,
+    NeedsService,
+    UnderMaintenance,
+}
+
+/// Equipment item listed for rental
+#[derive(Clone, Debug, Eq, PartialEq, contracttype)]
+pub struct Equipment {
+    /// Unique identifier
+    pub id: BytesN<32>,
+    /// Equipment type or description
+    pub equipment_type: String,
+    /// Address of the owner
+    pub owner: Address,
+    /// Daily rental price (in stroops or smallest currency unit)
+    pub rental_price_per_day: i128,
+    /// Whether equipment is available for rental
+    pub available: bool,
+    /// Geolocation or address string
+    pub location: String,
+    /// Current maintenance status
+    pub maintenance_status: MaintenanceStatus,
+}
+
+const EQUIPMENT_STORAGE: Symbol = symbol_short!("equipment");
+
+/// Register a new equipment item
+pub fn register_equipment(
+    env: &Env,
+    id: BytesN<32>,
+    equipment_type: String,
+    owner: Address,
+    rental_price_per_day: i128,
+    location: String,
+) {
+    let mut equipment_map: Map<BytesN<32>, Equipment> = env
+        .storage()
+        .persistent()
+        .get(&EQUIPMENT_STORAGE)
+        .unwrap_or(Map::new(env));
+    if equipment_map.contains_key(&id) {
+        panic!("Equipment already registered");
+    }
+    let equipment = Equipment {
+        id: id.clone(),
+        equipment_type,
+        owner,
+        rental_price_per_day,
+        available: true,
+        location,
+        maintenance_status: MaintenanceStatus::Good,
+    };
+    equipment_map.set(id, equipment);
+    env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+}
+
+/// Change the availability status of equipment
+pub fn update_availability(env: &Env, id: BytesN<32>, available: bool) {
+    let mut equipment_map: Map<BytesN<32>, Equipment> = env
+        .storage()
+        .persistent()
+        .get(&EQUIPMENT_STORAGE)
+        .unwrap_or(Map::new(env));
+    let mut equipment = equipment_map.get(id.clone()).expect("Equipment not found");
+    equipment.available = available;
+    equipment_map.set(id, equipment);
+    env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+}
+
+/// Update maintenance status for equipment
+pub fn update_maintenance_status(env: &Env, id: BytesN<32>, status: MaintenanceStatus) {
+    let mut equipment_map: Map<BytesN<32>, Equipment> = env
+        .storage()
+        .persistent()
+        .get(&EQUIPMENT_STORAGE)
+        .unwrap_or(Map::new(env));
+    let mut equipment = equipment_map.get(id.clone()).expect("Equipment not found");
+    equipment.maintenance_status = status;
+    equipment_map.set(id, equipment);
+    env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+}
+
+/// Retrieve equipment details by ID
+pub fn get_equipment(env: &Env, id: BytesN<32>) -> Option<Equipment> {
+    let equipment_map: Map<BytesN<32>, Equipment> = env
+        .storage()
+        .persistent()
+        .get(&EQUIPMENT_STORAGE)
+        .unwrap_or(Map::new(env));
+    equipment_map.get(id)
+}
