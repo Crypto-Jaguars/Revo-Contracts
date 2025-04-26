@@ -93,9 +93,9 @@ impl EquipmentRentalContract {
         start_date: u64,
         end_date: u64,
         proposed_price: i128,
-    ) {
-        let eq = crate::equipment::get_equipment(&env, equipment_id).expect("Equipment not found");
-        crate::pricing::validate_price(&eq, start_date, end_date, proposed_price);
+    ) -> Result<(), &'static str> {
+        let eq = crate::equipment::get_equipment(&env, equipment_id).ok_or("Equipment not found")?;
+        crate::pricing::validate_price(&eq, start_date, end_date, proposed_price)
     }
 
     // Maintenance

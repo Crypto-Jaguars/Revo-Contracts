@@ -115,8 +115,11 @@ pub fn complete_rental(env: &Env, equipment_id: BytesN<32>) {
         panic!("Rental not active");
     }
     rental.status = RentalStatus::Completed;
-    rental_map.set(equipment_id, rental);
+    rental_map.set(equipment_id.clone(), rental.clone());
     env.storage().persistent().set(&RENTAL_STORAGE, &rental_map);
+    // Mark equipment as available again
+    let equipment = crate::equipment::get_equipment(env, equipment_id.clone()).expect("Equipment not found");
+    crate::equipment::update_availability(env, equipment_id, equipment.owner, true);
 }
 
 /// Cancel a rental agreement before it starts

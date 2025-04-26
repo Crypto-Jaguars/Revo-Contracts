@@ -60,26 +60,32 @@ pub fn register_equipment(
 }
 
 /// Change the availability status of equipment
-pub fn update_availability(env: &Env, id: BytesN<32>, available: bool) {
+pub fn update_availability(env: &Env, id: BytesN<32>, caller: Address, available: bool) {
     let mut equipment_map: Map<BytesN<32>, Equipment> = env
         .storage()
         .persistent()
         .get(&EQUIPMENT_STORAGE)
         .unwrap_or(Map::new(env));
     let mut equipment = equipment_map.get(id.clone()).expect("Equipment not found");
+    if equipment.owner != caller {
+        panic!("Only the owner can update equipment availability");
+    }
     equipment.available = available;
     equipment_map.set(id, equipment);
     env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
 }
 
 /// Update maintenance status for equipment
-pub fn update_maintenance_status(env: &Env, id: BytesN<32>, status: MaintenanceStatus) {
+pub fn update_maintenance_status(env: &Env, id: BytesN<32>, caller: Address, status: MaintenanceStatus) {
     let mut equipment_map: Map<BytesN<32>, Equipment> = env
         .storage()
         .persistent()
         .get(&EQUIPMENT_STORAGE)
         .unwrap_or(Map::new(env));
     let mut equipment = equipment_map.get(id.clone()).expect("Equipment not found");
+    if equipment.owner != caller {
+        panic!("Only the owner can update maintenance status");
+    }
     equipment.maintenance_status = status;
     equipment_map.set(id, equipment);
     env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);

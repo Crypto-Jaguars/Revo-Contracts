@@ -11,8 +11,7 @@ A Soroban smart contract for managing equipment rental on the Stellar network. T
 
 ## Data Structures
 
-```
-rust
+```rustrust
 struct Equipment {
     id: BytesN<32>,
     equipment_type: String,
@@ -44,7 +43,7 @@ enum RentalStatus {
     Completed,
     Cancelled,
 }
-```
+```rust
 
 ## Core Functions
 - `register_equipment()` – Register a new equipment item
@@ -61,9 +60,9 @@ enum RentalStatus {
 
 ## Usage
 1. Build the contract with Soroban CLI:
-   ```sh
+   ```rustsh
    soroban contract build
-   ```
+   ```rust
 2. Deploy to the Stellar network and interact via the Soroban CLI or SDK.
 
 ## Notes

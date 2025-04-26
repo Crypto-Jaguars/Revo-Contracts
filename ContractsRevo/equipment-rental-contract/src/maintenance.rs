@@ -33,10 +33,46 @@ pub fn log_maintenance(env: &Env, equipment_id: BytesN<32>, status: MaintenanceS
     env.storage().persistent().set(&MAINTENANCE_HISTORY_STORAGE, &history);
 }
 
-/// Retrieve maintenance history for all equipment
-pub fn get_maintenance_history(env: &Env) -> Vec<MaintenanceRecord> {
-    env.storage()
+/// Retrieve maintenance history, optionally filtered by equipment ID
+pub fn get_maintenance_history(env: &Env, equipment_id: Option<BytesN<32>>) -> Vec<MaintenanceRecord> {
+    let all_records = env.storage()
         .persistent()
         .get(&MAINTENANCE_HISTORY_STORAGE)
-        .unwrap_or(Vec::new(env))
+        .unwrap_or(Vec::new(env));
+    if let Some(id) = equipment_id {
+        let filtered: Vec<MaintenanceRecord> = all_records
+            .iter()
+            .filter(|r| r.equipment_id == id)
+            .cloned()
+            .collect(env);
+        return filtered;
+    }
+    all_records
+}
+
+/// Retrieve maintenance history with optional filtering and pagination
+pub fn get_maintenance_history_paginated(
+    env: &Env,
+    equipment_id: Option<BytesN<32>>,
+    offset: u32,
+    limit: u32
+) -> Vec<MaintenanceRecord> {
+    let all_records = env.storage()
+        .persistent()
+        .get(&MAINTENANCE_HISTORY_STORAGE)
+        .unwrap_or(Vec::new(env));
+    let filtered = if let Some(id) = equipment_id {
+        all_records
+            .iter()
+            .filter(|r| r.equipment_id == id)
+            .collect::<Vec<_>>(env)
+    } else {
+        all_records.iter().collect::<Vec<_>>(env)
+    };
+    let start = offset as usize;
+    let end = core::cmp::min(start + limit as usize, filtered.len());
+    if start >= filtered.len() {
+        return Vec::new(env);
+    }
+    filtered[start..end].iter().cloned().collect(env)
 }
