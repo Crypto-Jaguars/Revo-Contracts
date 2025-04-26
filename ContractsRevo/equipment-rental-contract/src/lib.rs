@@ -115,10 +115,19 @@ impl EquipmentRentalContract {
         timestamp: u64,
         notes: Option<String>,
     ) {
+        // Get equipment and verify caller is the owner
+        let equipment = crate::equipment::get_equipment(&env, equipment_id.clone())
+            .expect("Equipment not found");
+        if env.invoker() != equipment.owner {
+            panic!("Only the owner can log maintenance events");
+        }
         crate::maintenance::log_maintenance(&env, equipment_id, status, timestamp, notes);
     }
     /// Retrieve maintenance history for all equipment
-    pub fn get_maintenance_history(env: Env) -> Vec<crate::maintenance::MaintenanceRecord> {
-        crate::maintenance::get_maintenance_history(&env)
+    pub fn get_maintenance_history(
+        env: Env,
+        equipment_id: Option<BytesN<32>>
+    ) -> Vec<crate::maintenance::MaintenanceRecord> {
+        crate::maintenance::get_maintenance_history(&env, equipment_id)
     }
 }
