@@ -25,12 +25,16 @@ impl EquipmentRentalContract {
         equipment::register_equipment(&env, id, equipment_type, rental_price_per_day, location)
     }
     /// Change the availability status of equipment
-    pub fn update_availability(env: Env, id: BytesN<32>, available: bool) {
-        crate::equipment::update_availability(&env, id, available);
+    pub fn update_availability(env: Env, id: BytesN<32>, available: bool) -> Result<(), String> {
+        // Get invoker to verify ownership
+        let caller = env.invoker();
+        crate::equipment::update_availability(&env, id, caller, available)
     }
     /// Mark equipment status (Good, NeedsService, UnderMaintenance)
-    pub fn update_maintenance_status(env: Env, id: BytesN<32>, status: crate::equipment::MaintenanceStatus) {
-        crate::equipment::update_maintenance_status(&env, id, status);
+    pub fn update_maintenance_status(env: Env, id: BytesN<32>, status: crate::equipment::MaintenanceStatus) -> Result<(), String> {
+        // Get invoker to verify ownership
+        let caller = env.invoker();
+        crate::equipment::update_maintenance_status(&env, id, caller, status)
     }
     /// Retrieve equipment details by ID
     pub fn get_equipment(env: Env, id: BytesN<32>) -> Option<crate::equipment::Equipment> {
@@ -51,14 +55,38 @@ impl EquipmentRentalContract {
     }
     /// Confirm and activate a rental
     pub fn confirm_rental(env: Env, equipment_id: BytesN<32>) {
+        // Get equipment owner and verify auth
+        let equipment = crate::equipment::get_equipment(&env, equipment_id)
+            .expect("Equipment not found");
+        equipment.owner.require_auth();
         crate::rental::confirm_rental(&env, equipment_id);
     }
     /// Finalize rental and release equipment
     pub fn complete_rental(env: Env, equipment_id: BytesN<32>) {
+        // Get equipment owner and verify auth
+        let equipment = crate::equipment::get_equipment(&env, equipment_id)
+            .expect("Equipment not found");
+        equipment.owner.require_auth();
         crate::rental::complete_rental(&env, equipment_id);
     }
     /// Cancel a rental agreement before start date
     pub fn cancel_rental(env: Env, equipment_id: BytesN<32>) {
+        // Get rental details
+        let rental = crate::rental::get_rental(&env, equipment_id)
+            .expect("Rental not found");
+        // Either the renter or equipment owner can cancel
+        let caller = env.invoker();
+        let equipment = crate::equipment::get_equipment(&env, equipment_id)
+            .expect("Equipment not found");
+        if caller == rental.renter {
+            // Renter is cancelling
+            rental.renter.require_auth();
+        } else if caller == equipment.owner {
+            // Owner is cancelling
+            equipment.owner.require_auth();
+        } else {
+            panic!("Only the renter or equipment owner can cancel a rental");
+        }
         crate::rental::cancel_rental(&env, equipment_id);
     }
     /// Retrieve rental details by equipment ID

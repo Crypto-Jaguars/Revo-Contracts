@@ -60,35 +60,37 @@ pub fn register_equipment(
 }
 
 /// Change the availability status of equipment
-pub fn update_availability(env: &Env, id: BytesN<32>, caller: Address, available: bool) {
+pub fn update_availability(env: &Env, id: BytesN<32>, caller: Address, available: bool) -> Result<(), String> {
     let mut equipment_map: Map<BytesN<32>, Equipment> = env
         .storage()
         .persistent()
         .get(&EQUIPMENT_STORAGE)
         .unwrap_or(Map::new(env));
-    let mut equipment = equipment_map.get(id.clone()).expect("Equipment not found");
+    let mut equipment = equipment_map.get(id.clone()).ok_or("Equipment not found")?;
     if equipment.owner != caller {
-        panic!("Only the owner can update equipment availability");
+        return Err("Only the owner can update equipment availability".to_string());
     }
     equipment.available = available;
     equipment_map.set(id, equipment);
     env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+    Ok(())
 }
 
 /// Update maintenance status for equipment
-pub fn update_maintenance_status(env: &Env, id: BytesN<32>, caller: Address, status: MaintenanceStatus) {
+pub fn update_maintenance_status(env: &Env, id: BytesN<32>, caller: Address, status: MaintenanceStatus) -> Result<(), String> {
     let mut equipment_map: Map<BytesN<32>, Equipment> = env
         .storage()
         .persistent()
         .get(&EQUIPMENT_STORAGE)
         .unwrap_or(Map::new(env));
-    let mut equipment = equipment_map.get(id.clone()).expect("Equipment not found");
+    let mut equipment = equipment_map.get(id.clone()).ok_or("Equipment not found")?;
     if equipment.owner != caller {
-        panic!("Only the owner can update maintenance status");
+        return Err("Only the owner can update maintenance status".to_string());
     }
     equipment.maintenance_status = status;
     equipment_map.set(id, equipment);
     env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+    Ok(())
 }
 
 /// List all equipment IDs, optionally filtering only available equipment
