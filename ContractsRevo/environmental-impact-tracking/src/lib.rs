@@ -1,13 +1,16 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, vec, Env, String, Vec};
+use soroban_sdk::{contract, contractimpl};
 
 #[contract]
 pub struct EnvironmentalContract;
 
 #[contractimpl]
-impl EnvironmentalContract {
-  
-}
+impl EnvironmentalContract {}
 
-mod test;
-
+mod carbon;
+mod datatypes;
+mod error;
+mod interfaces;
+mod reporting;
+mod retirement;
+mod verification;
