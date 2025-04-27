@@ -18,10 +18,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "vec": [
@@ -68,10 +65,7 @@
                   "symbol": "ProductRatings"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 }
               ]
             },
@@ -91,10 +85,7 @@
                       "symbol": "ProductRatings"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     }
                   ]
                 },
@@ -276,10 +267,7 @@
                 "symbol": "ratings_retrieved"
               },
               {
-                "u128": {
-                  "hi": 0,
-                  "lo": 12345
-                }
+                "u64": 12345
               }
             ],
             "data": {
