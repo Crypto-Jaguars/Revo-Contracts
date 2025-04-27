@@ -1,4 +1,4 @@
-use soroban_sdk::{ Address, BytesN, Env};
+use soroban_sdk::{Address, BytesN, Env};
 
 use crate::{
     datatypes::{CarbonCredit, DataKey, RetirementStatus},
