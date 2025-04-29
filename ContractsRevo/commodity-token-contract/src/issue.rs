@@ -51,11 +51,7 @@ pub fn issue_token(
     if inventory.available_quantity < quantity {
         panic_with_error!(env, IssueError::InsufficientInventory);
     }
-    inventory.available_quantity = inventory.available_quantity.checked_sub(quantity)
-        .unwrap_or_else(|| panic_with_error!(env, IssueError::InventoryUnderflow));
-    inventory.issued_tokens = inventory.issued_tokens.checked_add(quantity)
-        .unwrap_or_else(|| panic_with_error!(env, IssueError::InventoryOverflow));
-
+    
     let nonce_key = DataKey::TokenNonce;
     let current_nonce: u64 = env.storage().instance().get(&nonce_key).unwrap_or(0u64);
     let next_nonce = current_nonce.checked_add(1)
@@ -82,8 +78,12 @@ pub fn issue_token(
     );
 
     storage::store_token(env, &token_id, &token);
-    inventory.available_quantity -= quantity;
-    inventory.issued_tokens += quantity;
+    
+    inventory.available_quantity = inventory.available_quantity.checked_sub(quantity)
+        .unwrap_or_else(|| panic_with_error!(env, IssueError::InventoryUnderflow));
+    inventory.issued_tokens = inventory.issued_tokens.checked_add(quantity)
+        .unwrap_or_else(|| panic_with_error!(env, IssueError::InventoryOverflow));
+    
     storage::update_inventory(env, commodity_type, &inventory);
     storage::set_token_owner(env, &token_id, issuer);
     metadata::add_to_commodity_index(env, commodity_type, &token_id);

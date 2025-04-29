@@ -64,7 +64,7 @@ pub fn add_to_commodity_index(
     let mut token_ids: Vec<BytesN<32>> = env.storage().instance().get(&key).unwrap_or_else(|| Vec::new(env));
 
     // Prevent adding duplicate IDs to the index
-    if !token_ids.iter().any(|id| id == *token_id) {
+    if !token_ids.iter().any(|id| &id == token_id) {
         token_ids.push_back(token_id.clone());
         env.storage().instance().set(&key, &token_ids);
     }
@@ -82,10 +82,10 @@ pub fn remove_from_commodity_index(
         let mut updated_ids = Vec::new(env);
         let mut changed = false;
         for id in token_ids.iter() {
-            if id == *token_id {
+            if &id == token_id {
                 changed = true;
             } else {
-                updated_ids.push_back(id);
+                updated_ids.push_back(id.clone());
             }
         }
         if changed {

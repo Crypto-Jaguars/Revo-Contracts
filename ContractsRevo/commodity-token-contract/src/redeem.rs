@@ -45,7 +45,16 @@ pub fn redeem_token(
     
     // Update inventory
     let mut inventory = storage::get_inventory(env, &token.commodity_type);
-    inventory.issued_tokens -= quantity;
+
+    inventory.issued_tokens = inventory.issued_tokens
+        .checked_sub(quantity)
+        .expect("Inventory underflow");
+
+    inventory.total_quantity = inventory
+        .total_quantity
+        .checked_sub(quantity)
+        .expect("Total inventory underflow");
+
     storage::update_inventory(env, &token.commodity_type, &inventory);
     
     // Emit redemption event

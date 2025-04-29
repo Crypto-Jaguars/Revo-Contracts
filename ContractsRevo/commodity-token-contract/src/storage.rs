@@ -105,6 +105,8 @@ pub fn add_inventory(
         panic!("Only admin can add inventory");
     }
 
+    admin.require_auth();
+
     let mut inventory = get_inventory(env, commodity_type);
     inventory.total_quantity += quantity;
     inventory.available_quantity += quantity;

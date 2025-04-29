@@ -39,7 +39,10 @@ pub struct CommodityTokenContract;
 impl CommodityTokenContract {
     // Initialize the contract with admin address
     pub fn initialize(env: Env, admin: Address) {
-        // Save admin address
+        if env.storage().instance().has(&storage::DataKey::Admin) {
+            panic!("Contract already initialised");
+             }
+        admin.require_auth();
         storage::set_admin(&env, &admin);
     }
     
