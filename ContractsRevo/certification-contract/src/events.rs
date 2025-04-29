@@ -1,15 +1,30 @@
 use soroban_sdk::{BytesN, Env, Symbol, Vec};
-// No need to re-import, we'll use it directly from the datatypes module
+use crate::datatypes::{CertificationEvent, DataKey};
 
 pub struct EventManager;
 
 impl EventManager {
     pub fn record_event(
-        _env: &Env,
-        _certification_id: &BytesN<32>,
-        _event_type: Symbol,
-        _data: Vec<Symbol>
+        env: &Env,
+        certification_id: &BytesN<32>,
+        event_type: Symbol,
+        data: Vec<Symbol>
     ) {
-        // Implementation details would go here
+        // Create the event
+        let event = CertificationEvent {
+            certification_id: certification_id.clone(),
+            event_type,
+            timestamp: env.ledger().timestamp(),
+            data,
+        };
+        
+        // Get existing events or create a new vector
+        let mut events = env.storage().persistent()
+            .get::<_, Vec<CertificationEvent>>(&DataKey::CertificationEvents(certification_id.clone()))
+            .unwrap_or_else(|| Vec::new(env));
+        
+        // Add the new event and store
+        events.push_back(event);
+        env.storage().persistent().set(&DataKey::CertificationEvents(certification_id.clone()), &events);
     }
 } 
