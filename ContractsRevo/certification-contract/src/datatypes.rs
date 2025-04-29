@@ -82,4 +82,13 @@ pub enum CertificationError {
     CertificationRevoked = 8,
     InvalidStatus = 9,
     InvalidMetadata = 10,
+}
+
+// Issuance-related errors
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum IssuanceError {
+    InvalidMetadata = 1,
+    MetadataTooLarge = 2,
 } 

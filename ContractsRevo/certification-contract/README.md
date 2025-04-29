@@ -3,6 +3,8 @@
 ## Overview
 The Certification Management contract provides a secure, tamper-proof system for issuing, validating, and auditing certifications on the Stellar blockchain. It enables organizations to issue verifiable certifications with document hash verification, expiration dates, and comprehensive audit trails.
 
+This contract targets the Stellar network (compatible with both testnet and mainnet) and requires Soroban SDK v22.0.7 and Rust 1.74 or later.
+
 ## Features
 - **Secure Issuance**: Issue tamper-proof certifications with metadata and validity periods
 - **Document Verification**: Verify certification authenticity using document hash validation
@@ -25,14 +27,15 @@ The contract consists of several modules:
 - Organic
 - FairTrade
 - UTZ
-- RainforestAlliance
+- Rainforest Alliance
 - ISO9001
 - ISO14001
 - HACCP
 - Kosher
 - Halal
 - Demeter
-- Custom (with Symbol)
+- Custom (with Symbol) - Allows for custom certification types using Soroban's Symbol type
+  Example: `CertificationType::Custom(symbol_short!("organic_plus"))`
 
 ## How It Works
 
@@ -74,6 +77,22 @@ The contract includes comprehensive tests covering:
 - Audit report generation
 - Edge cases and error handling
 
+### Running Tests
+To run the tests:
+
+```bash
+# Run all tests
+cargo test
+
+# Run tests with output
+cargo test -- --nocapture
+
+# Run a specific test
+cargo test test_certification_issuance
+```
+
+Tests use snapshot testing for documenting expected behavior, with snapshots stored in the `test_snapshots/` directory.
+
 ## Usage
 
 ### Initialize the Contract
@@ -89,8 +108,8 @@ let cert_id = client.issue_certification(
     &CertificationType::Organic,
     &document_hash,
     &metadata,
-    valid_from,
-    valid_to,
+    &valid_from,
+    &valid_to,
 );
 ```
 

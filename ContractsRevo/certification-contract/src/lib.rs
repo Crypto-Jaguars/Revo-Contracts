@@ -7,6 +7,7 @@ mod datatypes;
 mod issuance;
 mod validation;
 mod audit;
+mod events;
 
 #[cfg(test)]
 mod test;

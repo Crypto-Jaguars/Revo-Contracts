@@ -1,7 +1,7 @@
 #![cfg(test)]
 use super::*;
 use crate::datatypes::{CertificationData, CertificationError, CertificationType, Status};
-use soroban_sdk::{symbol_short, vec, Bytes, BytesN, IntoVal};
+use soroban_sdk::{symbol_short, vec, Bytes, BytesN};
 use soroban_sdk::testutils::{Ledger, LedgerInfo, Address as _};
 
 struct TestContext {
@@ -56,10 +56,13 @@ impl TestContext {
         use super::issuance::add_verified_issuer;
         self.env.mock_all_auths();
         
-        // Execute in contract context
-        self.env.as_contract(&self.contract_id, || {
+        // Execute in contract context and ensure it succeeds
+        let result = self.env.as_contract(&self.contract_id, || {
             add_verified_issuer(&self.env, &self.admin, issuer)
         });
+        
+        // Make sure the issuer was added successfully
+        assert!(result.is_ok(), "Failed to add verified issuer in test setup");
     }
     
     fn advance_time(&self, seconds: u64) {
@@ -434,7 +437,7 @@ fn test_certification_audit() {
     let valid_from2 = now;
     let valid_to2 = now + 15768000; // 6 months
     
-    let cert_id2 = client.issue_certification(
+    let _cert_id2 = client.issue_certification(
         &context.issuer2,
         &context.holder1,
         &CertificationType::FairTrade,

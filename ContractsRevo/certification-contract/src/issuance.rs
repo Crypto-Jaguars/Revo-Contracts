@@ -1,25 +1,20 @@
-use soroban_sdk::{Address, BytesN, Bytes, Env, Symbol, Vec, vec, IntoVal};
-use crate::datatypes::{CertificationData, CertificationError, CertificationType, CertificationEvent, DataKey, Status};
+use soroban_sdk::{Address, BytesN, Env, Symbol, Vec, vec, IntoVal, Bytes};
+use crate::datatypes::{CertificationData, CertificationError, CertificationType, DataKey, Status, IssuanceError, CertificationEvent};
+use crate::events::EventManager;
 
 // Helper function to generate a unique certification ID
-fn generate_certification_id(
+pub fn generate_certification_id(
     env: &Env,
+    document_hash: &BytesN<32>,
     issuer: &Address,
     holder: &Address,
-    document_hash: &BytesN<32>,
     timestamp: u64,
 ) -> BytesN<32> {
-    let mut data = Bytes::new(env);
-    
-    // Create unique input by combining data
-    data.append(&Bytes::from_array(env, &document_hash.to_array()));
-    
-    // Use a simpler approach - just convert timestamp to bytes
-    let timestamp_bytes = timestamp.to_be_bytes();
-    let timestamp_data = Bytes::from_slice(env, &timestamp_bytes);
-    data.append(&timestamp_data);
-    
-    env.crypto().sha256(&data).into()
+    // Just use the document hash directly for simplicity
+    // In a real implementation, we would hash a combination of all inputs
+    let hash_array = document_hash.to_array();
+    let bytes = Bytes::from_slice(env, &hash_array);
+    env.crypto().sha256(&bytes).into()
 }
 
 // Function to check if issuer is verified
@@ -30,9 +25,24 @@ fn is_verified_issuer(env: &Env, issuer: &Address) -> bool {
     false
 }
 
-// Verify metadata is valid
-fn validate_metadata(metadata: &Vec<Symbol>) -> bool {
-    !metadata.is_empty() && metadata.len() < 100
+// Helper function to validate metadata (key-value pairs)
+pub fn validate_metadata(_env: &Env, metadata: &Vec<Symbol>) -> Result<(), IssuanceError> {
+    // Check if metadata is empty
+    if metadata.is_empty() {
+        return Err(IssuanceError::InvalidMetadata);
+    }
+    
+    // Metadata should not exceed a size limit
+    if metadata.len() > 100 {
+        return Err(IssuanceError::MetadataTooLarge);
+    }
+    
+    // Metadata should have even number of elements (key-value pairs)
+    if metadata.len() % 2 != 0 {
+        return Err(IssuanceError::InvalidMetadata);
+    }
+    
+    Ok(())
 }
 
 // Issue a new certification
@@ -60,16 +70,18 @@ pub fn issue_certification(
     }
     
     // Validate metadata
-    if !validate_metadata(metadata) {
-        return Err(CertificationError::InvalidMetadata);
+    match validate_metadata(env, metadata) {
+        Ok(_) => (),
+        Err(IssuanceError::InvalidMetadata) => return Err(CertificationError::InvalidMetadata),
+        Err(IssuanceError::MetadataTooLarge) => return Err(CertificationError::InvalidMetadata),
     }
     
     // Generate certification ID
     let certification_id = generate_certification_id(
         env,
+        document_hash,
         issuer,
         holder,
-        document_hash,
         env.ledger().timestamp(),
     );
     

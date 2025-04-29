@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, BytesN, Env, Vec};
+use soroban_sdk::{Address, BytesN, Env, Vec, vec};
 use crate::datatypes::{CertificationData, CertificationError, CertificationType, DataKey, Status};
 
 // Get all certifications for a specific holder
@@ -13,7 +13,7 @@ pub fn get_holder_certifications(
     let mut certifications = Vec::new(env);
     
     for cert_id in holder_certs.iter() {
-        if let Some(cert) = env.storage().persistent().get::<_, CertificationData>(&DataKey::Certification(cert_id)) {
+        if let Some(cert) = env.storage().persistent().get::<_, CertificationData>(&DataKey::Certification(cert_id.clone())) {
             certifications.push_back(cert);
         }
     }
@@ -33,7 +33,7 @@ pub fn get_issuer_certifications(
     let mut certifications = Vec::new(env);
     
     for cert_id in issuer_certs.iter() {
-        if let Some(cert) = env.storage().persistent().get::<_, CertificationData>(&DataKey::Certification(cert_id)) {
+        if let Some(cert) = env.storage().persistent().get::<_, CertificationData>(&DataKey::Certification(cert_id.clone())) {
             certifications.push_back(cert);
         }
     }
@@ -53,7 +53,7 @@ pub fn get_certifications_by_type(
     let mut certifications = Vec::new(env);
     
     for cert_id in type_certs.iter() {
-        if let Some(cert) = env.storage().persistent().get::<_, CertificationData>(&DataKey::Certification(cert_id)) {
+        if let Some(cert) = env.storage().persistent().get::<_, CertificationData>(&DataKey::Certification(cert_id.clone())) {
             certifications.push_back(cert);
         }
     }
@@ -70,39 +70,47 @@ pub fn generate_audit_report(
 ) -> Result<Vec<CertificationData>, CertificationError> {
     let mut certifications = Vec::new(env);
     
-    // If specific issuer is provided, get only their certifications
-    if let Some(specific_issuer) = issuer {
-        certifications = get_issuer_certifications(env, &specific_issuer)?;
-    } 
-    // If specific type is provided, get only that type of certifications
-    else if let Some(specific_type) = certification_type {
-        certifications = get_certifications_by_type(env, &specific_type)?;
-    } 
-    // Otherwise, gather all certifications from all issuers and types
-    else {
-        // This would be more efficiently implemented with pagination in a real system
-        // For test purposes, we'll use a simplified approach
+    // Start with the broadest set (all certifications from verified issuers)
+    if let Some(verified_issuers) = env.storage().instance().get::<_, Vec<Address>>(&DataKey::VerifiedIssuers) {
+        // If specific issuer is provided, filter to just that issuer
+        let issuers_to_check = if let Some(specific_issuer) = issuer {
+            if verified_issuers.contains(&specific_issuer) {
+                let mut issuers = Vec::new(env);
+                issuers.push_back(specific_issuer);
+                issuers
+            } else {
+                // If issuer filter specified but not found in verified issuers, return empty result
+                return Ok(Vec::new(env));
+            }
+        } else {
+            // Otherwise use all verified issuers
+            verified_issuers
+        };
         
-        // Get verified issuers
-        if let Some(verified_issuers) = env.storage().instance().get::<_, Vec<Address>>(&DataKey::VerifiedIssuers) {
-            for issuer in verified_issuers.iter() {
-                let issuer_certs = get_issuer_certifications(env, &issuer)?;
-                for cert in issuer_certs.iter() {
-                    certifications.push_back(cert);
+        // Get all certifications for the filtered issuers
+        for current_issuer in issuers_to_check.iter() {
+            let issuer_certs = get_issuer_certifications(env, &current_issuer)?;
+            
+            // Apply both certification type and status filters in a single pass
+            for cert in issuer_certs.iter() {
+                // Skip if it doesn't match the certification type filter
+                if let Some(ref cert_type) = certification_type {
+                    if cert.certification_type != *cert_type {
+                        continue;
+                    }
                 }
+                
+                // Skip if it doesn't match the status filter
+                if let Some(ref specific_status) = status {
+                    if cert.status != *specific_status {
+                        continue;
+                    }
+                }
+                
+                // If we get here, the certification passed all filters
+                certifications.push_back(cert);
             }
         }
-    }
-    
-    // Filter by status if provided
-    if let Some(specific_status) = status {
-        let mut filtered_certs = Vec::new(env);
-        for cert in certifications.iter() {
-            if cert.status == specific_status {
-                filtered_certs.push_back(cert);
-            }
-        }
-        certifications = filtered_certs;
     }
     
     Ok(certifications)
@@ -112,21 +120,29 @@ pub fn generate_audit_report(
 pub fn count_certifications_by_type(
     env: &Env,
 ) -> Result<Vec<(CertificationType, u32)>, CertificationError> {
-    // In a real implementation, this would be more sophisticated
-    // For now, let's use a simplified approach for testing
-    
-    // Example implementation
     let mut result = Vec::new(env);
     
-    // Manual count for Organic certifications
-    let organic_certs = get_certifications_by_type(env, &CertificationType::Organic)?;
-    result.push_back((CertificationType::Organic, organic_certs.len() as u32));
+    // Define all standard certification types to count
+    let mut types = Vec::new(env);
+    types.push_back(CertificationType::Organic);
+    types.push_back(CertificationType::FairTrade);
+    types.push_back(CertificationType::UTZ);
+    types.push_back(CertificationType::RainforestAlliance);
+    types.push_back(CertificationType::ISO9001);
+    types.push_back(CertificationType::ISO14001);
+    types.push_back(CertificationType::HACCP);
+    types.push_back(CertificationType::Kosher);
+    types.push_back(CertificationType::Halal);
+    types.push_back(CertificationType::Demeter);
     
-    // Manual count for FairTrade certifications
-    let fairtrade_certs = get_certifications_by_type(env, &CertificationType::FairTrade)?;
-    result.push_back((CertificationType::FairTrade, fairtrade_certs.len() as u32));
+    // Count each certification type
+    for cert_type in types.iter() {
+        let certs = get_certifications_by_type(env, &cert_type)?;
+        result.push_back((cert_type.clone(), certs.len() as u32));
+    }
     
-    // And so on for other types...
+    // Note: Custom types would need a different approach
+    // This implementation only counts the standard types
     
     Ok(result)
 } 

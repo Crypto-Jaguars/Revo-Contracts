@@ -211,7 +211,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
                 },
                 {
-                  "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                  "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                 },
                 {
                   "symbol": "violation"
@@ -250,7 +250,7 @@
                   "symbol": "Certification"
                 },
                 {
-                  "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                  "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                 }
               ]
             },
@@ -270,7 +270,7 @@
                       "symbol": "Certification"
                     },
                     {
-                      "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                      "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                     }
                   ]
                 },
@@ -282,7 +282,7 @@
                         "symbol": "certification_id"
                       },
                       "val": {
-                        "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                        "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                       }
                     },
                     {
@@ -292,7 +292,7 @@
                       "val": {
                         "vec": [
                           {
-                            "symbol": "Organic"
+                            "symbol": "FairTrade"
                           }
                         ]
                       }
@@ -302,7 +302,7 @@
                         "symbol": "document_hash"
                       },
                       "val": {
-                        "bytes": "0cdc61a6be06b362c797dedfcf9d1be4f83db749cea1c7217b214bf3a2f30364"
+                        "bytes": "7dddf7a5f7a4ba1e5b5c5c20b233682d1dceb729c4786096827f26036508cf12"
                       }
                     },
                     {
@@ -326,7 +326,7 @@
                         "symbol": "issuer"
                       },
                       "val": {
-                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
                       }
                     },
                     {
@@ -347,7 +347,7 @@
                             "symbol": "type"
                           },
                           {
-                            "symbol": "organic"
+                            "symbol": "fairtrade"
                           }
                         ]
                       }
@@ -383,7 +383,7 @@
                         "symbol": "valid_to"
                       },
                       "val": {
-                        "u64": 31536000
+                        "u64": 15768000
                       }
                     }
                   ]
@@ -405,7 +405,7 @@
                   "symbol": "Certification"
                 },
                 {
-                  "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                  "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                 }
               ]
             },
@@ -425,7 +425,7 @@
                       "symbol": "Certification"
                     },
                     {
-                      "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                      "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                     }
                   ]
                 },
@@ -437,7 +437,7 @@
                         "symbol": "certification_id"
                       },
                       "val": {
-                        "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                        "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                       }
                     },
                     {
@@ -562,7 +562,7 @@
                   "symbol": "Certification"
                 },
                 {
-                  "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                  "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                 }
               ]
             },
@@ -582,7 +582,7 @@
                       "symbol": "Certification"
                     },
                     {
-                      "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                      "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                     }
                   ]
                 },
@@ -594,7 +594,7 @@
                         "symbol": "certification_id"
                       },
                       "val": {
-                        "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                        "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                       }
                     },
                     {
@@ -604,7 +604,7 @@
                       "val": {
                         "vec": [
                           {
-                            "symbol": "FairTrade"
+                            "symbol": "Organic"
                           }
                         ]
                       }
@@ -614,7 +614,7 @@
                         "symbol": "document_hash"
                       },
                       "val": {
-                        "bytes": "7dddf7a5f7a4ba1e5b5c5c20b233682d1dceb729c4786096827f26036508cf12"
+                        "bytes": "0cdc61a6be06b362c797dedfcf9d1be4f83db749cea1c7217b214bf3a2f30364"
                       }
                     },
                     {
@@ -638,7 +638,7 @@
                         "symbol": "issuer"
                       },
                       "val": {
-                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                       }
                     },
                     {
@@ -659,7 +659,7 @@
                             "symbol": "type"
                           },
                           {
-                            "symbol": "fairtrade"
+                            "symbol": "organic"
                           }
                         ]
                       }
@@ -695,7 +695,7 @@
                         "symbol": "valid_to"
                       },
                       "val": {
-                        "u64": 15768000
+                        "u64": 31536000
                       }
                     }
                   ]
@@ -717,7 +717,7 @@
                   "symbol": "CertificationEvents"
                 },
                 {
-                  "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                  "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                 }
               ]
             },
@@ -737,7 +737,7 @@
                       "symbol": "CertificationEvents"
                     },
                     {
-                      "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                      "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                     }
                   ]
                 },
@@ -751,7 +751,7 @@
                             "symbol": "certification_id"
                           },
                           "val": {
-                            "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                            "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                           }
                         },
                         {
@@ -803,7 +803,7 @@
                   "symbol": "CertificationEvents"
                 },
                 {
-                  "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                  "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                 }
               ]
             },
@@ -823,7 +823,7 @@
                       "symbol": "CertificationEvents"
                     },
                     {
-                      "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                      "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                     }
                   ]
                 },
@@ -837,7 +837,7 @@
                             "symbol": "certification_id"
                           },
                           "val": {
-                            "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                            "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                           }
                         },
                         {
@@ -877,7 +877,7 @@
                             "symbol": "certification_id"
                           },
                           "val": {
-                            "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                            "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                           }
                         },
                         {
@@ -932,7 +932,7 @@
                   "symbol": "CertificationEvents"
                 },
                 {
-                  "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                  "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                 }
               ]
             },
@@ -952,7 +952,7 @@
                       "symbol": "CertificationEvents"
                     },
                     {
-                      "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                      "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                     }
                   ]
                 },
@@ -966,7 +966,7 @@
                             "symbol": "certification_id"
                           },
                           "val": {
-                            "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                            "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                           }
                         },
                         {
@@ -1054,10 +1054,10 @@
                 "val": {
                   "vec": [
                     {
-                      "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                      "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                     },
                     {
-                      "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                      "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                     }
                   ]
                 }
@@ -1114,7 +1114,7 @@
                 "val": {
                   "vec": [
                     {
-                      "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                      "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                     }
                   ]
                 }
@@ -1163,10 +1163,10 @@
                 "val": {
                   "vec": [
                     {
-                      "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                      "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                     },
                     {
-                      "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                      "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                     }
                   ]
                 }
@@ -1215,7 +1215,7 @@
                 "val": {
                   "vec": [
                     {
-                      "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                      "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                     }
                   ]
                 }
@@ -1264,7 +1264,7 @@
                 "val": {
                   "vec": [
                     {
-                      "bytes": "1947cc599c4620bb9c738fbbd95c6d52ae3cba33f06e16c2ef0f13a6f3472ee4"
+                      "bytes": "8ad223e7480ec928f55cd75dad6c8c5be8bb667019f6058e162ca799039428cd"
                     }
                   ]
                 }
@@ -1313,10 +1313,10 @@
                 "val": {
                   "vec": [
                     {
-                      "bytes": "ab0fe21a6570898f03635c7e55492d77a24b36abefe36d1ee6fd21bb91476c16"
+                      "bytes": "48d6bf9651fc6d413ccf112675c074cad9c4e33e6da6e3c4d79f566657a071df"
                     },
                     {
-                      "bytes": "6b21a25119eddd57245f1b51d82c1d44616f5c92ee521956cccee175d6e2c6e4"
+                      "bytes": "7c958b478dc50f4be9907ea9f14dbf5a7b8a3578d64c531b2e04a6d5bc992b2f"
                     }
                   ]
                 }
