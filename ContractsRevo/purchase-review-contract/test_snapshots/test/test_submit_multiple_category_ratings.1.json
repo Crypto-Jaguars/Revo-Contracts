@@ -37,10 +37,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 1
-                  }
+                  "u64": 1
                 },
                 {
                   "vec": [
@@ -78,10 +75,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 1
-                  }
+                  "u64": 1
                 },
                 {
                   "vec": [
@@ -119,10 +113,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 1
-                  }
+                  "u64": 1
                 },
                 {
                   "vec": [
@@ -169,10 +160,7 @@
                   "symbol": "ProductRatings"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 1
-                  }
+                  "u64": 1
                 }
               ]
             },
@@ -192,10 +180,7 @@
                       "symbol": "ProductRatings"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 1
-                      }
+                      "u64": 1
                     }
                   ]
                 },
@@ -601,10 +586,7 @@
                 "symbol": "ratings_retrieved"
               },
               {
-                "u128": {
-                  "hi": 0,
-                  "lo": 1
-                }
+                "u64": 1
               }
             ],
             "data": {

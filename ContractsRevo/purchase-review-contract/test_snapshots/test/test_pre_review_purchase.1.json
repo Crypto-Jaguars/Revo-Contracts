@@ -37,10 +37,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 1
-                  }
+                  "u64": 1
                 },
                 {
                   "string": "https://valid-purchase.com/123"
@@ -76,10 +73,7 @@
                   "symbol": "PurchaseVerification"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 1
-                  }
+                  "u64": 1
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
@@ -102,10 +96,7 @@
                       "symbol": "PurchaseVerification"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 1
-                      }
+                      "u64": 1
                     },
                     {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
@@ -136,10 +127,7 @@
                         "symbol": "product_id"
                       },
                       "val": {
-                        "u128": {
-                          "hi": 0,
-                          "lo": 1
-                        }
+                        "u64": 1
                       }
                     },
                     {
