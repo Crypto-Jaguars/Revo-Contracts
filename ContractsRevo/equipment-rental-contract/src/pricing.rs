@@ -1,5 +1,6 @@
-use soroban_sdk::Env;
+// Removed unused import
 use crate::equipment::Equipment;
+use soroban_sdk::{Env, String};
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum PriceValidationError {
@@ -11,6 +12,19 @@ pub enum PriceValidationError {
     },
 }
 
+impl PriceValidationError {
+    #[allow(dead_code)]
+    pub fn to_soroban_string(&self, env: &Env) -> String {
+        match self {
+            PriceValidationError::InvalidDate => 
+                String::from_str(env, "Invalid date"),
+            PriceValidationError::PriceMismatch { proposed: _, expected: _, context: _ } => {
+                // Use a simpler approach with just the basic information
+                String::from_str(env, "Price mismatch for rental")
+            }
+        }
+    }
+}
 
 /// Compute the total rental price for a given period
 ///
