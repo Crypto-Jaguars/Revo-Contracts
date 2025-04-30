@@ -90,10 +90,11 @@ pub fn issue_token(
     inventory.issued_tokens = inventory.issued_tokens.checked_add(quantity)
         .ok_or(IssueError::InventoryOverflow)?;
     
-    match storage::update_inventory(env, commodity_type, &inventory) {
-        Ok(_) => {},
-        Err(_) => return Err(IssueError::InventoryUnderflow),
-    }
+        storage::update_inventory(env, commodity_type, &inventory)
+        .map_err(|err| match err {
+        ContractError::Unauthorized => IssueError::UnauthorizedIssuer,
+        _ => IssueError::InventoryUnderflow,
+        })?;
     
     storage::set_token_owner(env, &token_id, issuer);
     metadata::add_to_commodity_index(env, commodity_type, &token_id);

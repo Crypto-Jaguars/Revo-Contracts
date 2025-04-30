@@ -17,6 +17,11 @@ pub enum DataKey {
 }
 
 pub fn set_admin(env: &Env, admin: &Address) {
+    if env.storage().instance().has(&DataKey::Admin) {
+        // If admin is already set, require authorization from current admin
+        let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        current_admin.require_auth();
+        }
     env.storage().instance().set(&DataKey::Admin, admin);
 }
 
@@ -116,8 +121,14 @@ pub fn add_inventory(
     admin.require_auth();
 
     let mut inventory = get_inventory(env, commodity_type);
-    inventory.total_quantity += quantity;
-    inventory.available_quantity += quantity;
+    inventory.total_quantity = inventory.total_quantity
+        .checked_add(quantity)
+        .ok_or(ContractError::InvalidInput)?;
+
+    inventory.available_quantity = inventory.available_quantity
+        .checked_add(quantity)
+        .ok_or(ContractError::InvalidInput)?;
+    
     update_inventory(env, commodity_type, &inventory)?;
 
     env.events().publish(
