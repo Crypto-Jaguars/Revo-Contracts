@@ -22,14 +22,17 @@ pub trait CarbonContract {
     ) -> Result<Vec<BytesN<32>>, ContractError>;
 }
 
+#[allow(dead_code)]
 pub trait VerificationContract {
     fn verify_credit(env: &Env, credit_id: BytesN<32>) -> Result<bool, ContractError>;
 }
 
+#[allow(dead_code)]
 pub trait ReportingContract {
     fn generate_impact_report(env: &Env, project_id: BytesN<32>) -> u32;
 }
 
+#[allow(dead_code)]
 pub trait RetirementContract {
     fn retire_credit(
         env: &Env,
