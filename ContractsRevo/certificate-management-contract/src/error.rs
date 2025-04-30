@@ -10,29 +10,37 @@ pub enum AdminError {
 #[contracterror]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum IssueError {
-    Error = 1,
+    InvalidExpirationDate = 1,
 }
 
 #[contracterror]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AuditError {
-    Error = 1,
+    NotFound = 1,
+
 }
 
 #[contracterror]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum RevokeError {
-    Error = 1,
+    NotFound = 1,
+    AlreadyRevoked = 2,
 }
 
 #[contracterror]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VerifyError {
-    Error = 1,
+    NotFound = 1,
+    HashMismatch = 2,
+    Expired = 3,
+    Revoked = 4,
+    ExpirationDue = 5,
 }
 
 #[contracterror]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CertificationError {
-    Error = 1,
+    NotFound = 1,
+    AlreadyExpired = 2,
+    NotExpired = 3,
 }

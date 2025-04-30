@@ -1,16 +1,17 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, Env, Symbol};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, Symbol, Vec};
 
 mod audit;
 mod certification;
-mod datatype;
+mod datatypes;
 mod error;
 mod initialize;
 mod issue;
 mod revoke;
 mod verify;
+mod test;
 
-pub use datatype::*;
+pub use datatypes::*;
 pub use error::{AdminError, AuditError, CertificationError, IssueError, RevokeError, VerifyError};
 
 #[contract]
@@ -24,41 +25,46 @@ impl CertificateManagement {
 
     pub fn issue_certification(
         env: Env,
+        issuer: Address,
+        recipient: Address,
         cert_type: Symbol,
-        recipient: soroban_sdk::Address,
         expiration_date: u64,
         verification_hash: soroban_sdk::BytesN<32>,
     ) -> Result<(), IssueError> {
         issue::issue_certification(
             env,
-            cert_type,
+            issuer,
             recipient,
+            cert_type,
             expiration_date,
             verification_hash,
         )
     }
 
-    pub fn revoke_certification(env: Env, cert_id: u32) -> Result<(), RevokeError> {
-        revoke::revoke_certification(env, cert_id)
+    pub fn revoke_certification(
+        env: Env,
+        issuer: Address,
+        owner: Address,
+        id: u32,
+    ) -> Result<(), RevokeError> {
+        revoke::revoke_certification(env, issuer, owner, id)
     }
 
-    pub fn check_cert_status(env: Env, cert_id: u32) -> Result<(), CertificationError> {
-        certification::check_cert_status(env, cert_id)
+    pub fn expire_certification(
+        env: Env,
+        owner: Address,
+        id: u32,
+    ) -> Result<(), CertificationError> {
+        certification::expire(env, owner, id)
     }
 
     pub fn verify_document_hash(
         env: Env,
-        cert_id: u32,
-        submitted_hash: soroban_sdk::BytesN<32>,
+        owner: Address,
+        id: u32,
+        submitted_hash: BytesN<32>,
     ) -> Result<(), VerifyError> {
-        verify::verify_document_hash(env, cert_id, submitted_hash)
-    }
-
-    pub fn generate_cert_audit_report(
-        env: Env,
-        issuer: soroban_sdk::Address,
-    ) -> Result<(), AuditError> {
-        audit::generate_cert_audit_report(env, issuer)
+        verify::verify_document_hash(env, owner, id, submitted_hash)
     }
 
     // GETTERS
@@ -67,5 +73,31 @@ impl CertificateManagement {
             .instance()
             .get(&DataKey::Admin)
             .ok_or(AdminError::UnauthorizedAccess)
+    }
+
+    pub fn check_cert_status(
+        env: Env,
+        owner: Address,
+        id: u32,
+    ) -> Result<CertStatus, CertificationError> {
+        certification::check_cert_status(env, owner, id)
+    }
+
+    pub fn get_cert(
+        env: Env,
+        owner: Address,
+        id: u32,
+    ) -> Result<Certification, CertificationError> {
+        certification::get_cert(env, owner, id)
+    }
+
+    pub fn generate_cert_audit_report(
+        env: Env,
+        owner: Address,
+        issuer: Option<Address>,
+        status_filter: Option<CertStatus>,
+        after_timestamp: Option<u64>,
+    ) -> Result<Vec<Certification>, AuditError> {
+        audit::generate_cert_audit_report(env, owner, issuer, status_filter, after_timestamp)
     }
 }
