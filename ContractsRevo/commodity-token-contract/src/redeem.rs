@@ -1,35 +1,41 @@
-use soroban_sdk::{Address, BytesN, Env};
-use crate::{storage, metadata};
+use soroban_sdk::{Address, BytesN, Env, Symbol};
+use crate::{storage, metadata, RedeemError};
 
 pub fn redeem_token(
     env: &Env,
     token_id: &BytesN<32>,
     redeemer: &Address,
     quantity: u32,
-) {
+) -> Result<(), RedeemError> {
     // Get token data
-    let mut token = metadata::get_token_metadata(env, token_id);
+    let token_result = metadata::get_token_metadata(env, token_id);
+    
+    if token_result.is_err() {
+        return Err(RedeemError::TokenNotFound);
+    }
+    
+    let mut token = token_result.unwrap();
     
     // Ensure token exists
     if token.quantity == 0 {
-        panic!("Token does not exist or has been fully redeemed");
+        return Err(RedeemError::InsufficientQuantity);
     }
     
     // Ensure redeemer owns the token
-    let owner = storage::get_token_owner(env, token_id);
-    if owner != *redeemer {
-        panic!("Only the token owner can redeem");
+    let owner_result = storage::get_token_owner(env, token_id);
+    if owner_result.is_err() || owner_result.unwrap() != *redeemer {
+        return Err(RedeemError::NotTokenOwner);
     }
     
     // Ensure valid redemption quantity
     if quantity > token.quantity {
-        panic!("Redemption quantity exceeds available token amount");
+        return Err(RedeemError::InsufficientQuantity);
     }
     
     // Check if token has expired
     let current_time = env.ledger().timestamp();
     if current_time > token.expiration_date {
-        panic!("Token has expired");
+        return Err(RedeemError::TokenExpired);
     }
     
     // Update token data
@@ -48,24 +54,26 @@ pub fn redeem_token(
 
     inventory.issued_tokens = inventory.issued_tokens
         .checked_sub(quantity)
-        .expect("Inventory underflow");
+        .ok_or(RedeemError::InventoryUnderflow)?;
 
     inventory.total_quantity = inventory
         .total_quantity
         .checked_sub(quantity)
-        .expect("Total inventory underflow");
+        .ok_or(RedeemError::InventoryUnderflow)?;
 
-    storage::update_inventory(env, &token.commodity_type, &inventory);
+    storage::update_inventory(env, &token.commodity_type, &inventory).map_err(|_| RedeemError::InventoryUnderflow)?;
     
     // Emit redemption event
     env.events().publish(
-        ("token_redeemed", redeemer),
+        (Symbol::new(env, "token_redeemed"), redeemer.clone()),
         (token_id.clone(), token.commodity_type.clone(), quantity),
     );
     
     // Trigger physical redemption process via event
     env.events().publish(
-        ("physical_redemption_initiated", redeemer),
+        (Symbol::new(env, "physical_redemption_initiated"), redeemer.clone()),
         (token_id.clone(), token.storage_location.clone(), quantity),
     );
+    
+    Ok(())
 }

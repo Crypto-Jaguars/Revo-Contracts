@@ -1,14 +1,15 @@
 use soroban_sdk::{
-    panic_with_error, symbol_short, Address, Bytes, BytesN, Env, String,
+    Address, Bytes, BytesN, Env, String, Symbol,contracterror
 };
 
 extern crate alloc;
 use alloc::vec::Vec as StdVec;
 
-use crate::{storage, validate, metadata, CommodityBackedToken};
+use crate::{storage, validate, metadata, CommodityBackedToken, ContractError};
 use crate::storage::DataKey;
 
-#[derive(Debug)]
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum IssueError {
     UnauthorizedIssuer = 1,
@@ -21,9 +22,13 @@ pub enum IssueError {
     NonceOverflow = 8,
 }
 
-impl From<IssueError> for soroban_sdk::Error {
-    fn from(err: IssueError) -> Self {
-        soroban_sdk::Error::from_contract_error(err as u32)
+// Implementation for converting ContractError to IssueError
+impl From<ContractError> for IssueError {
+    fn from(err: ContractError) -> Self {
+        match err {
+            ContractError::Unauthorized => IssueError::UnauthorizedIssuer,
+            _ => IssueError::IdGenerationError,
+        }
     }
 }
 
@@ -36,28 +41,29 @@ pub fn issue_token(
     storage_location: &String,
     expiration_date: u64,
     verification_data: &BytesN<32>,
-) -> BytesN<32> {
+) -> Result<BytesN<32>, IssueError> {
 
-    validate_issuer(env, issuer);
+    validate_issuer(env, issuer)?;
 
     if !validate::validate_commodity(env, commodity_type, verification_data) {
-        panic_with_error!(env, IssueError::InvalidCommodityData);
+        return Err(IssueError::InvalidCommodityData);
     }
+    
     let current_time = env.ledger().timestamp();
     if expiration_date <= current_time {
-        panic_with_error!(env, IssueError::InvalidExpirationDate);
+        return Err(IssueError::InvalidExpirationDate);
     }
+    
     let mut inventory = storage::get_inventory(env, commodity_type);
     if inventory.available_quantity < quantity {
-        panic_with_error!(env, IssueError::InsufficientInventory);
+        return Err(IssueError::InsufficientInventory);
     }
     
     let nonce_key = DataKey::TokenNonce;
     let current_nonce: u64 = env.storage().instance().get(&nonce_key).unwrap_or(0u64);
     let next_nonce = current_nonce.checked_add(1)
-        .unwrap_or_else(|| panic_with_error!(env, IssueError::NonceOverflow));
+        .ok_or(IssueError::NonceOverflow)?;
     env.storage().instance().set(&nonce_key, &next_nonce);
-
 
     let token = CommodityBackedToken {
         commodity_type: commodity_type.clone(),
@@ -75,34 +81,38 @@ pub fn issue_token(
         verification_data,
         current_time,
         current_nonce 
-    );
+    )?;
 
     storage::store_token(env, &token_id, &token);
     
     inventory.available_quantity = inventory.available_quantity.checked_sub(quantity)
-        .unwrap_or_else(|| panic_with_error!(env, IssueError::InventoryUnderflow));
+        .ok_or(IssueError::InventoryUnderflow)?;
     inventory.issued_tokens = inventory.issued_tokens.checked_add(quantity)
-        .unwrap_or_else(|| panic_with_error!(env, IssueError::InventoryOverflow));
+        .ok_or(IssueError::InventoryOverflow)?;
     
-    storage::update_inventory(env, commodity_type, &inventory);
+    match storage::update_inventory(env, commodity_type, &inventory) {
+        Ok(_) => {},
+        Err(_) => return Err(IssueError::InventoryUnderflow),
+    }
+    
     storage::set_token_owner(env, &token_id, issuer);
     metadata::add_to_commodity_index(env, commodity_type, &token_id);
 
     env.events().publish(
-        (symbol_short!("issued"), issuer.clone()),
+        (Symbol::new(env, "issued"), issuer.clone()),
         (token_id.clone(), commodity_type.clone(), quantity),
     );
 
-    token_id
+    Ok(token_id)
 }
 
-
-fn validate_issuer(env: &Env, issuer: &Address) {
+fn validate_issuer(env: &Env, issuer: &Address) -> Result<(), IssueError> {
     let admin = storage::get_admin(env);
     let authorized_issuers = storage::get_authorized_issuers(env);
     if *issuer != admin && !authorized_issuers.iter().any(|auth_issuer| auth_issuer == *issuer) {
-        panic_with_error!(env, IssueError::UnauthorizedIssuer);
+        return Err(IssueError::UnauthorizedIssuer);
     }
+    Ok(())
 }
 
 // Generates a unique ID by hashing manually combined bytes of key inputs and a nonce.
@@ -113,7 +123,7 @@ fn generate_token_id(
     verification_data: &BytesN<32>,
     timestamp: u64,
     nonce: u64,
-) -> BytesN<32> { // Return type BytesN
+) -> Result<BytesN<32>, IssueError> {
 
     let mut buffer = StdVec::new();
 
@@ -130,5 +140,5 @@ fn generate_token_id(
     let hash_result: soroban_sdk::crypto::Hash<32> = env.crypto().sha256(&bytes_to_hash);
 
     // Convert Hash into the required BytesN return type.
-    hash_result.into()
+    Ok(hash_result.into())
 }

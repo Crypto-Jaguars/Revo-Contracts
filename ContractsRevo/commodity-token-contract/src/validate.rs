@@ -1,6 +1,5 @@
-use soroban_sdk::{BytesN, Env, String, Map, Address};
-use crate::storage;
-use crate::metadata;
+use soroban_sdk::{BytesN, Env, String, Map, Address, Symbol};
+use crate::{storage, ContractError};
 
 pub fn validate_commodity(
     env: &Env,
@@ -18,10 +17,10 @@ pub fn register_commodity_verification(
     commodity_type: &String,
     verification_data: &BytesN<32>,
     metadata: &Map<String, String>,
-) {
+) -> Result<(), ContractError> {
     let stored_admin = storage::get_admin(env);
     if stored_admin != *admin {
-         panic!("Provided address is not the stored admin");
+        return Err(ContractError::Unauthorized);
     }
     admin.require_auth();
 
@@ -29,19 +28,23 @@ pub fn register_commodity_verification(
 
     registry.set(verification_data.clone(), metadata.clone());
 
-    storage::update_verification_registry(env, commodity_type, &registry);
+    storage::update_verification_registry(env, commodity_type, &registry)?;
 
     env.events().publish(
-        ("verification_registered", admin.clone()),
+        (Symbol::new(env, "verification_registered"), admin.clone()),
         (commodity_type.clone(), verification_data.clone()),
     );
+    
+    Ok(())
 }
 
 pub fn check_expiration(
     env: &Env,
     token_id: &BytesN<32>,
 ) -> bool {
-    let token = metadata::get_token_metadata(env, token_id);
-    let current_time = env.ledger().timestamp();
-    current_time <= token.expiration_date
+    if let Some(token) = storage::get_token(env, token_id) {
+        let current_time = env.ledger().timestamp();
+        return current_time <= token.expiration_date;
+    }
+    false
 }

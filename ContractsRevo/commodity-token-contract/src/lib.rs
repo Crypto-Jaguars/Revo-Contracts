@@ -6,12 +6,14 @@ mod redeem;
 mod validate;
 mod storage;
 mod metadata;
+mod error;
 
 pub use issue::*;
 pub use redeem::*;
 pub use validate::*;
 pub use storage::*;
 pub use metadata::*;
+pub use error::*;
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -37,16 +39,15 @@ pub struct CommodityTokenContract;
 
 #[contractimpl]
 impl CommodityTokenContract {
-    // Initialize the contract with admin address
-    pub fn initialize(env: Env, admin: Address) {
+    pub fn initialize(env: Env, admin: Address) -> Result<(), ContractError> {
         if env.storage().instance().has(&storage::DataKey::Admin) {
-            panic!("Contract already initialised");
-             }
+            return Err(ContractError::AlreadyInitialized);
+        }
         admin.require_auth();
         storage::set_admin(&env, &admin);
+        Ok(())
     }
     
-    // Issue new tokens
     pub fn issue_token(
         env: Env,
         issuer: Address,
@@ -56,7 +57,7 @@ impl CommodityTokenContract {
         storage_location: String,
         expiration_date: u64,
         verification_data: BytesN<32>,
-    ) -> BytesN<32> {
+    ) -> Result<BytesN<32>, IssueError> {
         issuer.require_auth();
         issue::issue_token(
             &env, 
@@ -70,28 +71,24 @@ impl CommodityTokenContract {
         )
     }
     
-    // Redeem tokens for physical commodities
     pub fn redeem_token(
         env: Env,
         token_id: BytesN<32>,
         redeemer: Address,
         quantity: u32,
-    ) {
+    ) -> Result<(), RedeemError> {
         redeemer.require_auth();
-        redeem::redeem_token(&env, &token_id, &redeemer, quantity);
+        redeem::redeem_token(&env, &token_id, &redeemer, quantity)
     }
     
-    // Get token metadata
-    pub fn get_token_metadata(env: Env, token_id: BytesN<32>) -> CommodityBackedToken {
+    pub fn get_token_metadata(env: Env, token_id: BytesN<32>) -> Result<CommodityBackedToken, ContractError> {
         metadata::get_token_metadata(&env, &token_id)
     }
     
-    // List available inventory
     pub fn list_available_inventory(env: Env, commodity_type: String) -> Inventory {
         storage::get_inventory(&env, &commodity_type)
     }
     
-    // Validate commodity data
     pub fn validate_commodity(
         env: Env,
         commodity_type: String,
@@ -100,40 +97,36 @@ impl CommodityTokenContract {
         validate::validate_commodity(&env, &commodity_type, &verification_data)
     }
     
-    // Add inventory (admin only)
     pub fn add_inventory(
         env: Env,
         admin: Address,
         commodity_type: String,
         quantity: u32,
-    ) {
+    ) -> Result<(), ContractError> {
         admin.require_auth();
-        storage::add_inventory(&env, &admin, &commodity_type, quantity);
+        storage::add_inventory(&env, &admin, &commodity_type, quantity)
     }
     
-    // Register commodity verification data (admin only)
     pub fn register_commodity_verification(
         env: Env,
         admin: Address,
         commodity_type: String,
         verification_data: BytesN<32>,
         metadata: Map<String, String>,
-    ) {
+    ) -> Result<(), ContractError> {
         admin.require_auth();
-        validate::register_commodity_verification(&env, &admin, &commodity_type, &verification_data, &metadata);
+        validate::register_commodity_verification(&env, &admin, &commodity_type, &verification_data, &metadata)
     }
     
-    // Add authorized issuer (admin only)
     pub fn add_authorized_issuer(
         env: Env,
         admin: Address,
         issuer: Address,
-    ) {
+    ) -> Result<(), ContractError> {
         admin.require_auth();
-        storage::add_authorized_issuer(&env, &admin, &issuer);
+        storage::add_authorized_issuer(&env, &admin, &issuer)
     }
     
-    // List tokens by commodity type
     pub fn list_tokens_by_commodity(
         env: Env,
         commodity_type: String,
@@ -141,11 +134,10 @@ impl CommodityTokenContract {
         metadata::list_tokens_by_commodity(&env, &commodity_type)
     }
     
-    // Get token details (human-readable)
     pub fn get_token_details(
         env: Env,
         token_id: BytesN<32>,
-    ) -> Map<String, Val> {
+    ) -> Result<Map<String, Val>, ContractError> {
         metadata::get_token_details(&env, &token_id)
     }
 }

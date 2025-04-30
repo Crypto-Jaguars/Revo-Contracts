@@ -1,7 +1,7 @@
 use soroban_sdk::{
-    contracttype, symbol_short, Address, BytesN, Env, Map, String, Vec,
+    contracttype, Address, BytesN, Env, Map, String, Vec, Symbol, 
 };
-use crate::{CommodityBackedToken, Inventory};
+use crate::{CommodityBackedToken, Inventory, ContractError};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -16,7 +16,6 @@ pub enum DataKey {
     TokenNonce,
 }
 
-
 pub fn set_admin(env: &Env, admin: &Address) {
     env.storage().instance().set(&DataKey::Admin, admin);
 }
@@ -28,9 +27,9 @@ pub fn get_admin(env: &Env) -> Address {
         .expect("Admin not set")
 }
 
-pub fn add_authorized_issuer(env: &Env, admin: &Address, issuer: &Address) {
+pub fn add_authorized_issuer(env: &Env, admin: &Address, issuer: &Address) -> Result<(), ContractError> {
     if *admin != get_admin(env) {
-        panic!("Only admin can add authorized issuers");
+        return Err(ContractError::Unauthorized);
     }
 
     let key = DataKey::AuthIssuers;
@@ -39,7 +38,14 @@ pub fn add_authorized_issuer(env: &Env, admin: &Address, issuer: &Address) {
     if !issuers.iter().any(|x| x == *issuer) {
         issuers.push_back(issuer.clone());
         env.storage().instance().set(&key, &issuers);
+        
+        env.events().publish(
+            (Symbol::new(env, "issuer_added"), admin.clone()),
+            issuer.clone(),
+        );
     }
+    
+    Ok(())
 }
 
 pub fn get_authorized_issuers(env: &Env) -> Vec<Address> {
@@ -48,6 +54,7 @@ pub fn get_authorized_issuers(env: &Env) -> Vec<Address> {
         .get(&DataKey::AuthIssuers)
         .unwrap_or_else(|| Vec::new(env))
 }
+
 pub fn store_token(env: &Env, token_id: &BytesN<32>, token: &CommodityBackedToken) {
     let key = DataKey::TokenData(token_id.clone());
     env.storage().instance().set(&key, token);
@@ -71,12 +78,12 @@ pub fn set_token_owner(env: &Env, token_id: &BytesN<32>, owner: &Address) {
     env.storage().instance().set(&key, owner);
 }
 
-pub fn get_token_owner(env: &Env, token_id: &BytesN<32>) -> Address {
+pub fn get_token_owner(env: &Env, token_id: &BytesN<32>) -> Result<Address, ContractError> {
     let key = DataKey::TokenOwner(token_id.clone());
     env.storage()
         .instance()
         .get(&key)
-        .expect("Token owner not found")
+        .ok_or(ContractError::OwnerNotFound)
 }
 
 pub fn get_inventory(env: &Env, commodity_type: &String) -> Inventory {
@@ -90,9 +97,10 @@ pub fn get_inventory(env: &Env, commodity_type: &String) -> Inventory {
     })
 }
 
-pub fn update_inventory(env: &Env, commodity_type: &String, inventory: &Inventory) {
+pub fn update_inventory(env: &Env, commodity_type: &String, inventory: &Inventory) -> Result<(), ContractError> {
     let key = DataKey::Inventory(commodity_type.clone());
     env.storage().instance().set(&key, inventory);
+    Ok(())
 }
 
 pub fn add_inventory(
@@ -100,9 +108,9 @@ pub fn add_inventory(
     admin: &Address,
     commodity_type: &String,
     quantity: u32,
-) {
+) -> Result<(), ContractError> {
     if *admin != get_admin(env) {
-        panic!("Only admin can add inventory");
+        return Err(ContractError::Unauthorized);
     }
 
     admin.require_auth();
@@ -110,12 +118,14 @@ pub fn add_inventory(
     let mut inventory = get_inventory(env, commodity_type);
     inventory.total_quantity += quantity;
     inventory.available_quantity += quantity;
-    update_inventory(env, commodity_type, &inventory);
+    update_inventory(env, commodity_type, &inventory)?;
 
     env.events().publish(
-        (symbol_short!("inv_added"), admin.clone()),
+        (Symbol::new(env, "inv_added"), admin.clone()),
         (commodity_type.clone(), quantity),
     );
+    
+    Ok(())
 }
 
 pub fn get_verification_registry(
@@ -130,7 +140,8 @@ pub fn update_verification_registry(
     env: &Env,
     commodity_type: &String,
     registry: &Map<BytesN<32>, Map<String, String>>,
-) {
+) -> Result<(), ContractError> {
     let key = DataKey::VerificationReg(commodity_type.clone());
     env.storage().instance().set(&key, registry);
+    Ok(())
 }

@@ -7,7 +7,9 @@ members = [
     "ContractsRevo/product-auction-contract",
     "ContractsRevo/agricultural-auction-contract",
     "ContractsRevo/agricultural-quality-contract",
-    "ContractsRevo/cooperative-management-contract", "ContractsRevo/commodity-token-contract"]
+    "ContractsRevo/cooperative-management-contract",
+    "ContractsRevo/commodity-token-contract"
+    ]
 
 [workspace.dependencies]
 soroban-sdk = "22.0.6"
