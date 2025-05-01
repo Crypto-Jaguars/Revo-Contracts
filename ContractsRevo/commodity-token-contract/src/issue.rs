@@ -1,9 +1,6 @@
 use soroban_sdk::{
-    Address, Bytes, BytesN, Env, String, Symbol,contracterror
+    Address, BytesN, Env, String, Symbol,contracterror
 };
-
-extern crate alloc;
-use alloc::vec::Vec as StdVec;
 
 use crate::{storage, validate, metadata, CommodityBackedToken, ContractError};
 use crate::storage::DataKey;
@@ -125,21 +122,32 @@ fn generate_token_id(
     timestamp: u64,
     nonce: u64,
 ) -> Result<BytesN<32>, IssueError> {
-
-    let mut buffer = StdVec::new();
-
-    // Append bytes for easily serializable components
-    buffer.extend_from_slice(&quantity.to_be_bytes());
-    buffer.extend_from_slice(&expiration_date.to_be_bytes());
-    buffer.extend_from_slice(&verification_data.to_array());
-    buffer.extend_from_slice(&timestamp.to_be_bytes());
-    buffer.extend_from_slice(&nonce.to_be_bytes());
-
-    // Create Soroban Bytes from the collected bytes
-    let bytes_to_hash: Bytes = Bytes::from_slice(env, &buffer);
-
-    let hash_result: soroban_sdk::crypto::Hash<32> = env.crypto().sha256(&bytes_to_hash);
-
-    // Convert Hash into the required BytesN return type.
+    
+    let mut buffer = [0u8; 60]; // 4 + 8 + 32 + 8 + 8 bytes
+    let mut offset = 0;
+    
+    // Copy all data into fixed buffer
+    buffer[offset..offset+4].copy_from_slice(&quantity.to_be_bytes());
+    offset += 4;
+    
+    buffer[offset..offset+8].copy_from_slice(&expiration_date.to_be_bytes());
+    offset += 8;
+    
+    // Get the raw bytes from BytesN<32>
+    let verification_bytes = verification_data.to_array();
+    buffer[offset..offset+32].copy_from_slice(&verification_bytes);
+    offset += 32;
+    
+    buffer[offset..offset+8].copy_from_slice(&timestamp.to_be_bytes());
+    offset += 8;
+    
+    buffer[offset..offset+8].copy_from_slice(&nonce.to_be_bytes());
+    
+    // Create a Soroban Bytes object from fixed buffer
+    let bytes = soroban_sdk::Bytes::from_slice(env, &buffer);
+    
+    // Hash the bytes
+    let hash_result = env.crypto().sha256(&bytes);
+    
     Ok(hash_result.into())
 }
