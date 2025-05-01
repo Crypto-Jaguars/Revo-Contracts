@@ -1,7 +1,7 @@
 #![no_std]
 
 use datatype::DataKey;
-use soroban_sdk::{Address, Env, String, contract, contractimpl};
+use soroban_sdk::{Address, Env, contract, contractimpl};
 
 mod datatype;
 mod governance;
@@ -9,6 +9,7 @@ mod interface;
 mod membership;
 mod profit_distribution;
 mod resource_sharing;
+mod test;
 
 #[contract]
 pub struct CooperativeManagementContract;
@@ -23,6 +24,3 @@ impl CooperativeManagementContract {
         env.storage().persistent().set(&DataKey::Admin, &admin);
     }
 }
-
-#[cfg(test)]
-mod test;
