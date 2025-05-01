@@ -8,11 +8,11 @@ members = [
     "ContractsRevo/agricultural-auction-contract",
     "ContractsRevo/agricultural-quality-contract",
     "ContractsRevo/cooperative-management-contract",
+    "ContractsRevo/csa-membership-contract",
 ]
 
 [workspace.dependencies]
 soroban-sdk = "22.0.6"
-
 [profile.release]
 opt-level = "z"
 overflow-checks = true
