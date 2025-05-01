@@ -2,18 +2,23 @@ use soroban_sdk::{Env, BytesN, Address, Symbol};
 use crate::LoyaltyProgram;
 
 pub fn redeem_reward(env: &Env, program_id: BytesN<32>, user_address: Address, redemption_option_id: u32) {
+
     let program_key = (Symbol::new(env, "program"), program_id.clone());
+
     let mut program: LoyaltyProgram = env.storage()
         .persistent()
         .get::<(Symbol, BytesN<32>), LoyaltyProgram>(&program_key)
         .expect("Program not found");
+
     let points_key = (Symbol::new(env, "points"), program_id.clone(), user_address.clone());
+
     let user_points: u64 = env.storage()
         .persistent()
         .get::<(Symbol, BytesN<32>, Address), u64>(&points_key)
         .unwrap_or(0);
     
     let option_index = program.redemption_options.iter().position(|opt| opt.id == redemption_option_id).expect("Redemption option not found");
+
     let mut option = program.redemption_options.get(option_index.try_into().unwrap()).expect("Redemption option not found");
     
     if option.available_quantity == 0 {
@@ -35,4 +40,5 @@ pub fn redeem_reward(env: &Env, program_id: BytesN<32>, user_address: Address, r
         (Symbol::new(env, "reward_redeemed"), program_id, user_address),
         redemption_option_id
     );
+    
 }

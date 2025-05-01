@@ -1,3 +1,4 @@
+#![no_std]
 use soroban_sdk::{contract, contractimpl, contracttype, BytesN, Env, Vec, Address, String};
 
 
@@ -5,6 +6,7 @@ mod program;
 mod earn;
 mod redeem;
 mod rewards;
+
 
 #[contracttype]
 pub struct LoyaltyProgram {
