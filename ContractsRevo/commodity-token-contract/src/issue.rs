@@ -1,5 +1,5 @@
 use soroban_sdk::{
-    Address, BytesN, Env, String, Symbol,contracterror
+    Address, BytesN, Env, String, Symbol, contracterror
 };
 
 use crate::{storage, validate, metadata, CommodityBackedToken, ContractError};
@@ -87,7 +87,7 @@ pub fn issue_token(
     inventory.issued_tokens = inventory.issued_tokens.checked_add(quantity)
         .ok_or(IssueError::InventoryOverflow)?;
     
-        storage::update_inventory(env, commodity_type, &inventory)
+    storage::update_inventory(env, commodity_type, &inventory)
         .map_err(|err| match err {
         ContractError::Unauthorized => IssueError::UnauthorizedIssuer,
         _ => IssueError::InventoryUnderflow,
