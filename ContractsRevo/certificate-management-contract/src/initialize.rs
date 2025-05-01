@@ -13,9 +13,11 @@ pub fn initialize(env: Env, admin: Address) -> Result<(), AdminError> {
     let user_cert_count: UserCertCount = Map::new(&env);
 
     env.storage().instance().set(&DataKey::Admin, &admin);
+
     env.storage()
         .instance()
         .set(&DataKey::UserCertCount, &user_cert_count);
+    
     env.storage()
         .instance()
         .set(&DataKey::UsersCertificates, &user_certificates);

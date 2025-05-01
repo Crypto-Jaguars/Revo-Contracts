@@ -9,16 +9,15 @@ mod initialize;
 mod issue;
 mod revoke;
 mod verify;
-mod test;
 
 pub use datatypes::*;
 pub use error::{AdminError, AuditError, CertificationError, IssueError, RevokeError, VerifyError};
 
 #[contract]
-pub struct CertificateManagement;
+pub struct CertificateManagementContract;
 
 #[contractimpl]
-impl CertificateManagement {
+impl CertificateManagementContract {
     pub fn initialize(env: Env, admin: Address) -> Result<(), AdminError> {
         initialize::initialize(env, admin)
     }
@@ -72,7 +71,7 @@ impl CertificateManagement {
         env.storage()
             .instance()
             .get(&DataKey::Admin)
-            .ok_or(AdminError::UnauthorizedAccess)
+            .ok_or(AdminError::Uninitialized)
     }
 
     pub fn check_cert_status(

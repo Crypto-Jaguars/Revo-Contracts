@@ -22,6 +22,10 @@ pub fn revoke_certification(
 
     let mut certification = user_certificates.get(id).ok_or(RevokeError::NotFound)?;
 
+    if certification.issuer != issuer {
+        return Err(RevokeError::Unauthorized);
+    }
+
     certification.revoke()?;
 
     user_certificates.set(id, certification);
@@ -32,10 +36,7 @@ pub fn revoke_certification(
         .set(&DataKey::UsersCertificates, &users_certificates);
 
     env.events().publish(
-        (
-            Symbol::new(&env, "certification_revoked"),
-            owner.clone(),
-        ),
+        (Symbol::new(&env, "certification_revoked"), owner.clone()),
         env.ledger().timestamp(),
     );
 

@@ -4,7 +4,7 @@ use soroban_sdk::contracterror;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AdminError {
     AlreadyInitialized = 1,
-    UnauthorizedAccess = 2,
+    Uninitialized = 2,
 }
 
 #[contracterror]
@@ -25,6 +25,7 @@ pub enum AuditError {
 pub enum RevokeError {
     NotFound = 1,
     AlreadyRevoked = 2,
+    Unauthorized = 3,
 }
 
 #[contracterror]
