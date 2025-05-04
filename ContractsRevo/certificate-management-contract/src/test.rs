@@ -1,12 +1,12 @@
 #![cfg(test)]
 use soroban_sdk::{
-    symbol, Address, BytesN, Env, Symbol,
+    Address, BytesN, Env, Symbol,
     testutils::{Address as _, Ledger, LedgerInfo},
 };
 
 use crate::{
-    AuditError, CertificateManagementContract, CertificateManagementContractClient,
-    CertStatus, Certification, CertificationError, IssueError, RevokeError, VerifyError,
+    CertificateManagementContract, CertificateManagementContractClient,
+    CertStatus, VerifyError, RevokeError,
 };
 
 struct TestContext {
@@ -35,7 +35,7 @@ impl TestContext {
         
         // Initialize contract
         env.mock_all_auths();
-        client.initialize(&admin).expect("Failed to initialize contract");
+        client.initialize(&admin);
         
         Self {
             env,
@@ -54,7 +54,12 @@ impl TestContext {
     
     fn create_document_hash(&self, content: &str) -> BytesN<32> {
         let bytes = soroban_sdk::Bytes::from_slice(&self.env, content.as_bytes());
-        self.env.crypto().sha256(&bytes)
+        self.env.crypto().sha256(&bytes).into()
+    }
+
+    // Helper function to create a Symbol
+    fn symbol(&self, s: &str) -> Symbol {
+        Symbol::new(&self.env, s)
     }
     
     fn advance_time(&self, seconds: u64) {
@@ -84,7 +89,7 @@ fn test_initialize() {
     let client = context.client();
     
     // Verify admin was set correctly
-    let admin = client.get_admin().expect("Failed to get admin");
+    let admin = client.get_admin();
     assert_eq!(admin, context.admin);
 }
 
@@ -108,7 +113,7 @@ fn test_certification_issuance() {
     let client = context.client();
     
     // Create test data
-    let cert_type = symbol!("ORGANIC");
+    let cert_type = context.symbol("ORGANIC");
     let now = context.env.ledger().timestamp();
     let expiration = now + 31536000; // 1 year
     let doc_hash = context.create_document_hash("Organic certification document");
@@ -121,10 +126,10 @@ fn test_certification_issuance() {
         &cert_type,
         &expiration,
         &doc_hash
-    ).expect("Failed to issue certification");
+    );
     
     // Verify certification exists and is valid
-    let cert = client.get_cert(&context.recipient1, &0).expect("Failed to get certification");
+    let cert = client.get_cert(&context.recipient1, &1);  // First cert ID is 1
     assert_eq!(cert.cert_type, cert_type);
     assert_eq!(cert.issuer, context.issuer1);
     assert_eq!(cert.status, CertStatus::Valid);
@@ -138,7 +143,7 @@ fn test_document_verification() {
     let client = context.client();
     
     // Create test data
-    let cert_type = symbol!("ORGANIC");
+    let cert_type = context.symbol("ORGANIC");
     let now = context.env.ledger().timestamp();
     let expiration = now + 31536000; // 1 year
     let doc_hash = context.create_document_hash("Organic certification document");
@@ -151,25 +156,31 @@ fn test_document_verification() {
         &cert_type,
         &expiration,
         &doc_hash
-    ).expect("Failed to issue certification");
+    );
     
     // Verify with correct hash
-    let verify_result = client.verify_document_hash(
+    client.verify_document_hash(
         &context.recipient1,
-        &0,
+        &1,  // First cert ID is 1
         &doc_hash
     );
-    assert!(verify_result.is_ok());
     
     // Verify with incorrect hash
     let wrong_hash = context.create_document_hash("Modified document");
-    let verify_result = client.verify_document_hash(
+    let result = client.try_verify_document_hash(
         &context.recipient1,
-        &0,
+        &1,  // First cert ID is 1
         &wrong_hash
     );
-    assert!(verify_result.is_err());
-    assert!(matches!(verify_result.unwrap_err(), VerifyError::HashMismatch));
+    
+    assert!(result.is_err());
+    // Check specific error
+    if let Err(err) = result {
+        match err {
+            Ok(e) => assert_eq!(e, VerifyError::HashMismatch),
+            Err(_) => panic!("Expected contract error")
+        }
+    }
 }
 
 // Test certification revocation
@@ -179,7 +190,7 @@ fn test_certification_revocation() {
     let client = context.client();
     
     // Create test data
-    let cert_type = symbol!("ORGANIC");
+    let cert_type = context.symbol("ORGANIC");
     let now = context.env.ledger().timestamp();
     let expiration = now + 31536000; // 1 year
     let doc_hash = context.create_document_hash("Organic certification document");
@@ -192,11 +203,10 @@ fn test_certification_revocation() {
         &cert_type,
         &expiration,
         &doc_hash
-    ).expect("Failed to issue certification");
+    );
     
     // Verify initially valid
-    let status = client.check_cert_status(&context.recipient1, &0)
-        .expect("Failed to check certification status");
+    let status = client.check_cert_status(&context.recipient1, &1);  // First cert ID is 1
     assert_eq!(status, CertStatus::Valid);
     
     // Revoke certification
@@ -204,22 +214,27 @@ fn test_certification_revocation() {
     client.revoke_certification(
         &context.issuer1,
         &context.recipient1,
-        &0
-    ).expect("Failed to revoke certification");
+        &1  // First cert ID is 1
+    );
     
     // Verify status updated to Revoked
-    let status = client.check_cert_status(&context.recipient1, &0)
-        .expect("Failed to check certification status");
+    let status = client.check_cert_status(&context.recipient1, &1);  // First cert ID is 1
     assert_eq!(status, CertStatus::Revoked);
     
     // Verify a revoked certification cannot be verified
-    let verify_result = client.verify_document_hash(
+    let result = client.try_verify_document_hash(
         &context.recipient1,
-        &0,
+        &1,  // First cert ID is 1
         &doc_hash
     );
-    assert!(verify_result.is_err());
-    assert!(matches!(verify_result.unwrap_err(), VerifyError::Revoked));
+    
+    assert!(result.is_err());
+    if let Err(err) = result {
+        match err {
+            Ok(e) => assert_eq!(e, VerifyError::Revoked),
+            Err(_) => panic!("Expected contract error")
+        }
+    }
 }
 
 // Test unauthorized revocation
@@ -229,7 +244,7 @@ fn test_unauthorized_revocation() {
     let client = context.client();
     
     // Create test data
-    let cert_type = symbol!("ORGANIC");
+    let cert_type = context.symbol("ORGANIC");
     let now = context.env.ledger().timestamp();
     let expiration = now + 31536000; // 1 year
     let doc_hash = context.create_document_hash("Organic certification document");
@@ -242,19 +257,23 @@ fn test_unauthorized_revocation() {
         &cert_type,
         &expiration,
         &doc_hash
-    ).expect("Failed to issue certification");
+    );
     
     // Attempt to revoke with issuer2 (unauthorized)
     context.env.mock_all_auths();
     let result = client.try_revoke_certification(
         &context.issuer2,
         &context.recipient1,
-        &0
+        &1  // First cert ID is 1
     );
     
     assert!(result.is_err());
-    // Check for unauthorized error
-    assert!(matches!(result.unwrap_err(), RevokeError::Unauthorized));
+    if let Err(err) = result {
+        match err {
+            Ok(e) => assert_eq!(e, RevokeError::Unauthorized),  // It's returning Unauthorized
+            Err(_) => panic!("Expected contract error")
+        }
+    }
 }
 
 // Test certification expiration
@@ -264,7 +283,7 @@ fn test_expiration_date_respected() {
     let client = context.client();
     
     // Create test data
-    let cert_type = symbol!("ORGANIC");
+    let cert_type = context.symbol("ORGANIC");
     let now = context.env.ledger().timestamp();
     let expiration = now + 1000; // Short expiration (1000 seconds)
     let doc_hash = context.create_document_hash("Organic certification document");
@@ -277,11 +296,10 @@ fn test_expiration_date_respected() {
         &cert_type,
         &expiration,
         &doc_hash
-    ).expect("Failed to issue certification");
+    );
     
     // Verify certification is valid
-    let status = client.check_cert_status(&context.recipient1, &0)
-        .expect("Failed to check certification status");
+    let status = client.check_cert_status(&context.recipient1, &1);  // First cert ID is 1
     assert_eq!(status, CertStatus::Valid);
     
     // Advance time past expiration
@@ -291,22 +309,27 @@ fn test_expiration_date_respected() {
     context.env.mock_all_auths();
     client.expire_certification(
         &context.recipient1,
-        &0
-    ).expect("Failed to expire certification");
+        &1  // First cert ID is 1
+    );
     
     // Verify status updated to Expired
-    let status = client.check_cert_status(&context.recipient1, &0)
-        .expect("Failed to check certification status");
+    let status = client.check_cert_status(&context.recipient1, &1);  // First cert ID is 1
     assert_eq!(status, CertStatus::Expired);
     
     // Verify an expired certification cannot be verified
-    let verify_result = client.verify_document_hash(
+    let result = client.try_verify_document_hash(
         &context.recipient1,
-        &0,
+        &1,  // First cert ID is 1
         &doc_hash
     );
-    assert!(verify_result.is_err());
-    assert!(matches!(verify_result.unwrap_err(), VerifyError::Expired));
+    
+    assert!(result.is_err());
+    if let Err(err) = result {
+        match err {
+            Ok(e) => assert_eq!(e, VerifyError::Expired),
+            Err(_) => panic!("Expected contract error")
+        }
+    }
 }
 
 // Test audit report generation
@@ -323,38 +346,38 @@ fn test_certification_audit() {
     client.issue_certification(
         &context.issuer1,
         &context.recipient1,
-        &symbol!("ORGANIC"),
+        &context.symbol("ORGANIC"),
         &(now + 31536000),
         &context.create_document_hash("Organic certification document")
-    ).expect("Failed to issue organic certification");
+    );
     
     // Fair Trade certification for recipient1
     context.env.mock_all_auths();
     client.issue_certification(
         &context.issuer2,
         &context.recipient1,
-        &symbol!("FAIRTRADE"),
+        &context.symbol("FAIRTRADE"),
         &(now + 15768000),
         &context.create_document_hash("Fair Trade certification document")
-    ).expect("Failed to issue fair trade certification");
+    );
     
     // Organic certification for recipient2
     context.env.mock_all_auths();
     client.issue_certification(
         &context.issuer1,
         &context.recipient2,
-        &symbol!("ORGANIC"),
+        &context.symbol("ORGANIC"),
         &(now + 31536000),
         &context.create_document_hash("Organic certification document for recipient2")
-    ).expect("Failed to issue second organic certification");
+    );
     
     // Revoke one certification
     context.env.mock_all_auths();
     client.revoke_certification(
         &context.issuer1,
         &context.recipient2,
-        &0
-    ).expect("Failed to revoke certification");
+        &1  // First cert ID is 1
+    );
     
     // Test audit reports with different filters
     
@@ -364,7 +387,7 @@ fn test_certification_audit() {
         &None,
         &None,
         &None
-    ).expect("Failed to generate audit report");
+    );
     assert_eq!(recipient1_certs.len(), 2);
     
     // All certifications from issuer1
@@ -373,7 +396,7 @@ fn test_certification_audit() {
         &Some(context.issuer1.clone()),
         &None,
         &None
-    ).expect("Failed to generate filtered audit report");
+    );
     assert_eq!(issuer1_certs.len(), 1);
     
     // All revoked certifications
@@ -382,7 +405,7 @@ fn test_certification_audit() {
         &None,
         &Some(CertStatus::Revoked),
         &None
-    ).expect("Failed to generate status-filtered audit report");
+    );
     assert_eq!(revoked_certs.len(), 1);
 }
 
@@ -401,7 +424,12 @@ fn test_verify_nonexistent_certification() {
     );
     
     assert!(result.is_err());
-    assert!(matches!(result.unwrap_err(), VerifyError::CertNotFound));
+    if let Err(err) = result {
+        match err {
+            Ok(e) => assert_eq!(e, VerifyError::NotFound),
+            Err(_) => panic!("Expected contract error")
+        }
+    }
 }
 
 // Test authorization is required
@@ -410,7 +438,7 @@ fn test_authorization_required() {
     let context = TestContext::setup();
     let client = context.client();
     
-    let cert_type = symbol!("ORGANIC");
+    let cert_type = context.symbol("ORGANIC");
     let now = context.env.ledger().timestamp();
     let expiration = now + 31536000;
     let doc_hash = context.create_document_hash("Organic certification document");
@@ -432,13 +460,11 @@ fn test_authorization_required() {
     context.env.mock_all_auths();
     
     // Now it should work
-    let result = client.issue_certification(
+    client.issue_certification(
         &context.issuer1,
         &context.recipient1,
         &cert_type,
         &expiration,
         &doc_hash
     );
-    
-    assert!(result.is_ok());
-} 
+}
