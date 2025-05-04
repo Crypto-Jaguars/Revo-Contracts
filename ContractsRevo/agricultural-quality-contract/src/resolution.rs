@@ -1,9 +1,11 @@
-use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec, vec};
 use crate::datatypes::*;
+use soroban_sdk::{vec, Address, BytesN, Env, String, Symbol, Vec};
 
 // Helper function to verify mediator authorization
 fn verify_mediator(env: &Env, mediator: &Address) -> Result<(), AgricQualityError> {
-    let mediators: Vec<Address> = env.storage().instance()
+    let mediators: Vec<Address> = env
+        .storage()
+        .instance()
         .get(&DataKey::Mediators)
         .unwrap_or_else(|| vec![env]);
 
@@ -27,16 +29,16 @@ fn calculate_compensation_amount(
             // Full compensation based on certification score
             let base = 100_000; // Base compensation amount
             (base * certification.audit_score) / 100
-        },
+        }
         ResolutionOutcome::Modified => {
             // Partial compensation
             let base = 50_000;
             (base * certification.audit_score) / 100
-        },
+        }
         ResolutionOutcome::RequireReinspection => {
             // Compensation for reinspection costs
             25_000
-        },
+        }
         ResolutionOutcome::Dismissed => 0,
         ResolutionOutcome::Pending => 0, // No compensation while pending
     }
@@ -53,7 +55,9 @@ pub fn resolve_dispute(
     verify_mediator(env, mediator)?;
 
     // Get dispute data
-    let mut dispute: DisputeData = env.storage().instance()
+    let mut dispute: DisputeData = env
+        .storage()
+        .instance()
         .get(&DataKey::Dispute(dispute_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -68,7 +72,9 @@ pub fn resolve_dispute(
     }
 
     // Get certification data
-    let mut certification: CertificationData = env.storage().instance()
+    let mut certification: CertificationData = env
+        .storage()
+        .instance()
         .get(&DataKey::Certification(dispute.certification.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -76,24 +82,24 @@ pub fn resolve_dispute(
     match outcome {
         ResolutionOutcome::Upheld => {
             certification.status = CertificationStatus::Active;
-        },
+        }
         ResolutionOutcome::Revoked => {
             certification.status = CertificationStatus::Revoked;
-        },
+        }
         ResolutionOutcome::Modified => {
             certification.status = CertificationStatus::Active;
             // Adjust audit score based on findings
             certification.audit_score = (certification.audit_score * 90) / 100;
-        },
+        }
         ResolutionOutcome::RequireReinspection => {
             certification.status = CertificationStatus::Pending;
-        },
+        }
         ResolutionOutcome::Dismissed => {
             certification.status = CertificationStatus::Active;
-        },
+        }
         ResolutionOutcome::Pending => {
             return Err(AgricQualityError::InvalidStatus);
-        },
+        }
     }
 
     // Update dispute status
@@ -101,8 +107,13 @@ pub fn resolve_dispute(
     dispute.resolution = outcome;
 
     // Store updated data
-    env.storage().instance().set(&DataKey::Certification(dispute.certification.clone()), &certification);
-    env.storage().instance().set(&DataKey::Dispute(dispute_id.clone()), &dispute);
+    env.storage().instance().set(
+        &DataKey::Certification(dispute.certification.clone()),
+        &certification,
+    );
+    env.storage()
+        .instance()
+        .set(&DataKey::Dispute(dispute_id.clone()), &dispute);
 
     // Emit event
     env.events().publish(
@@ -118,10 +129,12 @@ pub fn process_appeal(
     appellant: &Address,
     dispute_id: &BytesN<32>,
     new_evidence: Vec<BytesN<32>>,
-    _justification: String, 
+    _justification: String,
 ) -> Result<(), AgricQualityError> {
     // Get dispute data
-    let mut dispute: DisputeData = env.storage().instance()
+    let mut dispute: DisputeData = env
+        .storage()
+        .instance()
         .get(&DataKey::Dispute(dispute_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -150,7 +163,9 @@ pub fn process_appeal(
     }
 
     // Store updated dispute
-    env.storage().instance().set(&DataKey::Dispute(dispute_id.clone()), &dispute);
+    env.storage()
+        .instance()
+        .set(&DataKey::Dispute(dispute_id.clone()), &dispute);
 
     // Emit event
     env.events().publish(
@@ -166,7 +181,9 @@ pub fn calculate_compensation(
     dispute_id: &BytesN<32>,
 ) -> Result<u32, AgricQualityError> {
     // Get dispute data
-    let dispute: DisputeData = env.storage().instance()
+    let dispute: DisputeData = env
+        .storage()
+        .instance()
         .get(&DataKey::Dispute(dispute_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -176,7 +193,9 @@ pub fn calculate_compensation(
     }
 
     // Get certification data
-    let certification: CertificationData = env.storage().instance()
+    let certification: CertificationData = env
+        .storage()
+        .instance()
         .get(&DataKey::Certification(dispute.certification.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -194,7 +213,9 @@ pub fn track_enforcement(
     _notes: String, // Prefix with underscore since unused
 ) -> Result<(), AgricQualityError> {
     // Verify authority
-    let authorities: Vec<Address> = env.storage().instance()
+    let authorities: Vec<Address> = env
+        .storage()
+        .instance()
         .get(&DataKey::Authorities)
         .unwrap_or_else(|| vec![env]);
 
@@ -204,7 +225,9 @@ pub fn track_enforcement(
     authority.require_auth();
 
     // Get dispute data
-    let dispute: DisputeData = env.storage().instance()
+    let dispute: DisputeData = env
+        .storage()
+        .instance()
         .get(&DataKey::Dispute(dispute_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -220,4 +243,4 @@ pub fn track_enforcement(
     );
 
     Ok(())
-} 
+}

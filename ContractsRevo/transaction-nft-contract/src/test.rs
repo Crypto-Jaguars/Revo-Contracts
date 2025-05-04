@@ -5,7 +5,8 @@ mod tests {
     use crate::TransactionNFTContract;
     use crate::TransactionNFTContractClient;
     use soroban_sdk::{
-        testutils::{Address as _, Events as _, Ledger, LedgerInfo}, Address, Bytes, BytesN, Env, FromVal,
+        testutils::{Address as _, Events as _, Ledger, LedgerInfo},
+        Address, Bytes, BytesN, Env, FromVal,
     };
 
     fn create_ledger_info(timestamp: u64) -> LedgerInfo {
@@ -233,7 +234,10 @@ mod tests {
         let tx_id2 = client.mint_nft(&buyer, &seller, &amount, &product2);
 
         // Verify that the two transaction IDs are unique
-        assert_ne!(tx_id1, tx_id2, "Transaction IDs should be unique for different products");
+        assert_ne!(
+            tx_id1, tx_id2,
+            "Transaction IDs should be unique for different products"
+        );
     }
 
     #[test]
@@ -305,7 +309,9 @@ mod tests {
         let metadata = client.get_nft_metadata(&tx_id).unwrap();
 
         // Ensure timestamp is correct
-        assert_eq!(metadata.timestamp, 12345, "Timestamp should match the ledger info");
+        assert_eq!(
+            metadata.timestamp, 12345,
+            "Timestamp should match the ledger info"
+        );
     }
-
 }

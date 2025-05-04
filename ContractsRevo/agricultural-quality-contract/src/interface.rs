@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 use crate::datatypes::*;
+use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
 /// Handles quality standards management operations
 pub trait QualityStandardsOps {
@@ -178,10 +178,7 @@ pub trait ResolutionOps {
 
     /// Calculate compensation amount for resolved dispute
     /// * `dispute_id` - ID of resolved dispute
-    fn calculate_compensation(
-        env: Env,
-        dispute_id: BytesN<32>,
-    ) -> Result<u32, AgricQualityError>;
+    fn calculate_compensation(env: Env, dispute_id: BytesN<32>) -> Result<u32, AgricQualityError>;
 
     /// Track enforcement of resolution
     /// * `authority` - Address authorized to track enforcement
@@ -195,4 +192,4 @@ pub trait ResolutionOps {
         enforced: bool,
         notes: String,
     ) -> Result<(), AgricQualityError>;
-} 
+}

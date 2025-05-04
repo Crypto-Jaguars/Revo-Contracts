@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, Bytes, BytesN, Env, String, Symbol, Vec, vec};
 use soroban_sdk::xdr::ToXdr;
+use soroban_sdk::{vec, Address, Bytes, BytesN, Env, String, Symbol, Vec};
 
 use crate::datatypes::*;
 
@@ -15,13 +15,15 @@ fn generate_certification_id(
     data.append(&Bytes::from_array(env, &[standard.to_u8()]));
     data.append(&Bytes::from_array(env, &timestamp.to_be_bytes()));
     data.append(&env.current_contract_address().to_xdr(env));
-    
+
     env.crypto().sha256(&data).into()
 }
 
 // Helper function to verify inspector authorization
 fn verify_inspector(env: &Env, inspector: &Address) -> Result<(), AgricQualityError> {
-    let inspectors: Vec<Address> = env.storage().instance()
+    let inspectors: Vec<Address> = env
+        .storage()
+        .instance()
         .get(&DataKey::Inspectors)
         .unwrap_or_else(|| vec![env]);
 
@@ -34,7 +36,9 @@ fn verify_inspector(env: &Env, inspector: &Address) -> Result<(), AgricQualityEr
 
 // Helper function to verify issuer authorization
 fn verify_issuer(env: &Env, issuer: &Address) -> Result<(), AgricQualityError> {
-    let authorities: Vec<Address> = env.storage().instance()
+    let authorities: Vec<Address> = env
+        .storage()
+        .instance()
         .get(&DataKey::Authorities)
         .unwrap_or_else(|| vec![env]);
 
@@ -55,15 +59,15 @@ pub fn submit_for_certification(
     holder.require_auth();
 
     // Generate certification ID
-    let certification_id = generate_certification_id(
-        env,
-        holder,
-        &standard,
-        env.ledger().timestamp(),
-    );
+    let certification_id =
+        generate_certification_id(env, holder, &standard, env.ledger().timestamp());
 
     // Check if certification already exists
-    if env.storage().persistent().has(&DataKey::Certification(certification_id.clone())) {
+    if env
+        .storage()
+        .persistent()
+        .has(&DataKey::Certification(certification_id.clone()))
+    {
         return Err(AgricQualityError::AlreadyExists);
     }
 
@@ -81,13 +85,21 @@ pub fn submit_for_certification(
         conditions,
     };
 
-    env.storage().persistent().set(&DataKey::Certification(certification_id.clone()), &certification);
+    env.storage().persistent().set(
+        &DataKey::Certification(certification_id.clone()),
+        &certification,
+    );
 
-    let mut holder_certs: Vec<BytesN<32>> = env.storage().persistent()
+    let mut holder_certs: Vec<BytesN<32>> = env
+        .storage()
+        .persistent()
         .get(&DataKey::HolderCertifications(holder.clone()))
         .unwrap_or_else(|| vec![env]);
     holder_certs.push_back(certification_id.clone());
-    env.storage().persistent().set(&DataKey::HolderCertifications(holder.clone()), &holder_certs);
+    env.storage().persistent().set(
+        &DataKey::HolderCertifications(holder.clone()),
+        &holder_certs,
+    );
 
     // Emit event
     env.events().publish(
@@ -109,7 +121,9 @@ pub fn record_inspection(
     // Verify inspector authorization
     verify_inspector(env, inspector)?;
 
-    let certification: CertificationData = env.storage().instance()
+    let certification: CertificationData = env
+        .storage()
+        .instance()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -119,9 +133,7 @@ pub fn record_inspection(
     }
 
     // Calculate overall score
-    let total_score: u32 = metrics.iter()
-        .map(|(_, score)| score)
-        .sum();
+    let total_score: u32 = metrics.iter().map(|(_, score)| score).sum();
     let overall_score = if !metrics.is_empty() {
         total_score / (metrics.len() as u32)
     } else {
@@ -138,7 +150,9 @@ pub fn record_inspection(
     };
 
     // Store inspection report
-    env.storage().instance().set(&DataKey::Inspection(certification_id.clone()), &report);
+    env.storage()
+        .instance()
+        .set(&DataKey::Inspection(certification_id.clone()), &report);
 
     // Emit event
     env.events().publish(
@@ -160,7 +174,9 @@ pub fn process_certification(
     verify_issuer(env, issuer)?;
 
     // Get certification data
-    let mut certification: CertificationData = env.storage().instance()
+    let mut certification: CertificationData = env
+        .storage()
+        .instance()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -170,7 +186,9 @@ pub fn process_certification(
     }
 
     // Get inspection report
-    let inspection: InspectionReport = env.storage().instance()
+    let inspection: InspectionReport = env
+        .storage()
+        .instance()
         .get(&DataKey::Inspection(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -188,14 +206,22 @@ pub fn process_certification(
     }
 
     // Store updated certification
-    env.storage().instance().set(&DataKey::Certification(certification_id.clone()), &certification);
+    env.storage().instance().set(
+        &DataKey::Certification(certification_id.clone()),
+        &certification,
+    );
 
     // Update issuer's certifications list
-    let mut issuer_certs: Vec<BytesN<32>> = env.storage().instance()
+    let mut issuer_certs: Vec<BytesN<32>> = env
+        .storage()
+        .instance()
         .get(&DataKey::IssuerCertifications(issuer.clone()))
         .unwrap_or_else(|| vec![env]);
     issuer_certs.push_back(certification_id.clone());
-    env.storage().instance().set(&DataKey::IssuerCertifications(issuer.clone()), &issuer_certs);
+    env.storage().instance().set(
+        &DataKey::IssuerCertifications(issuer.clone()),
+        &issuer_certs,
+    );
 
     // Emit event
     env.events().publish(
@@ -210,16 +236,22 @@ pub fn get_certification_history(
     env: &Env,
     holder: &Address,
 ) -> Result<Vec<CertificationData>, AgricQualityError> {
-    let cert_ids: Vec<BytesN<32>> = env.storage().instance()
+    let cert_ids: Vec<BytesN<32>> = env
+        .storage()
+        .instance()
         .get(&DataKey::HolderCertifications(holder.clone()))
         .unwrap_or_else(|| vec![env]);
 
     let mut certifications = vec![env];
     for id in cert_ids.iter() {
-        if let Some(cert) = env.storage().instance().get(&DataKey::Certification(id.clone())) {
+        if let Some(cert) = env
+            .storage()
+            .instance()
+            .get(&DataKey::Certification(id.clone()))
+        {
             certifications.push_back(cert);
         }
     }
 
     Ok(certifications)
-} 
+}
