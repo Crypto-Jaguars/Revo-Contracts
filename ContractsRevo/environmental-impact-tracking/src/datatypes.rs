@@ -16,7 +16,7 @@ pub enum DataKey {
     ProjectCredits(BytesN<32>),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[contracttype]
 pub enum RetirementStatus {
     Available,
