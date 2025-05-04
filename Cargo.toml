@@ -8,6 +8,7 @@ members = [
     "ContractsRevo/agricultural-auction-contract",
     "ContractsRevo/agricultural-quality-contract",
     "ContractsRevo/cooperative-management-contract",
+    "ContractsRevo/certificate-management-contract",
     "ContractsRevo/commodity-token-contract",
 ]
 
