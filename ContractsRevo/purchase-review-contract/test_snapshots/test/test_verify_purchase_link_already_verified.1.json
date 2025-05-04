@@ -47,10 +47,7 @@
                   "symbol": "PurchaseVerification"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -73,10 +70,7 @@
                       "symbol": "PurchaseVerification"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -107,10 +101,7 @@
                         "symbol": "product_id"
                       },
                       "val": {
-                        "u128": {
-                          "hi": 0,
-                          "lo": 12345
-                        }
+                        "u64": 12345
                       }
                     },
                     {

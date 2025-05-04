@@ -1,6 +1,6 @@
-use crate::CooperativeManagementContract;
 use crate::datatype::{CooperativeError, DataKey};
 use crate::interface::ProfitDistribution;
+use crate::CooperativeManagementContract;
 use soroban_sdk::{Address, Env, Map, Vec};
 
 impl ProfitDistribution for CooperativeManagementContract {
