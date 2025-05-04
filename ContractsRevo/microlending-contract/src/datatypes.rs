@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, BytesN, String};
+use soroban_sdk::{contracterror, contracttype, Address, BytesN, String};
 
 #[contracttype]
 pub enum DataKey {
@@ -83,4 +83,24 @@ pub struct SystemStats {
     pub total_funded: i128, // Total amount funded
     pub total_repaid: i128, // Total amount repaid
     pub default_rate: u32,  // Basis points (e.g., 500 = 5%)
+}
+
+// === Error Definitions ===
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum MicrolendingError {
+    AlreadyInitialized = 1,
+    InvalidAmount = 2,
+    InvalidDuration = 3,
+    InvalidInterestRate = 4,
+    InvalidCollateral = 5,
+    LoanNotFound = 6,
+    Unauthorized = 7,
+    InvalidLoanStatus = 8,
+    LoanFullyFunded = 9,
+    LoanNotRepayable = 10,
+    RepaymentExceedsDue = 11,
+    NotInDefault = 12,
+    NoContribution = 13,
 }
