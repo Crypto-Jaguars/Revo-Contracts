@@ -2,7 +2,7 @@ use crate::datatypes::*;
 use crate::fund::{calculate_lender_share_percentage, get_loan_fundings};
 use crate::repay::{calculate_total_repayment_due, get_loan_repayments};
 use crate::request::get_loan_request;
-use soroban_sdk::{token, Address, Env, Symbol, Vec};
+use soroban_sdk::{panic_with_error, token, Address, Env, Symbol};
 
 pub fn claim_default(env: &Env, lender: Address, loan_id: u32) {
     lender.require_auth();
@@ -12,22 +12,20 @@ pub fn claim_default(env: &Env, lender: Address, loan_id: u32) {
 
     // Verify loan is not already Defaulted or Completed
     if loan.status == LoanStatus::Defaulted || loan.status == LoanStatus::Completed {
-        panic!("Loan is already defaulted or completed");
+        panic_with_error!(env, MicrolendingError::InvalidLoanStatus);
     }
 
     // Check if loan is in default
     if !check_default_status(env, &loan) {
-        panic!("Loan is not in default");
+        panic_with_error!(env, MicrolendingError::NotInDefault);
     }
 
     // Verify lender has a contribution
     let mut contributions = get_loan_fundings(env, loan_id);
-    let has_contribution = contributions
+    let contribution_index = contributions
         .iter()
-        .any(|c| c.lender == lender && !c.claimed);
-    if !has_contribution {
-        panic!("Lender has no unclaimed contribution to this loan");
-    }
+        .position(|c| c.lender == lender && !c.claimed)
+        .unwrap_or_else(|| panic_with_error!(env, MicrolendingError::NoContribution));
 
     // Update loan status to Defaulted
     loan.status = LoanStatus::Defaulted;
@@ -63,42 +61,46 @@ pub fn claim_default(env: &Env, lender: Address, loan_id: u32) {
         .persistent()
         .get(&DataKey::SystemStats)
         .unwrap_or_else(|| SystemStats {
-            total_loans: total_loans_defaulted,
+            total_loans: env
+                .storage()
+                .persistent()
+                .get(&DataKey::TotalLoansCreated)
+                .unwrap_or(0),
             total_funded: 0,
             total_repaid: 0,
             default_rate: 0,
         });
-    system_stats.default_rate =
-        calculate_default_rate(env, &system_stats, total_loans_defaulted + 1);
+    system_stats.default_rate = calculate_default_rate(env, total_loans_defaulted + 1);
     env.storage()
         .persistent()
         .set(&DataKey::SystemStats, &system_stats);
 
-    // Distribute collateral value to lenders
+    // Distribute collateral value to the calling lender
     let collateral_value = loan.collateral.estimated_value;
     let token_id = env
         .storage()
         .persistent()
         .get(&DataKey::AssetCode)
-        .unwrap_or_else(|| panic!("Token contract not configured"));
+        .unwrap_or_else(|| panic_with_error!(env, MicrolendingError::TokenNotConfigured));
     let token_client = token::Client::new(env, &token_id);
 
-    for mut contribution in contributions.iter() {
-        if !contribution.claimed {
-            let lender_share_percentage =
-                calculate_lender_share_percentage(env, contribution.lender.clone(), loan_id);
-            let lender_share =
-                (collateral_value as u128 * lender_share_percentage as u128 / 10000) as i128;
-            if lender_share > 0 {
-                token_client.transfer(
-                    &env.current_contract_address(),
-                    &contribution.lender,
-                    &lender_share,
-                );
-                contribution.claimed = true;
-            }
-        }
+    // Check contract balance
+    let contract_balance = token_client.balance(&env.current_contract_address());
+    if contract_balance < collateral_value {
+        panic_with_error!(env, MicrolendingError::InsufficientBalance);
     }
+
+    // Process the calling lender's share
+    let mut contribution = contributions.get_unchecked(contribution_index as u32);
+    let lender_share_percentage = calculate_lender_share_percentage(env, lender.clone(), loan_id);
+    let lender_share = (collateral_value as u128 * lender_share_percentage as u128 / 10000) as i128;
+    if lender_share > 0 {
+        token_client.transfer(&env.current_contract_address(), &lender, &lender_share);
+        contribution.claimed = true;
+        contributions.set(contribution_index as u32, contribution);
+    }
+
+    // Store updated contributions
     env.storage()
         .persistent()
         .set(&DataKey::Funding(loan_id), &contributions);
@@ -111,7 +113,7 @@ pub fn claim_default(env: &Env, lender: Address, loan_id: u32) {
     // Emit default event
     env.events().publish(
         (Symbol::new(env, "loan_defaulted"),),
-        (loan_id, lender.clone(), collateral_value),
+        (loan_id, lender.clone(), lender_share),
     );
 }
 
@@ -136,11 +138,7 @@ pub fn check_default_status(env: &Env, loan: &LoanRequest) -> bool {
     false
 }
 
-fn calculate_default_rate(
-    env: &Env,
-    system_stats: &SystemStats,
-    total_loans_defaulted: u32,
-) -> u32 {
+fn calculate_default_rate(env: &Env, total_loans_defaulted: u32) -> u32 {
     let total_loans: u32 = env
         .storage()
         .persistent()

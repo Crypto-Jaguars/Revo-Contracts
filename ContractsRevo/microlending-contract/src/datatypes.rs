@@ -103,4 +103,6 @@ pub enum MicrolendingError {
     RepaymentExceedsDue = 11,
     NotInDefault = 12,
     NoContribution = 13,
+    TokenNotConfigured = 14,
+    InsufficientBalance = 15,
 }

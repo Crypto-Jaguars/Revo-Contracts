@@ -1,14 +1,14 @@
 use crate::datatypes::*;
 use crate::fund::{calculate_lender_share_percentage, get_loan_fundings};
 use crate::request::get_loan_request;
-use soroban_sdk::{token, Address, Env, Symbol, Vec};
+use soroban_sdk::{panic_with_error, token, Address, Env, Symbol, Vec};
 
 pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
     borrower.require_auth();
 
     // Validate inputs
     if amount <= 0 {
-        panic!("Repayment amount must be positive");
+        panic_with_error!(env, MicrolendingError::InvalidAmount);
     }
 
     // Get loan request
@@ -16,12 +16,12 @@ pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
 
     // Verify borrower is the loan creator
     if loan.borrower != borrower {
-        panic!("Only the loan creator can make repayments");
+        panic_with_error!(env, MicrolendingError::Unauthorized);
     }
 
     // Verify loan is Funded or Repaying
     if loan.status != LoanStatus::Funded && loan.status != LoanStatus::Repaying {
-        panic!("Loan is not in a repayable state");
+        panic_with_error!(env, MicrolendingError::LoanNotRepayable);
     }
 
     // Calculate total repayment due (principal + interest)
@@ -38,7 +38,7 @@ pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
     // Verify repayment doesn't exceed remaining amount
     let remaining_due = total_due - total_repaid;
     if amount > remaining_due {
-        panic!("Repayment amount exceeds remaining amount due");
+        panic_with_error!(env, MicrolendingError::RepaymentExceedsDue);
     }
 
     // Transfer repayment to contract
@@ -46,8 +46,13 @@ pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
         .storage()
         .persistent()
         .get(&DataKey::AssetCode)
-        .unwrap_or_else(|| panic!("Token contract not configured"));
+        .unwrap_or_else(|| panic_with_error!(env, MicrolendingError::TokenNotConfigured));
     let token_client = token::Client::new(env, &token_id);
+
+    // Check borrower balance
+    if token_client.balance(&borrower) < amount {
+        panic_with_error!(env, MicrolendingError::InsufficientBalance);
+    }
     token_client.transfer(&borrower, &env.current_contract_address(), &amount);
 
     // Record repayment
@@ -63,6 +68,11 @@ pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
     let is_first_repayment = loan.status == LoanStatus::Funded;
     if is_first_repayment {
         loan.status = LoanStatus::Repaying;
+    }
+
+    // Check contract balance for lender distributions
+    if token_client.balance(&env.current_contract_address()) < amount {
+        panic_with_error!(env, MicrolendingError::InsufficientBalance);
     }
 
     // Distribute repayment to lenders proportionally
@@ -115,19 +125,17 @@ pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
             .set(&DataKey::TotalLoansCompleted, &(total_loans_completed + 1));
     }
 
-    let total_loans_completed: u32 = env
-        .storage()
-        .persistent()
-        .get(&DataKey::TotalLoansCompleted)
-        .unwrap_or(0);
-
     // Update system stats for total repaid
     let mut system_stats: SystemStats = env
         .storage()
         .persistent()
         .get(&DataKey::SystemStats)
         .unwrap_or_else(|| SystemStats {
-            total_loans: total_loans_completed,
+            total_loans: env
+                .storage()
+                .persistent()
+                .get(&DataKey::TotalLoansCreated)
+                .unwrap_or(0),
             total_funded: 0,
             total_repaid: 0,
             default_rate: 0,

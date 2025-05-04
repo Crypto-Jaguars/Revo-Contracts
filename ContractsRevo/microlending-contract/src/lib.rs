@@ -1,11 +1,12 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Vec};
+use soroban_sdk::{contract, contractimpl, panic_with_error, Address, Env, String, Symbol, Vec};
 
 mod claim;
 mod datatypes;
 mod fund;
 mod repay;
 mod request;
+mod test;
 
 pub use claim::*;
 pub use datatypes::*;
@@ -19,10 +20,20 @@ pub struct Microlending;
 #[contractimpl]
 impl Microlending {
     // Initialize the contract
-    pub fn initialize(env: Env, token_address: BytesN<32>) {
+    pub fn initialize(env: Env, token_address: Address) {
+        // Check if already initialized
+        if env.storage().persistent().has(&DataKey::AssetCode) {
+            panic_with_error!(env, MicrolendingError::AlreadyInitialized);
+        }
+
+        // Store token address
         env.storage()
             .persistent()
             .set(&DataKey::AssetCode, &token_address);
+
+        // Emit initialization event
+        env.events()
+            .publish((Symbol::new(&env, "initialized"),), (token_address,));
     }
 
     // Loan request functions

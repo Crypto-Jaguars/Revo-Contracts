@@ -1,13 +1,13 @@
 use crate::datatypes::*;
 use crate::request::get_loan_request;
-use soroban_sdk::{token, Address, Env, Symbol, Vec};
+use soroban_sdk::{panic_with_error, token, Address, Env, Symbol, Vec};
 
 pub fn fund_loan(env: &Env, lender: Address, loan_id: u32, amount: i128) {
     lender.require_auth();
 
     // Validate inputs
     if amount <= 0 {
-        panic!("Funding amount must be positive");
+        panic_with_error!(env, MicrolendingError::InvalidAmount);
     }
 
     // Get loan request
@@ -15,18 +15,18 @@ pub fn fund_loan(env: &Env, lender: Address, loan_id: u32, amount: i128) {
 
     // Verify loan is pending
     if loan.status != LoanStatus::Pending {
-        panic!("Only pending loans can be funded");
+        panic_with_error!(env, MicrolendingError::InvalidLoanStatus);
     }
 
     // Verify lender is not the borrower
     if loan.borrower == lender {
-        panic!("Borrower cannot fund their own loan");
+        panic_with_error!(env, MicrolendingError::Unauthorized);
     }
 
     // Calculate remaining amount needed
     let remaining_amount = loan.amount - loan.funded_amount;
     if remaining_amount <= 0 {
-        panic!("Loan is already fully funded");
+        panic_with_error!(env, MicrolendingError::LoanFullyFunded);
     }
 
     // Accept up to the remaining amount
@@ -37,11 +37,13 @@ pub fn fund_loan(env: &Env, lender: Address, loan_id: u32, amount: i128) {
         .storage()
         .persistent()
         .get(&DataKey::AssetCode)
-        .unwrap_or_else(|| {
-            // Placeholder: Assume XLM token contract (replace with actual token ID)
-            panic!("Token contract not configured");
-        });
+        .unwrap_or_else(|| panic_with_error!(env, MicrolendingError::TokenNotConfigured));
     let token_client = token::Client::new(env, &token_id);
+
+    // Check lender balance
+    if token_client.balance(&lender) < funding_amount {
+        panic_with_error!(env, MicrolendingError::InsufficientBalance);
+    }
     token_client.transfer(&lender, &env.current_contract_address(), &funding_amount);
 
     // Update funded amount
@@ -90,14 +92,16 @@ pub fn fund_loan(env: &Env, lender: Address, loan_id: u32, amount: i128) {
         loan.repayment_due_timestamp =
             Some(env.ledger().timestamp() + (loan.duration_days as u64) * 24 * 60 * 60);
 
-        // Disburse funds to borrower
+        // Check contract balance
+        if token_client.balance(&env.current_contract_address()) < loan.funded_amount {
+            panic_with_error!(env, MicrolendingError::InsufficientBalance);
+        }
         token_client.transfer(
             &env.current_contract_address(),
             &loan.borrower,
             &loan.funded_amount,
         );
 
-        // Update system stats
         total_loans_funded += 1;
         env.storage()
             .persistent()
@@ -110,7 +114,11 @@ pub fn fund_loan(env: &Env, lender: Address, loan_id: u32, amount: i128) {
         .persistent()
         .get(&DataKey::SystemStats)
         .unwrap_or_else(|| SystemStats {
-            total_loans: total_loans_funded,
+            total_loans: env
+                .storage()
+                .persistent()
+                .get(&DataKey::TotalLoansCreated)
+                .unwrap_or(0),
             total_funded: 0,
             total_repaid: 0,
             default_rate: 0,

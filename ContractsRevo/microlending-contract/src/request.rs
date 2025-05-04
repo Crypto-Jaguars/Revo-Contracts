@@ -1,5 +1,5 @@
 use crate::datatypes::*;
-use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{panic_with_error, Address, Env, String, Symbol, Vec};
 
 pub fn create_loan_request(
     env: &Env,
@@ -101,7 +101,7 @@ pub fn get_loan_request(env: &Env, loan_id: u32) -> LoanRequest {
     env.storage()
         .persistent()
         .get(&DataKey::Loan(loan_id))
-        .unwrap_or_else(|| panic!("Loan not found: {}", loan_id))
+        .unwrap_or_else(|| panic_with_error!(env, MicrolendingError::LoanNotFound))
 }
 
 pub fn get_borrower_loans(env: &Env, borrower: Address) -> Vec<u32> {
@@ -119,12 +119,12 @@ pub fn cancel_loan_request(env: &Env, borrower: Address, loan_id: u32) {
 
     // Verify borrower is the loan creator
     if loan.borrower != borrower {
-        panic!("Only the loan creator can cancel this loan request");
+        panic_with_error!(env, MicrolendingError::Unauthorized);
     }
 
     // Verify loan is still in pending status
     if loan.status != LoanStatus::Pending {
-        panic!("Only pending loans can be cancelled");
+        panic_with_error!(env, MicrolendingError::InvalidLoanStatus);
     }
 
     // Update loan status
@@ -157,12 +157,12 @@ pub fn update_loan_request(
 
     // Verify borrower is the loan creator
     if loan.borrower != borrower {
-        panic!("Only the loan creator can update this loan request");
+        panic_with_error!(env, MicrolendingError::Unauthorized);
     }
 
     // Verify loan is still in pending status and has no funding
     if loan.status != LoanStatus::Pending || loan.funded_amount > 0 {
-        panic!("Only unfunded pending loans can be updated");
+        panic_with_error!(env, MicrolendingError::InvalidLoanStatus);
     }
 
     // Validate inputs
@@ -195,20 +195,17 @@ fn validate_loan_inputs(
     collateral: &CollateralInfo,
 ) {
     if amount <= 0 {
-        panic!("Loan amount must be positive");
+        panic_with_error!(env, MicrolendingError::InvalidAmount);
     }
     if duration_days < 1 || duration_days > 1095 {
-        panic!("Loan duration must be between 1 day and 3 years");
+        panic_with_error!(env, MicrolendingError::InvalidDuration);
     }
     if interest_rate == 0 || interest_rate > 10000 {
-        panic!("Interest rate must be between 0.01% and 100%");
+        panic_with_error!(env, MicrolendingError::InvalidInterestRate);
     }
     let collateral_info = collateral;
-    if collateral_info.estimated_value <= 0 {
-        panic!("Collateral value must be positive");
-    }
-    if collateral_info.asset_type.is_empty() {
-        panic!("Collateral asset type must not be empty");
+    if collateral_info.estimated_value <= 0 || collateral_info.asset_type.is_empty() {
+        panic_with_error!(env, MicrolendingError::InvalidCollateral);
     }
 }
 
