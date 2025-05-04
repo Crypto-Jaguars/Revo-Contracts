@@ -26,14 +26,22 @@ impl EquipmentRentalContract {
     }
     /// Change the availability status of equipment
     pub fn update_availability(env: Env, id: BytesN<32>, available: bool) -> Result<(), Error> {
-        let caller = env.current_contract_address();
-        crate::equipment::update_availability(&env, id, caller, available)
+        // Get equipment and verify caller is the owner
+        let equipment = crate::equipment::get_equipment(&env, id.clone())
+            .ok_or(Error::from_contract_error(1006))?;
+        // Require authentication from the equipment owner
+        equipment.owner.require_auth();
+        crate::equipment::update_availability(&env, id, equipment.owner, available)
             .map_err(|_| Error::from_contract_error(1004))
     }
     /// Mark equipment status (Good, NeedsService, UnderMaintenance)
     pub fn update_maintenance_status(env: Env, id: BytesN<32>, status: crate::equipment::MaintenanceStatus) -> Result<(), Error> {
-        let caller = env.current_contract_address();
-        crate::equipment::update_maintenance_status(&env, id, caller, status)
+        // Get equipment and verify caller is the owner
+        let equipment = crate::equipment::get_equipment(&env, id.clone())
+            .ok_or(Error::from_contract_error(1006))?;
+        // Require authentication from the equipment owner
+        equipment.owner.require_auth();
+        crate::equipment::update_maintenance_status(&env, id, equipment.owner, status)
             .map_err(|_| Error::from_contract_error(1005))
     }
     /// Retrieve equipment details by ID
@@ -148,9 +156,8 @@ impl EquipmentRentalContract {
         // Get equipment and verify caller is the owner
         let equipment = crate::equipment::get_equipment(&env, equipment_id.clone())
             .expect("Equipment not found");
-        if env.current_contract_address() != equipment.owner {
-            panic!("Only the owner can log maintenance events");
-        }
+        // Require authentication from the equipment owner
+        equipment.owner.require_auth();
         crate::maintenance::log_maintenance(&env, equipment_id, status, timestamp, notes);
     }
     /// Retrieve maintenance history for all equipment
