@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, BytesN, String, Vec};
+use soroban_sdk::{contracttype, Address, BytesN, String};
 
 #[contracttype]
 pub enum DataKey {
@@ -13,8 +13,9 @@ pub enum DataKey {
     TotalLoansFunded,         // Total number of loans fully funded
     TotalLoansCompleted,      // Total number of loans fully repaid
     TotalLoansDefaulted,      // Total number of loans defaulted
+    AssetCode,                // Token contract address for funding
+    SystemStats,              // System-wide statistics
 }
-
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LoanRequest {
@@ -24,7 +25,7 @@ pub struct LoanRequest {
     pub purpose: String,
     pub duration_days: u32,
     pub interest_rate: u32, // Basis points (e.g., 1000 = 10%)
-    pub collateral: Option<CollateralInfo>,
+    pub collateral: CollateralInfo,
     pub status: LoanStatus,
     pub funded_amount: i128,                  // Total amount funded so far
     pub creation_timestamp: u64,              // Ledger timestamp when loan is created
