@@ -1,6 +1,6 @@
-use crate::CooperativeManagementContract;
 use crate::datatype::{CooperativeError, DataKey, Resource};
 use crate::interface::ResourceSharing;
+use crate::CooperativeManagementContract;
 use soroban_sdk::{Address, Env, String, Vec};
 
 impl ResourceSharing for CooperativeManagementContract {

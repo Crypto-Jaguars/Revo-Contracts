@@ -85,6 +85,6 @@ pub trait Governance {
     ) -> Result<(), CooperativeError>;
     fn execute_decision(env: Env, proposer: Address) -> Result<(), CooperativeError>;
     fn trigger_emergency(env: Env, caller: Address, reason: String)
-    -> Result<(), CooperativeError>;
+        -> Result<(), CooperativeError>;
     fn track_accountability(env: Env, member: Address) -> Result<i128, CooperativeError>;
 }

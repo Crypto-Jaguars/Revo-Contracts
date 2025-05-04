@@ -113,7 +113,7 @@ pub enum StorageCondition {
 }
 
 #[contracttype]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AgriculturalProduct {
     pub id: u64,
     pub farmer: Address,
@@ -137,7 +137,7 @@ pub struct AgriculturalProduct {
 }
 
 #[contracttype]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Auction {
     pub product_id: u64,
     pub highest_bid: u64,
@@ -153,7 +153,7 @@ pub struct Auction {
 }
 
 #[contracttype]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MarketPrice {
     pub product_type: Symbol,
     pub region: Symbol,

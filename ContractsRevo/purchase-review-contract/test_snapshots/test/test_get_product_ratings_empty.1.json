@@ -150,10 +150,7 @@
                 "symbol": "ratings_retrieved"
               },
               {
-                "u128": {
-                  "hi": 0,
-                  "lo": 999
-                }
+                "u64": 999
               }
             ],
             "data": {

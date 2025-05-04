@@ -1,9 +1,11 @@
-use soroban_sdk::{Address, BytesN, Env, Symbol, Vec, vec, String};
 use crate::datatypes::*;
+use soroban_sdk::{vec, Address, BytesN, Env, String, Symbol, Vec};
 
 // Helper function to verify authority
 fn verify_authority(env: &Env, authority: &Address) -> Result<(), AgricQualityError> {
-    let authorities: Vec<Address> = env.storage().instance()
+    let authorities: Vec<Address> = env
+        .storage()
+        .instance()
         .get(&DataKey::Authorities)
         .unwrap_or_else(|| vec![env]);
 
@@ -159,11 +161,15 @@ pub fn register_metric(
     env.storage().instance().set(&key, &metric);
 
     // Update standard metrics list
-    let mut metrics = env.storage().instance()
+    let mut metrics = env
+        .storage()
+        .instance()
         .get(&DataKey::StandardMetrics(standard.clone()))
         .unwrap_or_else(|| vec![env]);
     metrics.push_back(name.clone());
-    env.storage().instance().set(&DataKey::StandardMetrics(standard), &metrics);
+    env.storage()
+        .instance()
+        .set(&DataKey::StandardMetrics(standard), &metrics);
 
     // Emit event
     env.events().publish(
@@ -188,7 +194,9 @@ pub fn update_metric(
 
     // Get existing metric
     let key = DataKey::Metric(standard.clone(), name.clone());
-    let mut metric: QualityMetric = env.storage().instance()
+    let mut metric: QualityMetric = env
+        .storage()
+        .instance()
         .get(&key)
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -218,13 +226,19 @@ pub fn get_standard_metrics(
     env: &Env,
     standard: &QualityStandard,
 ) -> Result<Vec<QualityMetric>, AgricQualityError> {
-    let metric_names = env.storage().instance()
+    let metric_names = env
+        .storage()
+        .instance()
         .get(&DataKey::StandardMetrics(standard.clone()))
         .unwrap_or_else(|| vec![env]);
 
     let mut metrics = vec![env];
     for name in metric_names.iter() {
-        if let Some(metric) = env.storage().instance().get(&DataKey::Metric(standard.clone(), name)) {
+        if let Some(metric) = env
+            .storage()
+            .instance()
+            .get(&DataKey::Metric(standard.clone(), name))
+        {
             metrics.push_back(metric);
         }
     }
@@ -238,7 +252,9 @@ pub fn check_compliance(
     inspector: &Address,
 ) -> Result<InspectionReport, AgricQualityError> {
     // Verify inspector authorization
-    let inspectors: Vec<Address> = env.storage().instance()
+    let inspectors: Vec<Address> = env
+        .storage()
+        .instance()
         .get(&DataKey::Inspectors)
         .unwrap_or_else(|| vec![env]);
 
@@ -248,7 +264,9 @@ pub fn check_compliance(
     inspector.require_auth();
 
     // Get certification data
-    let certification: CertificationData = env.storage().instance()
+    let certification: CertificationData = env
+        .storage()
+        .instance()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -267,16 +285,16 @@ pub fn check_compliance(
 
     for metric in metrics.iter() {
         let score = calculate_metric_score(env, certification_id, &metric)?;
-        
+
         // Add findings and recommendations based on score
         if score < metric.min_score {
             findings.push_back(String::from_str(
                 env,
-                "Score below minimum required threshold"
+                "Score below minimum required threshold",
             ));
             recommendations.push_back(String::from_str(
                 env,
-                "Improve metric score to meet minimum requirements"
+                "Improve metric score to meet minimum requirements",
             ));
         }
 
@@ -318,17 +336,23 @@ fn calculate_metric_score(
     metric: &QualityMetric,
 ) -> Result<u32, AgricQualityError> {
     // Get certification data
-    let certification: CertificationData = env.storage().instance()
+    let certification: CertificationData = env
+        .storage()
+        .instance()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
     // Get the latest inspection report
-    let inspection: Option<InspectionReport> = env.storage().instance()
+    let inspection: Option<InspectionReport> = env
+        .storage()
+        .instance()
         .get(&DataKey::Inspection(certification_id.clone()));
 
     let base_score = if let Some(report) = inspection {
         // Find the score for this metric in the report
-        report.metrics.iter()
+        report
+            .metrics
+            .iter()
             .find(|(name, _)| name == &metric.name)
             .map(|(_, score)| score)
             .unwrap_or(0)
@@ -358,7 +382,7 @@ fn calculate_metric_score(
             } else {
                 time_factor
             }
-        },
+        }
         QualityStandard::Kosher => {
             // Binary scoring for kosher certification
             if time_factor >= metric.min_score {
@@ -366,10 +390,10 @@ fn calculate_metric_score(
             } else {
                 0
             }
-        },
+        }
         _ => time_factor,
     };
 
     // Ensure score doesn't exceed 100
     Ok(adjusted_score.min(100))
-} 
+}
