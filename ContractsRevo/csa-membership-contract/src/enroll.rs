@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, BytesN, Env, String};
+use soroban_sdk::{Address, BytesN, Env, String,Symbol};
 use crate::{CSAMembership, ShareSize, Error};
 
 pub fn enroll_membership(
@@ -15,7 +15,6 @@ pub fn enroll_membership(
     member.require_auth();
     env.logs().add("After require_auth", &[]);
 
-    // ⛏ Corrección: esta validación puede causar un panic explícito con panic_with_error
     crate::validate::validate_season(&env, farm_id.clone(), season.clone(), start_date, end_date)?;
     env.logs().add("After validate_season", &[]);
 
@@ -34,7 +33,10 @@ pub fn enroll_membership(
     env.storage().persistent().set(&token_id, &membership);
     env.logs().add("After storage set", &[]);
 
-    env.events().publish(("enroll_membership", "success"), (&member, &token_id));
+    env.events().publish(
+    (Symbol::new(&env, "membership_enrolled"), member.clone()),
+    token_id.clone(),
+);
     env.logs().add("After event publish", &[]);
 
     Ok(token_id)

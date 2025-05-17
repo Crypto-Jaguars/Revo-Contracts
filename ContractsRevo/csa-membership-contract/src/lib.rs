@@ -75,6 +75,5 @@ pub mod manage;
 pub mod validate;
 pub mod metadata;
 pub mod cancel;
-
-#[cfg(test)]
-mod test;
+pub mod errors;
+pub mod types;

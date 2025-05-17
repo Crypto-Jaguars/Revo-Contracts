@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, BytesN, Env};
+use soroban_sdk::{Address, BytesN, Env, Symbol}; 
 use crate::{CSAMembership, Error};
 
 pub fn cancel_membership(env: Env, token_id: BytesN<32>, member: Address) -> Result<(), Error> {
@@ -21,8 +21,12 @@ pub fn cancel_membership(env: Env, token_id: BytesN<32>, member: Address) -> Res
     env.storage().persistent().remove(&token_id);
     env.logs().add("After removing membership", &[]);
 
+    // Evento modificado con Symbol
     env.events()
-        .publish(("cancel_membership", "success"), (member, token_id));
+        .publish(
+            (Symbol::new(&env, "membership_cancelled"), member.clone()),
+            token_id,
+        );
     env.logs().add("After event publish", &[]);
 
     Ok(())

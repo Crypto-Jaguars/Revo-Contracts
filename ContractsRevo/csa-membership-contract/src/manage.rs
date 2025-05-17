@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, BytesN, Env, String};
+use soroban_sdk::{Address, BytesN, Env, String, Symbol}; 
 use crate::{CSAMembership, Error};
 
 pub fn update_pickup_location(
@@ -27,8 +27,10 @@ pub fn update_pickup_location(
     env.storage().persistent().set(&token_id, &membership);
     env.logs().add("After updating membership", &[]);
 
-    env.events()
-        .publish(("update_pickup_location", "success"), (member, token_id , new_location));
+    env.events().publish(
+        (Symbol::new(&env, "pickup_location_updated"), member.clone()),
+        (token_id, new_location),
+    );
     env.logs().add("After event publish", &[]);
 
     Ok(())
