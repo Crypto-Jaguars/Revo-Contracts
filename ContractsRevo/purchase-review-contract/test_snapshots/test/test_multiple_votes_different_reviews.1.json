@@ -18,10 +18,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "string": "First review"
@@ -49,10 +46,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "string": "Second review"
@@ -80,10 +74,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 0
@@ -111,10 +102,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 1
@@ -150,10 +138,7 @@
                   "symbol": "PurchaseVerification"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -176,10 +161,7 @@
                       "symbol": "PurchaseVerification"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -210,10 +192,7 @@
                         "symbol": "product_id"
                       },
                       "val": {
-                        "u128": {
-                          "hi": 0,
-                          "lo": 12345
-                        }
+                        "u64": 12345
                       }
                     },
                     {
@@ -259,10 +238,7 @@
                   "symbol": "PurchaseVerification"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
@@ -285,10 +261,7 @@
                       "symbol": "PurchaseVerification"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
@@ -319,10 +292,7 @@
                         "symbol": "product_id"
                       },
                       "val": {
-                        "u128": {
-                          "hi": 0,
-                          "lo": 12345
-                        }
+                        "u64": 12345
                       }
                     },
                     {
@@ -368,10 +338,7 @@
                   "symbol": "Review"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 0
@@ -394,10 +361,7 @@
                       "symbol": "Review"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "u32": 0
@@ -482,10 +446,7 @@
                   "symbol": "Review"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 1
@@ -508,10 +469,7 @@
                       "symbol": "Review"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "u32": 1
@@ -596,10 +554,7 @@
                   "symbol": "ReviewCount"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 }
               ]
             },
@@ -619,10 +574,7 @@
                       "symbol": "ReviewCount"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     }
                   ]
                 },
@@ -647,10 +599,7 @@
                   "symbol": "ReviewVote"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 0
@@ -676,10 +625,7 @@
                       "symbol": "ReviewVote"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "u32": 0
@@ -710,10 +656,7 @@
                   "symbol": "ReviewVote"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 1
@@ -739,10 +682,7 @@
                       "symbol": "ReviewVote"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "u32": 1
@@ -969,10 +909,7 @@
             "data": {
               "vec": [
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 1

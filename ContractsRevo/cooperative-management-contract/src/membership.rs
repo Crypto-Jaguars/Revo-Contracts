@@ -6,12 +6,12 @@ use soroban_sdk::{Address, Env, String};
 impl Membership for CooperativeManagementContract {
     fn register_member(env: Env, address: Address, name: String) -> Result<(), CooperativeError> {
         let key = DataKey::Member(address.clone());
-    
+
         // Check if the member is already registered
         if env.storage().persistent().has(&key) {
             return Err(CooperativeError::MemberAlreadyExists);
         }
-    
+
         let member = Member {
             address: address.clone(),
             name,
@@ -19,18 +19,13 @@ impl Membership for CooperativeManagementContract {
             contributions: 0,
             verified: false,
         };
-    
+
         env.storage().persistent().set(&key, &member);
-    
+
         Ok(())
     }
-    
 
-    fn verify_member(
-        env: Env,
-        admin: Address,
-        address: Address,
-    ) -> Result<(), CooperativeError> {
+    fn verify_member(env: Env, admin: Address, address: Address) -> Result<(), CooperativeError> {
         admin.require_auth();
         let address_key = DataKey::Member(address);
         if let Some(mut member) = env
@@ -46,11 +41,7 @@ impl Membership for CooperativeManagementContract {
         }
     }
 
-    fn track_contribution(
-        env: Env,
-        address: Address,
-        amount: u32,
-    ) -> Result<(), CooperativeError> {
+    fn track_contribution(env: Env, address: Address, amount: u32) -> Result<(), CooperativeError> {
         let address_key = DataKey::Member(address);
         if let Some(mut member) = env
             .storage()
@@ -73,7 +64,7 @@ impl Membership for CooperativeManagementContract {
     ) -> Result<(), CooperativeError> {
         // Ensure admin authorization
         admin.require_auth();
-    
+
         let address_key = DataKey::Member(address);
         if let Some(mut member) = env
             .storage()
@@ -87,5 +78,4 @@ impl Membership for CooperativeManagementContract {
             Err(CooperativeError::MemberNotFound)
         }
     }
-    
 }

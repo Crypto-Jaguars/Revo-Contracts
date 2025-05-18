@@ -2,11 +2,11 @@
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Vec};
 
 mod datatypes;
+mod dispute_handling;
 mod interface;
 mod quality_metrics;
-mod verification;
-mod dispute_handling;
 mod resolution;
+mod verification;
 
 use datatypes::*;
 use interface::*;
@@ -99,7 +99,14 @@ impl VerificationOps for AgricQualityContract {
         findings: Vec<String>,
         recommendations: Vec<String>,
     ) -> Result<(), AgricQualityError> {
-        verification::record_inspection(&env, &inspector, &certification_id, metrics, findings, recommendations)
+        verification::record_inspection(
+            &env,
+            &inspector,
+            &certification_id,
+            metrics,
+            findings,
+            recommendations,
+        )
     }
 
     fn process_certification(
@@ -109,7 +116,13 @@ impl VerificationOps for AgricQualityContract {
         approved: bool,
         validity_period: u64,
     ) -> Result<(), AgricQualityError> {
-        verification::process_certification(&env, &issuer, &certification_id, approved, validity_period)
+        verification::process_certification(
+            &env,
+            &issuer,
+            &certification_id,
+            approved,
+            validity_period,
+        )
     }
 
     fn get_certification_history(
@@ -140,7 +153,14 @@ impl DisputeOps for AgricQualityContract {
         data_type: Symbol,
         metadata: Vec<(Symbol, String)>,
     ) -> Result<BytesN<32>, AgricQualityError> {
-        dispute_handling::submit_evidence(&env, &handler, &dispute_id, description, data_type, metadata)
+        dispute_handling::submit_evidence(
+            &env,
+            &handler,
+            &dispute_id,
+            description,
+            data_type,
+            metadata,
+        )
     }
 
     fn assign_mediator(
@@ -182,10 +202,7 @@ impl ResolutionOps for AgricQualityContract {
         resolution::process_appeal(&env, &appellant, &dispute_id, new_evidence, justification)
     }
 
-    fn calculate_compensation(
-        env: Env,
-        dispute_id: BytesN<32>,
-    ) -> Result<u32, AgricQualityError> {
+    fn calculate_compensation(env: Env, dispute_id: BytesN<32>) -> Result<u32, AgricQualityError> {
         resolution::calculate_compensation(&env, &dispute_id)
     }
 
