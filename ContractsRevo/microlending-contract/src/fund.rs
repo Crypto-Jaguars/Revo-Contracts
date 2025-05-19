@@ -89,8 +89,18 @@ pub fn fund_loan(env: &Env, lender: Address, loan_id: u32, amount: i128) {
     if is_fully_funded {
         loan.status = LoanStatus::Funded;
         loan.funded_timestamp = Some(env.ledger().timestamp());
-        loan.repayment_due_timestamp =
-            Some(env.ledger().timestamp() + (loan.duration_days as u64) * 24 * 60 * 60);
+        // Set final due date based on schedule or duration
+        let due_timestamp = if loan.repayment_schedule.installments > 0 {
+            env.ledger().timestamp()
+                + (loan.repayment_schedule.installments * loan.repayment_schedule.frequency_days)
+                    as u64
+                    * 24
+                    * 60
+                    * 60
+        } else {
+            env.ledger().timestamp() + (loan.duration_days as u64) * 24 * 60 * 60
+        };
+        loan.repayment_due_timestamp = Some(due_timestamp);
 
         // Check contract balance
         if token_client.balance(&env.current_contract_address()) < loan.funded_amount {

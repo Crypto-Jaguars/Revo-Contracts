@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, contracttype, Address, BytesN, String};
+use soroban_sdk::{contracterror, contracttype, Address, BytesN, String, Vec};
 
 #[contracttype]
 pub enum DataKey {
@@ -16,6 +16,7 @@ pub enum DataKey {
     AssetCode,                // Token contract address for funding
     SystemStats,              // System-wide statistics
 }
+
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LoanRequest {
@@ -27,10 +28,11 @@ pub struct LoanRequest {
     pub interest_rate: u32, // Basis points (e.g., 1000 = 10%)
     pub collateral: CollateralInfo,
     pub status: LoanStatus,
-    pub funded_amount: i128,                  // Total amount funded so far
-    pub creation_timestamp: u64,              // Ledger timestamp when loan is created
-    pub funded_timestamp: Option<u64>,        // Ledger timestamp when loan is funded
-    pub repayment_due_timestamp: Option<u64>, // Ledger timestamp when repayment is due
+    pub funded_amount: i128,                   // Total amount funded so far
+    pub creation_timestamp: u64,               // Ledger timestamp when loan is created
+    pub funded_timestamp: Option<u64>,         // Ledger timestamp when loan is funded
+    pub repayment_due_timestamp: Option<u64>,  // Ledger timestamp when repayment is due
+    pub repayment_schedule: RepaymentSchedule, // Repayment schedule (if applicable)
 }
 
 #[contracttype]
@@ -52,6 +54,17 @@ pub enum LoanStatus {
     Cancelled, // Loan request cancelled by borrower
 }
 
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LoanHistory {
+    pub loan_request: LoanRequest,
+    pub funding_contributions: Vec<FundingContribution>,
+    pub repayments: Vec<Repayment>,
+    pub total_due: i128,
+    pub total_repaid: i128,
+    pub interest_earned: i128,
+    pub status: LoanStatus,
+}
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FundingContribution {
@@ -85,6 +98,14 @@ pub struct SystemStats {
     pub default_rate: u32,  // Basis points (e.g., 500 = 5%)
 }
 
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RepaymentSchedule {
+    pub installments: u32,   // Total number of payments (0 for single payment)
+    pub frequency_days: u32, // Days between payments (e.g., 30 for monthly, 0 for single payment)
+    pub per_installment_amount: i128, // Amount per installment (principal + interest) and 0 for single payment
+}
+
 // === Error Definitions ===
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -105,4 +126,6 @@ pub enum MicrolendingError {
     NoContribution = 13,
     TokenNotConfigured = 14,
     InsufficientBalance = 15,
+    InvalidRepaymentSchedule = 16,
+    RepaymentScheduleViolation = 17,
 }

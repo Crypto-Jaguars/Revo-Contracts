@@ -123,9 +123,31 @@ pub fn check_default_status(env: &Env, loan: &LoanRequest) -> bool {
     }
 
     let current_timestamp = env.ledger().timestamp();
-    if let Some(due_timestamp) = loan.repayment_due_timestamp {
+    let funded_timestamp = loan.funded_timestamp.unwrap_or(current_timestamp);
+
+    // Check based on repayment schedule
+    if loan.repayment_schedule.installments > 0 {
+        let repayments = get_loan_repayments(env, loan.id);
+        let elapsed_days = (current_timestamp - funded_timestamp) / (24 * 60 * 60);
+        let expected_installments =
+            (elapsed_days / loan.repayment_schedule.frequency_days as u64) as u32;
+        // Allow a 7-day grace period for missed installments
+        let grace_period = 7 * 24 * 60 * 60;
+        if expected_installments > repayments.len() as u32
+            && current_timestamp > funded_timestamp + grace_period
+        {
+            return true;
+        }
+        // Check if total repaid is less than expected
+        let expected_repaid =
+            expected_installments as i128 * loan.repayment_schedule.per_installment_amount;
+        let total_repaid: i128 = repayments.iter().map(|r| r.amount).sum();
+        if total_repaid < expected_repaid {
+            return true;
+        }
+    } else if let Some(due_timestamp) = loan.repayment_due_timestamp {
+        // Fallback for single payment
         if current_timestamp > due_timestamp {
-            // Check if loan is fully repaid
             let total_due = calculate_total_repayment_due(loan);
             let repayments = get_loan_repayments(env, loan.id);
             let total_repaid: i128 = repayments.iter().map(|r| r.amount).sum();

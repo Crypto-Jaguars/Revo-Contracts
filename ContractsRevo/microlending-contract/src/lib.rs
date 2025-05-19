@@ -6,7 +6,6 @@ mod datatypes;
 mod fund;
 mod repay;
 mod request;
-mod test;
 
 pub use claim::*;
 pub use datatypes::*;
@@ -59,6 +58,33 @@ impl Microlending {
 
     pub fn get_loan_request(env: Env, loan_id: u32) -> LoanRequest {
         request::get_loan_request(&env, loan_id)
+    }
+
+    pub fn get_loan_history(env: &Env, loan_id: u32) -> LoanHistory {
+        let loan = get_loan_request(env, loan_id);
+        let fundings = get_loan_fundings(env, loan_id);
+        let repayments = get_loan_repayments(env, loan_id);
+        let total_due = calculate_total_repayment_due(&loan);
+        let total_repaid: i128 = repayments.iter().map(|r| r.amount).sum();
+        let interest_earned = if total_repaid > loan.amount {
+            total_repaid - loan.amount
+        } else {
+            0
+        };
+
+        LoanHistory {
+            loan_request: loan.clone(),
+            funding_contributions: fundings,
+            repayments,
+            total_due,
+            total_repaid,
+            interest_earned,
+            status: if check_default_status(env, &loan) {
+                LoanStatus::Defaulted
+            } else {
+                loan.status
+            },
+        }
     }
 
     pub fn get_borrower_loans(env: Env, borrower: Address) -> Vec<u32> {
