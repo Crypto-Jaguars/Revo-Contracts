@@ -18,6 +18,32 @@ pub fn create_loan_request(
     // Get next loan ID
     let loan_id = next_loan_id(env);
 
+    // Calculate total repayment due
+    let principal = amount;
+    let interest = (principal as u128 * interest_rate as u128 / 10000) as i128;
+    let total_due = principal + interest;
+
+    // Create repayment schedule
+    let repayment_schedule = if duration_days >= 30 {
+        let installments = duration_days / 30; // Monthly payments
+        if installments == 0 {
+            panic_with_error!(env, MicrolendingError::InvalidRepaymentSchedule);
+        }
+        let frequency_days = 30;
+        let per_installment_amount = total_due / installments as i128;
+        RepaymentSchedule {
+            installments,
+            frequency_days,
+            per_installment_amount,
+        }
+    } else {
+        RepaymentSchedule {
+            installments: 0,
+            frequency_days: 0,
+            per_installment_amount: 0,
+        }
+    };
+
     // Create loan request
     let loan_request = LoanRequest {
         id: loan_id,
@@ -32,6 +58,7 @@ pub fn create_loan_request(
         creation_timestamp: env.ledger().timestamp(),
         funded_timestamp: None,
         repayment_due_timestamp: None,
+        repayment_schedule,
     };
 
     // Store loan request
@@ -94,6 +121,19 @@ pub fn create_loan_request(
         (loan_id, borrower.clone(), amount),
     );
 
+    // Emit repayment schedule event if applicable
+    if loan_request.repayment_schedule.installments > 0 {
+        env.events().publish(
+            (Symbol::new(&env, "repayment_schedule_set"),),
+            (
+                loan_id,
+                loan_request.repayment_schedule.installments,
+                loan_request.repayment_schedule.frequency_days,
+                loan_request.repayment_schedule.per_installment_amount,
+            ),
+        );
+    }
+
     loan_id
 }
 
@@ -135,7 +175,7 @@ pub fn cancel_loan_request(env: &Env, borrower: Address, loan_id: u32) {
 
     // Emit loan cancelled event
     env.events().publish(
-        (Symbol::new(env, "loan_cancelled"),),
+        (Symbol::new(&env, "loan_cancelled"),),
         (loan_id, borrower.clone()),
     );
 }
@@ -175,6 +215,28 @@ pub fn update_loan_request(
     loan.interest_rate = interest_rate;
     loan.collateral = collateral;
 
+    // Recalculate repayment schedule
+    let total_due = amount + (amount as u128 * interest_rate as u128 / 10000) as i128;
+    loan.repayment_schedule = if duration_days >= 30 {
+        let installments = duration_days / 30;
+        if installments == 0 {
+            panic_with_error!(env, MicrolendingError::InvalidRepaymentSchedule);
+        }
+        let frequency_days = 30;
+        let per_installment_amount = total_due / installments as i128;
+        RepaymentSchedule {
+            installments,
+            frequency_days,
+            per_installment_amount,
+        }
+    } else {
+        RepaymentSchedule {
+            installments: 0,
+            frequency_days: 0,
+            per_installment_amount: 0,
+        }
+    };
+
     // Store updated loan
     env.storage()
         .persistent()
@@ -182,7 +244,7 @@ pub fn update_loan_request(
 
     // Emit loan updated event
     env.events().publish(
-        (Symbol::new(env, "loan_updated"),),
+        (Symbol::new(&env, "loan_updated"),),
         (loan_id, borrower.clone()),
     );
 }
