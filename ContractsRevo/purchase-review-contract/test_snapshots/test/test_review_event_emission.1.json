@@ -18,10 +18,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "string": "This product is excellent!"
@@ -57,10 +54,7 @@
                   "symbol": "PurchaseVerification"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -83,10 +77,7 @@
                       "symbol": "PurchaseVerification"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -117,10 +108,7 @@
                         "symbol": "product_id"
                       },
                       "val": {
-                        "u128": {
-                          "hi": 0,
-                          "lo": 12345
-                        }
+                        "u64": 12345
                       }
                     },
                     {
@@ -166,10 +154,7 @@
                   "symbol": "Review"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 0
@@ -192,10 +177,7 @@
                       "symbol": "Review"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "u32": 0
@@ -280,10 +262,7 @@
                   "symbol": "ReviewCount"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 }
               ]
             },
@@ -303,10 +282,7 @@
                       "symbol": "ReviewCount"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     }
                   ]
                 },
@@ -428,10 +404,7 @@
             "data": {
               "vec": [
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "u32": 0

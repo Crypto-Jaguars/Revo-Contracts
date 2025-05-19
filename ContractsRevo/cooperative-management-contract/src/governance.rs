@@ -1,6 +1,6 @@
-use crate::CooperativeManagementContract;
 use crate::datatype::{CooperativeError, DataKey, Proposal};
 use crate::interface::Governance;
+use crate::CooperativeManagementContract;
 use soroban_sdk::{Address, Env, String};
 
 impl Governance for CooperativeManagementContract {
@@ -74,19 +74,25 @@ impl Governance for CooperativeManagementContract {
         }
     }
 
-    fn trigger_emergency(env: Env, caller: Address, reason: String) -> Result<(), CooperativeError> {
+    fn trigger_emergency(
+        env: Env,
+        caller: Address,
+        reason: String,
+    ) -> Result<(), CooperativeError> {
         let admin_key = DataKey::Admin; // Assuming Admin address is stored
-        let admin = env.storage().persistent().get::<DataKey, Address>(&admin_key);
-    
+        let admin = env
+            .storage()
+            .persistent()
+            .get::<DataKey, Address>(&admin_key);
+
         if Some(caller.clone()) != admin {
             return Err(CooperativeError::Unauthorized);
         }
-    
+
         let key = DataKey::Emergency;
         env.storage().persistent().set(&key, &reason);
         Ok(())
     }
-    
 
     fn track_accountability(env: Env, member: Address) -> Result<i128, CooperativeError> {
         let key = DataKey::Reputation(member.clone());
