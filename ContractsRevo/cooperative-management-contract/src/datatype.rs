@@ -22,7 +22,7 @@ pub enum CooperativeError {
 pub enum DataKey {
     Admin,
     Member(Address),
-    Resource(Address,u32),
+    Resource(Address, u32),
     ResourceCounter,
     OwnerResources(Address),
     MaintenanceLog(Address),

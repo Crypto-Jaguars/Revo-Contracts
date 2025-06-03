@@ -1,0 +1,11 @@
+[package]
+name = "equipment-rental-contract"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+soroban-sdk = "22.0.6"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"

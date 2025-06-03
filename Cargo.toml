@@ -14,6 +14,7 @@ members = [
     "ContractsRevo/commodity-token-contract"
 ]
 
+
 [workspace.dependencies]
 soroban-sdk = "22.0.6"
 [profile.release]
