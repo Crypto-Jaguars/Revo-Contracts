@@ -1,7 +1,7 @@
 #![no_std]
 
 use datatype::DataKey;
-use soroban_sdk::{Address, Env, contract, contractimpl};
+use soroban_sdk::{contract, contractimpl, Address, Env};
 
 mod datatype;
 mod governance;

@@ -37,10 +37,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "string": "https://example.com/purchase/12345"
@@ -73,10 +70,7 @@
                   "symbol": "PurchaseVerification"
                 },
                 {
-                  "u128": {
-                    "hi": 0,
-                    "lo": 12345
-                  }
+                  "u64": 12345
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -99,10 +93,7 @@
                       "symbol": "PurchaseVerification"
                     },
                     {
-                      "u128": {
-                        "hi": 0,
-                        "lo": 12345
-                      }
+                      "u64": 12345
                     },
                     {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -133,10 +124,7 @@
                         "symbol": "product_id"
                       },
                       "val": {
-                        "u128": {
-                          "hi": 0,
-                          "lo": 12345
-                        }
+                        "u64": 12345
                       }
                     },
                     {
@@ -323,10 +311,7 @@
               }
             ],
             "data": {
-              "u128": {
-                "hi": 0,
-                "lo": 12345
-              }
+              "u64": 12345
             }
           }
         }

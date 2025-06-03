@@ -1,19 +1,19 @@
-use soroban_sdk::{contracttype, contracterror, Address, BytesN, String, Symbol, Vec};
+use soroban_sdk::{contracterror, contracttype, Address, BytesN, String, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum QualityStandard {
-    GlobalGAP,           // Global Good Agricultural Practices
-    Organic,             // Organic Certification
-    Fairtrade,          // Fairtrade Certification
-    UTZ,                // UTZ Certification
-    NonGMO,             // Non-GMO Project Verified
-    PDO,                // Protected Designation of Origin
-    PGI,                // Protected Geographical Indication
-    Kosher,             // Kosher Certification
-    GOTS,               // Global Organic Textile Standard
-    Demeter,            // Demeter Biodynamic Certification
-    Custom(Symbol),      // Custom certification
+    GlobalGAP,      // Global Good Agricultural Practices
+    Organic,        // Organic Certification
+    Fairtrade,      // Fairtrade Certification
+    UTZ,            // UTZ Certification
+    NonGMO,         // Non-GMO Project Verified
+    PDO,            // Protected Designation of Origin
+    PGI,            // Protected Geographical Indication
+    Kosher,         // Kosher Certification
+    GOTS,           // Global Organic Textile Standard
+    Demeter,        // Demeter Biodynamic Certification
+    Custom(Symbol), // Custom certification
 }
 
 impl QualityStandard {
@@ -47,23 +47,23 @@ pub enum CertificationStatus {
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DisputeStatus {
-    Filed,              // Initial filing
-    UnderReview,        // Being reviewed
-    InMediation,        // In mediation process
-    Resolved,           // Resolution reached
-    Appealed,           // Under appeal
-    Closed,             // Final closure
+    Filed,       // Initial filing
+    UnderReview, // Being reviewed
+    InMediation, // In mediation process
+    Resolved,    // Resolution reached
+    Appealed,    // Under appeal
+    Closed,      // Final closure
 }
 
 #[contracttype]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ResolutionOutcome {
-    Upheld,             // Original certification stands
-    Revoked,            // Certification revoked
-    Modified,           // Certification modified
+    Upheld,              // Original certification stands
+    Revoked,             // Certification revoked
+    Modified,            // Certification modified
     RequireReinspection, // New inspection needed
-    Dismissed,          // Dispute rejected
-    Pending,           // Use instead of None
+    Dismissed,           // Dispute rejected
+    Pending,             // Use instead of None
 }
 
 #[contracttype]
@@ -130,22 +130,22 @@ pub struct Evidence {
 #[contracttype]
 pub enum DataKey {
     // Instance storage (small, frequently accessed data)
-    Admin,                                  // -> Address
-    Authorities,                            // -> Vec<Address>
-    Inspectors,                            // -> Vec<Address>
-    Mediators,                             // -> Vec<Address>
-    StandardMetrics(QualityStandard),      // Standard -> Vec<Symbol>
-    
+    Admin,                            // -> Address
+    Authorities,                      // -> Vec<Address>
+    Inspectors,                       // -> Vec<Address>
+    Mediators,                        // -> Vec<Address>
+    StandardMetrics(QualityStandard), // Standard -> Vec<Symbol>
+
     // Persistent storage (long-term data)
-    Certification(BytesN<32>),              // Certification ID -> CertificationData
-    Metric(QualityStandard, Symbol),        // (Standard, Name) -> QualityMetric
-    Inspection(BytesN<32>),                 // Inspection ID -> InspectionReport
-    Dispute(BytesN<32>),                    // Dispute ID -> DisputeData
-    Evidence(BytesN<32>),                   // Evidence hash -> Evidence
-    HolderCertifications(Address),          // Address -> Vec<BytesN<32>>
-    IssuerCertifications(Address),          // Address -> Vec<BytesN<32>>
-    DisputesByHolder(Address),              // Address -> Vec<BytesN<32>>
-    DisputesByStandard(QualityStandard),   // Standard -> Vec<BytesN<32>>
+    Certification(BytesN<32>), // Certification ID -> CertificationData
+    Metric(QualityStandard, Symbol), // (Standard, Name) -> QualityMetric
+    Inspection(BytesN<32>),    // Inspection ID -> InspectionReport
+    Dispute(BytesN<32>),       // Dispute ID -> DisputeData
+    Evidence(BytesN<32>),      // Evidence hash -> Evidence
+    HolderCertifications(Address), // Address -> Vec<BytesN<32>>
+    IssuerCertifications(Address), // Address -> Vec<BytesN<32>>
+    DisputesByHolder(Address), // Address -> Vec<BytesN<32>>
+    DisputesByStandard(QualityStandard), // Standard -> Vec<BytesN<32>>
 }
 
 #[contracterror]
@@ -176,4 +176,3 @@ pub enum AdminError {
     AlreadyInitialized = 1,
     UnauthorizedAccess = 2,
 }
-
