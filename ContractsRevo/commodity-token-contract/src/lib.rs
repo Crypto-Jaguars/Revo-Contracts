@@ -1,19 +1,24 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, BytesN, Env, Map, String, Vec, Val};
+use soroban_sdk::{
+    contract, contractimpl, contracttype, Address, BytesN, Env, Map, String, Val, Vec,
+};
 
-mod issue;
-mod redeem;
-mod validate;
-mod storage;
-mod metadata;
 mod error;
+mod issue;
+mod metadata;
+mod redeem;
+mod storage;
+mod validate;
 
-pub use issue::*;
-pub use redeem::*;
-pub use validate::*;
-pub use storage::*;
-pub use metadata::*;
 pub use error::*;
+pub use issue::*;
+pub use metadata::*;
+pub use redeem::*;
+pub use storage::*;
+pub use validate::*;
+
+#[cfg(test)]
+mod test;
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -35,6 +40,7 @@ pub struct Inventory {
 }
 
 #[contract]
+#[derive(Clone)]
 pub struct CommodityTokenContract;
 
 #[contractimpl]
@@ -47,7 +53,7 @@ impl CommodityTokenContract {
         storage::set_admin(&env, &admin);
         Ok(())
     }
-    
+
     pub fn issue_token(
         env: Env,
         issuer: Address,
@@ -60,17 +66,17 @@ impl CommodityTokenContract {
     ) -> Result<BytesN<32>, IssueError> {
         issuer.require_auth();
         issue::issue_token(
-            &env, 
-            &issuer, 
-            &commodity_type, 
-            quantity, 
-            &grade, 
-            &storage_location, 
+            &env,
+            &issuer,
+            &commodity_type,
+            quantity,
+            &grade,
+            &storage_location,
             expiration_date,
             &verification_data,
         )
     }
-    
+
     pub fn redeem_token(
         env: Env,
         token_id: BytesN<32>,
@@ -80,23 +86,26 @@ impl CommodityTokenContract {
         redeemer.require_auth();
         redeem::redeem_token(&env, &token_id, &redeemer, quantity)
     }
-    
-    pub fn get_token_metadata(env: Env, token_id: BytesN<32>) -> Result<CommodityBackedToken, ContractError> {
+
+    pub fn get_token_metadata(
+        env: Env,
+        token_id: BytesN<32>,
+    ) -> Result<CommodityBackedToken, ContractError> {
         metadata::get_token_metadata(&env, &token_id)
     }
-    
+
     pub fn list_available_inventory(env: Env, commodity_type: String) -> Inventory {
         storage::get_inventory(&env, &commodity_type)
     }
-    
+
     pub fn validate_commodity(
         env: Env,
         commodity_type: String,
-        verification_data: BytesN<32>
+        verification_data: BytesN<32>,
     ) -> bool {
         validate::validate_commodity(&env, &commodity_type, &verification_data)
     }
-    
+
     pub fn add_inventory(
         env: Env,
         admin: Address,
@@ -106,7 +115,7 @@ impl CommodityTokenContract {
         admin.require_auth();
         storage::add_inventory(&env, &admin, &commodity_type, quantity)
     }
-    
+
     pub fn register_commodity_verification(
         env: Env,
         admin: Address,
@@ -115,9 +124,15 @@ impl CommodityTokenContract {
         metadata: Map<String, String>,
     ) -> Result<(), ContractError> {
         admin.require_auth();
-        validate::register_commodity_verification(&env, &admin, &commodity_type, &verification_data, &metadata)
+        validate::register_commodity_verification(
+            &env,
+            &admin,
+            &commodity_type,
+            &verification_data,
+            &metadata,
+        )
     }
-    
+
     pub fn add_authorized_issuer(
         env: Env,
         admin: Address,
@@ -126,14 +141,11 @@ impl CommodityTokenContract {
         admin.require_auth();
         storage::add_authorized_issuer(&env, &admin, &issuer)
     }
-    
-    pub fn list_tokens_by_commodity(
-        env: Env,
-        commodity_type: String,
-    ) -> Vec<BytesN<32>> {
+
+    pub fn list_tokens_by_commodity(env: Env, commodity_type: String) -> Vec<BytesN<32>> {
         metadata::list_tokens_by_commodity(&env, &commodity_type)
     }
-    
+
     pub fn get_token_details(
         env: Env,
         token_id: BytesN<32>,
