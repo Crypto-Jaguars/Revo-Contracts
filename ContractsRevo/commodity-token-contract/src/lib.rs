@@ -15,6 +15,9 @@ pub use storage::*;
 pub use metadata::*;
 pub use error::*;
 
+#[cfg(test)]
+mod test;
+
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CommodityBackedToken {
@@ -35,6 +38,7 @@ pub struct Inventory {
 }
 
 #[contract]
+#[derive(Clone)]
 pub struct CommodityTokenContract;
 
 #[contractimpl]
