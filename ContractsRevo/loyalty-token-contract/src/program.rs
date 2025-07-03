@@ -1,7 +1,12 @@
-use soroban_sdk::{Env, BytesN, Vec, Symbol};
 use crate::{LoyaltyProgram, RedemptionOption};
+use soroban_sdk::{BytesN, Env, Symbol, Vec};
 
-pub fn create_loyalty_program(env: &Env, program_id: BytesN<32>, points_per_transaction: u32, redemption_options: Vec<RedemptionOption>) {
+pub fn create_loyalty_program(
+    env: &Env,
+    program_id: BytesN<32>,
+    points_per_transaction: u32,
+    redemption_options: Vec<RedemptionOption>,
+) {
     let key = (Symbol::new(env, "program"), program_id.clone());
     if env.storage().persistent().has(&key) {
         panic!("Program already exists");

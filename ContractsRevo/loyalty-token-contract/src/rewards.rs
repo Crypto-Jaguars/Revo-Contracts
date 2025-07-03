@@ -1,8 +1,7 @@
-use soroban_sdk::{Env, BytesN, Vec};
-use crate::{RedemptionOption, program::get_program_info};
+use crate::{program::get_program_info, RedemptionOption};
+use soroban_sdk::{BytesN, Env, Vec};
 
 pub fn list_available_rewards(env: &Env, program_id: BytesN<32>) -> Vec<RedemptionOption> {
-
     let program = get_program_info(env, program_id);
 
     let mut available_rewards = Vec::new(env);
@@ -13,5 +12,4 @@ pub fn list_available_rewards(env: &Env, program_id: BytesN<32>) -> Vec<Redempti
         }
     }
     available_rewards
-    
 }

@@ -12,7 +12,7 @@ pub fn check_cert_status(
         .instance()
         .get(&DataKey::UsersCertificates)
         .ok_or(CertificationError::NotFound)?;
- 
+
     let user_certificates = users_certificates
         .get(owner.clone())
         .ok_or(CertificationError::NotFound)?;

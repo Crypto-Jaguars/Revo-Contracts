@@ -26,6 +26,6 @@ pub fn verify_document_hash(
         (Symbol::new(&env, "certification_verified"), owner.clone()),
         env.ledger().timestamp(),
     );
-    
+
     Ok(())
 }

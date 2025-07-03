@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, BytesN, Env, String, Symbol}; 
 use crate::{CSAMembership, Error};
+use soroban_sdk::{Address, BytesN, Env, String, Symbol};
 
 pub fn update_pickup_location(
     env: Env,

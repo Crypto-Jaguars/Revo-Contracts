@@ -8,9 +8,9 @@ mod error;
 mod initialize;
 mod issue;
 mod revoke;
-mod verify;
 #[cfg(test)]
 mod test;
+mod verify;
 
 pub use datatypes::*;
 pub use error::{AdminError, AuditError, CertificationError, IssueError, RevokeError, VerifyError};

@@ -1,5 +1,5 @@
-use soroban_sdk::{BytesN, Env, String, Map, Address, Symbol};
 use crate::{storage, ContractError};
+use soroban_sdk::{Address, BytesN, Env, Map, String, Symbol};
 
 pub fn validate_commodity(
     env: &Env,
@@ -34,14 +34,11 @@ pub fn register_commodity_verification(
         (Symbol::new(env, "verification_registered"), admin.clone()),
         (commodity_type.clone(), verification_data.clone()),
     );
-    
+
     Ok(())
 }
 
-pub fn check_expiration(
-    env: &Env,
-    token_id: &BytesN<32>,
-) -> bool {
+pub fn check_expiration(env: &Env, token_id: &BytesN<32>) -> bool {
     if let Some(token) = storage::get_token(env, token_id) {
         let current_time = env.ledger().timestamp();
         return current_time <= token.expiration_date;
