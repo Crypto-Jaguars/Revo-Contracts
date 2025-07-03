@@ -1,13 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
+
     "ContractsRevo/*",
 ]
-
-
-
 [workspace.dependencies]
-soroban-sdk = "22.0.6"
+soroban-sdk = "22.0.7"
 [profile.release]
 opt-level = "z"
 overflow-checks = true
