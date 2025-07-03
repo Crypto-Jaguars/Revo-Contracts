@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, BytesN, Env, String,Symbol};
-use crate::{CSAMembership, ShareSize, Error};
+use crate::{CSAMembership, Error, ShareSize};
+use soroban_sdk::{Address, BytesN, Env, String, Symbol};
 
 pub fn enroll_membership(
     env: Env,
@@ -34,9 +34,9 @@ pub fn enroll_membership(
     env.logs().add("After storage set", &[]);
 
     env.events().publish(
-    (Symbol::new(&env, "membership_enrolled"), member.clone()),
-    token_id.clone(),
-);
+        (Symbol::new(&env, "membership_enrolled"), member.clone()),
+        token_id.clone(),
+    );
     env.logs().add("After event publish", &[]);
 
     Ok(token_id)

@@ -2,10 +2,9 @@
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, Error, String, Vec};
 
 mod equipment;
-mod rental;
-mod pricing;
 mod maintenance;
-
+mod pricing;
+mod rental;
 
 /// Main contract for equipment rental management
 #[contract]
@@ -35,7 +34,11 @@ impl EquipmentRentalContract {
             .map_err(|_| Error::from_contract_error(1004))
     }
     /// Mark equipment status (Good, NeedsService, UnderMaintenance)
-    pub fn update_maintenance_status(env: Env, id: BytesN<32>, status: crate::equipment::MaintenanceStatus) -> Result<(), Error> {
+    pub fn update_maintenance_status(
+        env: Env,
+        id: BytesN<32>,
+        status: crate::equipment::MaintenanceStatus,
+    ) -> Result<(), Error> {
         // Get equipment and verify caller is the owner
         let equipment = crate::equipment::get_equipment(&env, id.clone())
             .ok_or(Error::from_contract_error(1006))?;
@@ -59,7 +62,14 @@ impl EquipmentRentalContract {
         end_date: u64,
         total_price: i128,
     ) {
-        crate::rental::create_rental(&env, equipment_id, renter, start_date, end_date, total_price);
+        crate::rental::create_rental(
+            &env,
+            equipment_id,
+            renter,
+            start_date,
+            end_date,
+            total_price,
+        );
     }
     /// Confirm and activate a rental
     pub fn confirm_rental(env: Env, equipment_id: BytesN<32>) {
@@ -80,8 +90,8 @@ impl EquipmentRentalContract {
     /// Cancel a rental agreement before start date
     pub fn cancel_rental(env: Env, equipment_id: BytesN<32>) {
         // Get rental details
-        let rental = crate::rental::get_rental(&env, equipment_id.clone())
-            .expect("Rental not found");
+        let rental =
+            crate::rental::get_rental(&env, equipment_id.clone()).expect("Rental not found");
         // Either the renter or equipment owner can cancel
         let caller = env.current_contract_address();
         let equipment = crate::equipment::get_equipment(&env, equipment_id.clone())
@@ -102,7 +112,10 @@ impl EquipmentRentalContract {
         crate::rental::get_rental(&env, equipment_id)
     }
     /// Retrieve all rental agreements for a given equipment
-    pub fn get_rental_history_by_equipment(env: Env, equipment_id: BytesN<32>) -> Vec<crate::rental::Rental> {
+    pub fn get_rental_history_by_equipment(
+        env: Env,
+        equipment_id: BytesN<32>,
+    ) -> Vec<crate::rental::Rental> {
         crate::rental::get_rental_history_by_equipment(&env, equipment_id)
     }
     /// Retrieve all rental agreements for a given renter address
@@ -132,16 +145,10 @@ impl EquipmentRentalContract {
         proposed_price: i128,
         tolerance: i128,
     ) -> Result<(), Error> {
-        let equipment = equipment::get_equipment(&env, equipment_id)
-            .ok_or(Error::from_contract_error(1001))?;
-        pricing::validate_price(
-            &equipment,
-            start_date,
-            end_date,
-            proposed_price,
-            tolerance,
-        )
-        .map_err(|_| Error::from_contract_error(1003))
+        let equipment =
+            equipment::get_equipment(&env, equipment_id).ok_or(Error::from_contract_error(1001))?;
+        pricing::validate_price(&equipment, start_date, end_date, proposed_price, tolerance)
+            .map_err(|_| Error::from_contract_error(1003))
     }
 
     // Maintenance
@@ -163,7 +170,7 @@ impl EquipmentRentalContract {
     /// Retrieve maintenance history for all equipment
     pub fn get_maintenance_history(
         env: Env,
-        equipment_id: Option<BytesN<32>>
+        equipment_id: Option<BytesN<32>>,
     ) -> Vec<crate::maintenance::MaintenanceRecord> {
         crate::maintenance::get_maintenance_history(&env, equipment_id)
     }

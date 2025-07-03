@@ -1,4 +1,6 @@
-use soroban_sdk::{Address, BytesN, Env, Symbol, Map, contracttype, symbol_short, String, Vec, Error};
+use soroban_sdk::{
+    contracttype, symbol_short, Address, BytesN, Env, Error, Map, String, Symbol, Vec,
+};
 
 /// Status of equipment maintenance
 #[derive(Clone, Debug, Eq, PartialEq, Copy)]
@@ -58,52 +60,68 @@ pub fn register_equipment(
         maintenance_status: MaintenanceStatus::Good,
     };
     equipment_map.set(id.clone(), equipment);
-    env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+    env.storage()
+        .persistent()
+        .set(&EQUIPMENT_STORAGE, &equipment_map);
 }
 
 /// Change the availability status of equipment
-pub fn update_availability(env: &Env, id: BytesN<32>, caller: Address, available: bool) -> Result<(), Error> {
+pub fn update_availability(
+    env: &Env,
+    id: BytesN<32>,
+    caller: Address,
+    available: bool,
+) -> Result<(), Error> {
     let mut equipment_map: Map<BytesN<32>, Equipment> = env
         .storage()
         .persistent()
         .get(&EQUIPMENT_STORAGE)
         .unwrap_or(Map::new(env));
-    
+
     if !equipment_map.contains_key(id.clone()) {
         return Err(Error::from_contract_error(1006));
     }
-    
+
     let mut equipment = equipment_map.get_unchecked(id.clone());
     if equipment.owner != caller {
         return Err(Error::from_contract_error(1007));
     }
-    
+
     equipment.available = available;
     equipment_map.set(id.clone(), equipment);
-    env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+    env.storage()
+        .persistent()
+        .set(&EQUIPMENT_STORAGE, &equipment_map);
     Ok(())
 }
 
 /// Update maintenance status for equipment
-pub fn update_maintenance_status(env: &Env, id: BytesN<32>, caller: Address, status: MaintenanceStatus) -> Result<(), Error> {
+pub fn update_maintenance_status(
+    env: &Env,
+    id: BytesN<32>,
+    caller: Address,
+    status: MaintenanceStatus,
+) -> Result<(), Error> {
     let mut equipment_map: Map<BytesN<32>, Equipment> = env
         .storage()
         .persistent()
         .get(&EQUIPMENT_STORAGE)
         .unwrap_or(Map::new(env));
-    
+
     if !equipment_map.contains_key(id.clone()) {
         return Err(Error::from_contract_error(1006));
     }
-    
+
     let mut equipment = equipment_map.get_unchecked(id.clone());
     if equipment.owner != caller {
         return Err(Error::from_contract_error(1007));
     }
-    
+
     equipment.maintenance_status = status;
     equipment_map.set(id.clone(), equipment);
-    env.storage().persistent().set(&EQUIPMENT_STORAGE, &equipment_map);
+    env.storage()
+        .persistent()
+        .set(&EQUIPMENT_STORAGE, &equipment_map);
     Ok(())
 }
 

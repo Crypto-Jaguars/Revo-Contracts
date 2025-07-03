@@ -3,14 +3,14 @@ use core::result;
 
 use soroban_sdk::{
     testutils::{Address as _, Ledger},
-    Address, BytesN, Env, String, Vec
+    Address, BytesN, Env, String, Vec,
 };
 
+use crate::interfaces::{CarbonContract, ReportingContract, RetirementContract};
 use crate::{
     datatypes::{CarbonCredit, DataKey, RetirementStatus},
     EnvironmentalContract,
 };
-use crate::interfaces::{CarbonContract, RetirementContract, ReportingContract};
 
 // Helper function to set up test environment
 fn setup_test() -> (Env, Address, Address) {
@@ -18,7 +18,7 @@ fn setup_test() -> (Env, Address, Address) {
     let contract_id = env.register(EnvironmentalContract, ());
     let admin = Address::generate(&env);
 
-    (env, contract_id ,admin)
+    (env, contract_id, admin)
 }
 
 // Helper function to create a valid credit ID
@@ -338,7 +338,8 @@ fn test_get_credit_status() {
         );
 
         // Check initial status
-        let initial_status = EnvironmentalContract::get_credit_status(&env, credit_id.clone()).unwrap();
+        let initial_status =
+            EnvironmentalContract::get_credit_status(&env, credit_id.clone()).unwrap();
         assert_eq!(initial_status, RetirementStatus::Available);
 
         // Retire credit

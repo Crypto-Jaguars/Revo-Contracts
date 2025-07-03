@@ -1,5 +1,7 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, contracterror, BytesN, String, Address, Env};
+use soroban_sdk::{
+    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, String,
+};
 
 #[contracttype]
 #[derive(Clone, Debug)]
@@ -47,10 +49,24 @@ impl CSAMembershipContract {
         end_date: u64,
         member: Address,
     ) -> Result<BytesN<32>, Error> {
-        enroll::enroll_membership(env, farm_id, season, share_size, pickup_location, start_date, end_date, member)
+        enroll::enroll_membership(
+            env,
+            farm_id,
+            season,
+            share_size,
+            pickup_location,
+            start_date,
+            end_date,
+            member,
+        )
     }
 
-    pub fn update_pickup_location(env: Env, token_id: BytesN<32>, new_location: String, member: Address) -> Result<(), Error> {
+    pub fn update_pickup_location(
+        env: Env,
+        token_id: BytesN<32>,
+        new_location: String,
+        member: Address,
+    ) -> Result<(), Error> {
         crate::manage::update_pickup_location(env, token_id, new_location, member)
     }
 
@@ -70,10 +86,10 @@ pub enum ContractError {
     NotAuthorized = 2,
 }
 
-pub mod enroll;
-pub mod manage;
-pub mod validate;
-pub mod metadata;
 pub mod cancel;
+pub mod enroll;
 pub mod errors;
+pub mod manage;
+pub mod metadata;
 pub mod types;
+pub mod validate;
