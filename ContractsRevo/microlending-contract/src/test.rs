@@ -235,7 +235,7 @@ fn test_loan_history_and_tracking() {
             client.repay_loan(&borrower, &loan_id, &remaining_due);
         }
     }
-    let loan = client.get_loan_request(&loan_id);
+    let _loan = client.get_loan_request(&loan_id);
     // Check borrower loans
     let borrower_loans = client.get_borrower_loans(&borrower);
     assert!(borrower_loans.contains(&loan_id));
