@@ -1,5 +1,5 @@
-use soroban_sdk::{Env, BytesN, Symbol, Vec, contracttype, symbol_short, String};
 use crate::equipment::MaintenanceStatus;
+use soroban_sdk::{contracttype, symbol_short, BytesN, Env, String, Symbol, Vec};
 
 /// Record of a maintenance event for equipment
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -18,7 +18,13 @@ pub struct MaintenanceRecord {
 const MAINTENANCE_HISTORY_STORAGE: Symbol = symbol_short!("maint");
 
 /// Log a maintenance event for equipment
-pub fn log_maintenance(env: &Env, equipment_id: BytesN<32>, status: MaintenanceStatus, timestamp: u64, notes: Option<String>) {
+pub fn log_maintenance(
+    env: &Env,
+    equipment_id: BytesN<32>,
+    status: MaintenanceStatus,
+    timestamp: u64,
+    notes: Option<String>,
+) {
     let mut history: Vec<MaintenanceRecord> = env
         .storage()
         .persistent()
@@ -31,12 +37,18 @@ pub fn log_maintenance(env: &Env, equipment_id: BytesN<32>, status: MaintenanceS
         notes,
     };
     history.push_back(record);
-    env.storage().persistent().set(&MAINTENANCE_HISTORY_STORAGE, &history);
+    env.storage()
+        .persistent()
+        .set(&MAINTENANCE_HISTORY_STORAGE, &history);
 }
 
 /// Retrieve maintenance history, optionally filtered by equipment ID
-pub fn get_maintenance_history(env: &Env, equipment_id: Option<BytesN<32>>) -> Vec<MaintenanceRecord> {
-    let all_records: Vec<MaintenanceRecord> = env.storage()
+pub fn get_maintenance_history(
+    env: &Env,
+    equipment_id: Option<BytesN<32>>,
+) -> Vec<MaintenanceRecord> {
+    let all_records: Vec<MaintenanceRecord> = env
+        .storage()
         .persistent()
         .get(&MAINTENANCE_HISTORY_STORAGE)
         .unwrap_or(Vec::new(env));
@@ -58,9 +70,10 @@ pub fn get_maintenance_history_paginated(
     env: &Env,
     equipment_id: Option<BytesN<32>>,
     offset: u32,
-    limit: u32
+    limit: u32,
 ) -> Vec<MaintenanceRecord> {
-    let all_records: Vec<MaintenanceRecord> = env.storage()
+    let all_records: Vec<MaintenanceRecord> = env
+        .storage()
         .persistent()
         .get(&MAINTENANCE_HISTORY_STORAGE)
         .unwrap_or(Vec::new(env));

@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, BytesN, Env, Symbol, Map, contracttype, symbol_short, Vec};
 use crate::equipment::{get_equipment, MaintenanceStatus};
+use soroban_sdk::{contracttype, symbol_short, Address, BytesN, Env, Map, Symbol, Vec};
 
 /// Status of a rental agreement
 #[derive(Clone, Debug, Eq, PartialEq, Copy)]
@@ -58,8 +58,12 @@ pub fn create_rental(
         .persistent()
         .get(&RENTAL_STORAGE)
         .unwrap_or(Map::new(env));
-    if rental_map.contains_key(equipment_id.clone()) {
-        panic!("Rental already exists for this equipment");
+    if let Some(existing_rental) = rental_map.get(equipment_id.clone()) {
+        if existing_rental.status == RentalStatus::Pending
+            || existing_rental.status == RentalStatus::Active
+        {
+            panic!("Rental already exists for this equipment");
+        }
     }
     let rental = Rental {
         equipment_id: equipment_id.clone(),
@@ -78,7 +82,10 @@ pub fn create_rental(
         .get(&(RENTAL_HISTORY_BY_EQUIPMENT, equipment_id.clone()))
         .unwrap_or(Vec::new(env));
     eq_history.push_back(rental.clone());
-    env.storage().persistent().set(&(RENTAL_HISTORY_BY_EQUIPMENT, equipment_id.clone()), &eq_history);
+    env.storage().persistent().set(
+        &(RENTAL_HISTORY_BY_EQUIPMENT, equipment_id.clone()),
+        &eq_history,
+    );
     // Track history per user
     let mut user_history = env
         .storage()
@@ -86,7 +93,9 @@ pub fn create_rental(
         .get(&(RENTAL_HISTORY_BY_USER, renter.clone()))
         .unwrap_or(Vec::new(env));
     user_history.push_back(rental);
-    env.storage().persistent().set(&(RENTAL_HISTORY_BY_USER, renter), &user_history);
+    env.storage()
+        .persistent()
+        .set(&(RENTAL_HISTORY_BY_USER, renter), &user_history);
 }
 
 /// Confirm and activate a pending rental
@@ -96,7 +105,9 @@ pub fn confirm_rental(env: &Env, equipment_id: BytesN<32>) {
         .persistent()
         .get(&RENTAL_STORAGE)
         .unwrap_or(Map::new(env));
-    let mut rental = rental_map.get(equipment_id.clone()).expect("Rental not found");
+    let mut rental = rental_map
+        .get(equipment_id.clone())
+        .expect("Rental not found");
     if rental.status != RentalStatus::Pending {
         panic!("Rental not pending");
     }
@@ -112,15 +123,41 @@ pub fn complete_rental(env: &Env, equipment_id: BytesN<32>) {
         .persistent()
         .get(&RENTAL_STORAGE)
         .unwrap_or(Map::new(env));
-    let mut rental = rental_map.get(equipment_id.clone()).expect("Rental not found");
+    let mut rental = rental_map
+        .get(equipment_id.clone())
+        .expect("Rental not found");
     if rental.status != RentalStatus::Active {
         panic!("Rental not active");
     }
     rental.status = RentalStatus::Completed;
-    rental_map.set(equipment_id.clone(), rental.clone());
+
+    // Update the rental in history with completed status
+    let mut eq_history = env
+        .storage()
+        .persistent()
+        .get(&(RENTAL_HISTORY_BY_EQUIPMENT, equipment_id.clone()))
+        .unwrap_or(Vec::new(env));
+    // Find and update the rental in history
+    for i in 0..eq_history.len() {
+        let mut history_rental: Rental = eq_history.get(i).unwrap();
+        if history_rental.equipment_id == equipment_id {
+            history_rental.status = RentalStatus::Completed;
+            eq_history.set(i, history_rental);
+            break;
+        }
+    }
+    env.storage().persistent().set(
+        &(RENTAL_HISTORY_BY_EQUIPMENT, equipment_id.clone()),
+        &eq_history,
+    );
+
+    // Keep the rental in active rentals map but mark as completed
+    rental_map.set(equipment_id.clone(), rental);
     env.storage().persistent().set(&RENTAL_STORAGE, &rental_map);
+
     // Mark equipment as available again
-    let equipment = crate::equipment::get_equipment(env, equipment_id.clone()).expect("Equipment not found");
+    let equipment =
+        crate::equipment::get_equipment(env, equipment_id.clone()).expect("Equipment not found");
     let _ = crate::equipment::update_availability(env, equipment_id, equipment.owner, true);
 }
 
@@ -131,7 +168,9 @@ pub fn cancel_rental(env: &Env, equipment_id: BytesN<32>) {
         .persistent()
         .get(&RENTAL_STORAGE)
         .unwrap_or(Map::new(env));
-    let mut rental = rental_map.get(equipment_id.clone()).expect("Rental not found");
+    let mut rental = rental_map
+        .get(equipment_id.clone())
+        .expect("Rental not found");
     if rental.status != RentalStatus::Pending {
         panic!("Only pending rentals can be cancelled");
     }
