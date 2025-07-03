@@ -13,8 +13,13 @@ pub fn fund_loan(env: &Env, lender: Address, loan_id: u32, amount: i128) {
     // Get loan request
     let mut loan = get_loan_request(env, loan_id);
 
-    // Verify loan is pending
-    if loan.status != LoanStatus::Pending {
+    // Verify loan is not fully funded yet (allow funding if still needs money)
+    if loan.funded_amount >= loan.amount {
+        panic_with_error!(env, MicrolendingError::LoanFullyFunded);
+    }
+
+    // Verify loan is in a fundable state (Pending or Funded but not fully funded)
+    if loan.status != LoanStatus::Pending && loan.status != LoanStatus::Funded {
         panic_with_error!(env, MicrolendingError::InvalidLoanStatus);
     }
 

@@ -162,3 +162,6 @@ impl Microlending {
         claim::check_default_status(&env, &loan)
     }
 }
+
+#[cfg(test)]
+mod test;
