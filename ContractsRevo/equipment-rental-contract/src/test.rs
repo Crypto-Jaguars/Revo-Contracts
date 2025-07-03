@@ -37,7 +37,11 @@ fn setup_test<'a>() -> (
 fn create_equipment_id(env: &Env, id: &str) -> BytesN<32> {
     let mut bytes = [0u8; 32];
     let id_bytes = id.as_bytes();
-    bytes[..id_bytes.len().min(32)].copy_from_slice(&id_bytes[..id_bytes.len().min(32)]);
+    assert!(
+        id_bytes.len() <= 32,
+        "equipment_id exceeds 32 bytes and would be truncated"
+    );
+    bytes[..id_bytes.len()].copy_from_slice(id_bytes);
     BytesN::from_array(env, &bytes)
 }
 
