@@ -451,6 +451,47 @@ fn test_cancel_rental_success() {
     // Verify rental status changed to Cancelled
     let rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(rental.status, RentalStatus::Cancelled);
+    
+    // Verify data consistency: rental history should also reflect cancelled status
+    let history = client.get_rental_history_by_equipment(&equipment_id);
+    assert_eq!(history.len(), 1);
+    let history_rental = history.get(0).unwrap();
+    assert_eq!(history_rental.status, RentalStatus::Cancelled);
+    assert_eq!(history_rental.equipment_id, equipment_id);
+    assert_eq!(history_rental.renter, renter1);
+    
+    // Verify user history consistency as well
+    let user_history = client.get_rental_history_by_user(&renter1);
+    assert_eq!(user_history.len(), 1);
+    let user_history_rental = user_history.get(0).unwrap();
+    assert_eq!(user_history_rental.status, RentalStatus::Cancelled);
+    assert_eq!(user_history_rental.equipment_id, equipment_id);
+    assert_eq!(user_history_rental.renter, renter1);
+    
+    // Verify that a new rental can be created after cancellation
+    let new_start_date = env.ledger().timestamp() + (10 * 86400);
+    let new_end_date = new_start_date + (2 * 86400);
+    let new_total_price = 2000;
+    
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &new_start_date,
+        &new_end_date,
+        &new_total_price,
+    );
+    
+    // Verify the new rental was created successfully
+    let new_rental = client.get_rental(&equipment_id).unwrap();
+    assert_eq!(new_rental.status, RentalStatus::Pending);
+    assert_eq!(new_rental.renter, renter1);
+    assert_eq!(new_rental.total_price, new_total_price);
+    
+    // Verify history now contains both rentals
+    let updated_history = client.get_rental_history_by_equipment(&equipment_id);
+    assert_eq!(updated_history.len(), 2);
+    assert_eq!(updated_history.get(0).unwrap().status, RentalStatus::Cancelled);
+    assert_eq!(updated_history.get(1).unwrap().status, RentalStatus::Pending);
 }
 
 #[test]

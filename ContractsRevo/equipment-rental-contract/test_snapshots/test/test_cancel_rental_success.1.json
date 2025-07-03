@@ -26,6 +26,11 @@
         }
       ]
     ],
+    [],
+    [],
+    [],
+    [],
+    [],
     []
   ],
   "ledger": {
@@ -176,7 +181,7 @@
                               "symbol": "end_date"
                             },
                             "val": {
-                              "u64": 345600
+                              "u64": 1036800
                             }
                           },
                           {
@@ -200,7 +205,7 @@
                               "symbol": "start_date"
                             },
                             "val": {
-                              "u64": 86400
+                              "u64": 864000
                             }
                           },
                           {
@@ -210,7 +215,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "Cancelled"
+                                  "symbol": "Pending"
                                 }
                               ]
                             }
@@ -222,7 +227,7 @@
                             "val": {
                               "i128": {
                                 "hi": 0,
-                                "lo": 3000
+                                "lo": 2000
                               }
                             }
                           }
@@ -316,7 +321,7 @@
                           "val": {
                             "vec": [
                               {
-                                "symbol": "Pending"
+                                "symbol": "Cancelled"
                               }
                             ]
                           }
@@ -329,6 +334,65 @@
                             "i128": {
                               "hi": 0,
                               "lo": 3000
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "map": [
+                        {
+                          "key": {
+                            "symbol": "end_date"
+                          },
+                          "val": {
+                            "u64": 1036800
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "equipment_id"
+                          },
+                          "val": {
+                            "bytes": "74726163746f725f303031000000000000000000000000000000000000000000"
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "renter"
+                          },
+                          "val": {
+                            "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "start_date"
+                          },
+                          "val": {
+                            "u64": 864000
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "status"
+                          },
+                          "val": {
+                            "vec": [
+                              {
+                                "symbol": "Pending"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "total_price"
+                          },
+                          "val": {
+                            "i128": {
+                              "hi": 0,
+                              "lo": 2000
                             }
                           }
                         }
@@ -421,7 +485,7 @@
                           "val": {
                             "vec": [
                               {
-                                "symbol": "Pending"
+                                "symbol": "Cancelled"
                               }
                             ]
                           }
@@ -434,6 +498,65 @@
                             "i128": {
                               "hi": 0,
                               "lo": 3000
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "map": [
+                        {
+                          "key": {
+                            "symbol": "end_date"
+                          },
+                          "val": {
+                            "u64": 1036800
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "equipment_id"
+                          },
+                          "val": {
+                            "bytes": "74726163746f725f303031000000000000000000000000000000000000000000"
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "renter"
+                          },
+                          "val": {
+                            "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "start_date"
+                          },
+                          "val": {
+                            "u64": 864000
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "status"
+                          },
+                          "val": {
+                            "vec": [
+                              {
+                                "symbol": "Pending"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "total_price"
+                          },
+                          "val": {
+                            "i128": {
+                              "hi": 0,
+                              "lo": 2000
                             }
                           }
                         }
