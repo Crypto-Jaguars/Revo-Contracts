@@ -3,20 +3,23 @@
 use super::*;
 use soroban_sdk::{
     testutils::{Address as _, Ledger as _},
-    Address, Env, String, BytesN, Symbol, IntoVal,
+    Address, BytesN, Env, IntoVal, String, Symbol,
 };
 
 // Helper to mint tokens using the token contract's interface
 fn mint_tokens(env: &Env, token: &Address, to: &Address, amount: i128) {
-    env.invoke_contract::<()>(
-        token,
-        &Symbol::short("mint"),
-        (to, &amount).into_val(env),
-    );
+    env.invoke_contract::<()>(token, &Symbol::short("mint"), (to, &amount).into_val(env));
 }
 
 // Helper to set up the environment and contract client
-fn setup_test<'a>() -> (Env, Address, MicrolendingClient<'a>, Address, Address, Address) {
+fn setup_test<'a>() -> (
+    Env,
+    Address,
+    MicrolendingClient<'a>,
+    Address,
+    Address,
+    Address,
+) {
     let env = Env::default();
     env.mock_all_auths();
     let _admin = Address::generate(&env);
@@ -30,7 +33,7 @@ fn setup_test<'a>() -> (Env, Address, MicrolendingClient<'a>, Address, Address, 
     mint_tokens(&env, &token_address, &borrower, 100_000);
     mint_tokens(&env, &token_address, &lender1, 100_000);
     mint_tokens(&env, &token_address, &lender2, 100_000);
-    
+
     // Mint tokens to contract address for collateral claims
     let contract_id = env.register(Microlending, ());
     mint_tokens(&env, &token_address, &contract_id, 50_000);
@@ -146,12 +149,14 @@ fn test_repayment_flow_and_completion() {
     let total_due = client.calculate_total_repayment_due(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
     // First repayment (simulate time forward)
-    env.ledger().with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    env.ledger()
+        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
     client.repay_loan(&borrower, &loan_id, &per_installment);
     let loan = client.get_loan_request(&loan_id);
     assert_eq!(loan.status, LoanStatus::Repaying);
     // Second repayment (simulate time forward)
-    env.ledger().with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    env.ledger()
+        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
     client.repay_loan(&borrower, &loan_id, &per_installment);
     let loan = client.get_loan_request(&loan_id);
     assert_eq!(loan.status, LoanStatus::Completed);
@@ -181,7 +186,8 @@ fn test_default_and_collateral_claim() {
     let loan = client.get_loan_request(&loan_id);
     assert_eq!(loan.status, LoanStatus::Funded);
     // Simulate time past due date (plus grace period)
-    env.ledger().with_mut(|li| li.timestamp += 40 * 24 * 60 * 60);
+    env.ledger()
+        .with_mut(|li| li.timestamp += 40 * 24 * 60 * 60);
     // Should now be in default
     let is_default = client.check_default_status(&loan_id);
     assert!(is_default);
@@ -212,9 +218,11 @@ fn test_loan_history_and_tracking() {
     // Repay fully
     let loan = client.get_loan_request(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
-    env.ledger().with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    env.ledger()
+        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
     client.repay_loan(&borrower, &loan_id, &per_installment);
-    env.ledger().with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    env.ledger()
+        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
     client.repay_loan(&borrower, &loan_id, &per_installment);
     // If still not completed, repay the remaining due
     let loan = client.get_loan_request(&loan_id);
