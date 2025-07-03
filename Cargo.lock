@@ -331,6 +331,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "csa-membership-contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "ctor"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"

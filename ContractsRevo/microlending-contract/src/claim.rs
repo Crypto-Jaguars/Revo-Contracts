@@ -131,18 +131,20 @@ pub fn check_default_status(env: &Env, loan: &LoanRequest) -> bool {
         let elapsed_days = (current_timestamp - funded_timestamp) / (24 * 60 * 60);
         let expected_installments =
             (elapsed_days / loan.repayment_schedule.frequency_days as u64) as u32;
-        // Allow a 7-day grace period for missed installments
+        // Allow a 7-day grace period for missed installments and payment amounts
         let grace_period = 7 * 24 * 60 * 60;
-        if expected_installments > repayments.len() as u32
-            && current_timestamp > funded_timestamp + grace_period
-        {
+        let grace_period_expired = current_timestamp > funded_timestamp + grace_period;
+        
+        // Check for missed installments (with grace period)
+        if expected_installments > repayments.len() as u32 && grace_period_expired {
             return true;
         }
-        // Check if total repaid is less than expected
+        
+        // Check if total repaid is less than expected (with grace period)
         let expected_repaid =
             expected_installments as i128 * loan.repayment_schedule.per_installment_amount;
         let total_repaid: i128 = repayments.iter().map(|r| r.amount).sum();
-        if total_repaid < expected_repaid {
+        if total_repaid < expected_repaid && grace_period_expired {
             return true;
         }
     } else if let Some(due_timestamp) = loan.repayment_due_timestamp {

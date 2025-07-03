@@ -99,22 +99,77 @@ pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
         panic_with_error!(env, MicrolendingError::InsufficientBalance);
     }
 
-    // Distribute repayment to lenders proportionally
+    // Distribute repayment to lenders proportionally with remainder handling
     let mut contributions = get_loan_fundings(env, loan_id);
-    for (i, mut contribution) in contributions.iter().enumerate() {
+    let mut total_distributed: i128 = 0;
+    let mut eligible_lenders: Vec<(u32, Address, u32)> = Vec::new(env); // (index, lender, percentage)
+    
+    // First pass: calculate initial shares and identify eligible lenders
+    for (i, contribution) in contributions.iter().enumerate() {
         if !contribution.claimed {
             let lender_share_percentage =
                 calculate_lender_share_percentage(env, contribution.lender.clone(), loan_id);
-            let lender_share = (amount as u128 * lender_share_percentage as u128 / 10000) as i128;
-            if lender_share > 0 {
-                token_client.transfer(
-                    &env.current_contract_address(),
-                    &contribution.lender,
-                    &lender_share,
-                );
-                contribution.claimed = true;
-                contributions.set(i as u32, contribution);
+            if lender_share_percentage > 0 {
+                eligible_lenders.push_back((i as u32, contribution.lender.clone(), lender_share_percentage));
             }
+        }
+    }
+    
+    // Calculate initial distribution amounts
+    let mut distribution_amounts: Vec<i128> = Vec::new(env);
+    for i in 0..eligible_lenders.len() {
+        let (_, _, percentage) = eligible_lenders.get_unchecked(i as u32);
+        let initial_share = (amount as u128 * percentage as u128 / 10000) as i128;
+        distribution_amounts.push_back(initial_share);
+        total_distributed += initial_share;
+    }
+    
+    // Calculate remainder
+    let remainder = amount - total_distributed;
+    
+    // Distribute remainder proportionally among eligible lenders
+    if remainder > 0 && !eligible_lenders.is_empty() {
+        let mut total_percentage: u32 = 0;
+        for i in 0..eligible_lenders.len() {
+            let (_, _, percentage) = eligible_lenders.get_unchecked(i as u32);
+            total_percentage += percentage;
+        }
+        
+        let mut remainder_distributed: i128 = 0;
+        
+        for i in 0..eligible_lenders.len() {
+            let (_, _, percentage) = eligible_lenders.get_unchecked(i as u32);
+            if total_percentage > 0 {
+                let remainder_share = (remainder as u128 * percentage as u128 / total_percentage as u128) as i128;
+                let current_amount = distribution_amounts.get_unchecked(i as u32);
+                distribution_amounts.set(i as u32, current_amount + remainder_share);
+                remainder_distributed += remainder_share;
+            }
+        }
+        
+        // Handle any final rounding by adding to the first eligible lender
+        let final_remainder = remainder - remainder_distributed;
+        if final_remainder > 0 && !distribution_amounts.is_empty() {
+            let first_amount = distribution_amounts.get_unchecked(0);
+            distribution_amounts.set(0, first_amount + final_remainder);
+        }
+    }
+    
+    // Execute transfers and update contributions
+    for i in 0..eligible_lenders.len() {
+        let (contribution_index, lender, _) = eligible_lenders.get_unchecked(i as u32);
+        let distribution_amount = distribution_amounts.get_unchecked(i as u32);
+        if distribution_amount > 0 {
+            token_client.transfer(
+                &env.current_contract_address(),
+                &lender,
+                &distribution_amount,
+            );
+            
+            // Mark contribution as claimed
+            let mut contribution = contributions.get_unchecked(contribution_index);
+            contribution.claimed = true;
+            contributions.set(contribution_index, contribution);
         }
     }
     env.storage()
