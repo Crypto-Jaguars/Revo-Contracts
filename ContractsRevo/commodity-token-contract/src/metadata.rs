@@ -1,11 +1,13 @@
-use soroban_sdk::{BytesN, Env, String, Map, Vec, Val, IntoVal};
-use crate::{CommodityBackedToken, storage, ContractError};
 use crate::storage::DataKey;
 use crate::validate;
+use crate::{storage, CommodityBackedToken, ContractError};
+use soroban_sdk::{BytesN, Env, IntoVal, Map, String, Val, Vec};
 
-pub fn get_token_metadata(env: &Env, token_id: &BytesN<32>) -> Result<CommodityBackedToken, ContractError> {
-    storage::get_token(env, token_id)
-        .ok_or(ContractError::TokenNotFound)
+pub fn get_token_metadata(
+    env: &Env,
+    token_id: &BytesN<32>,
+) -> Result<CommodityBackedToken, ContractError> {
+    storage::get_token(env, token_id).ok_or(ContractError::TokenNotFound)
 }
 
 pub fn get_token_details(
@@ -24,10 +26,7 @@ pub fn get_token_details(
         String::from_str(env, "quantity"),
         token.quantity.into_val(env),
     );
-    details.set(
-        String::from_str(env, "grade"),
-        token.grade.into_val(env),
-    );
+    details.set(String::from_str(env, "grade"), token.grade.into_val(env));
     details.set(
         String::from_str(env, "storage_location"),
         token.storage_location.into_val(env),
@@ -38,29 +37,26 @@ pub fn get_token_details(
     );
 
     let is_valid = validate::check_expiration(env, token_id);
-    details.set(
-        String::from_str(env, "valid"),
-        is_valid.into_val(env),
-    );
+    details.set(String::from_str(env, "valid"), is_valid.into_val(env));
 
     Ok(details)
 }
 
-pub fn list_tokens_by_commodity(
-    env: &Env,
-    commodity_type: &String,
-) -> Vec<BytesN<32>> {
+pub fn list_tokens_by_commodity(env: &Env, commodity_type: &String) -> Vec<BytesN<32>> {
     let key = DataKey::CommodityIndex(commodity_type.clone());
-    env.storage().instance().get(&key).unwrap_or_else(|| Vec::new(env))
+    env.storage()
+        .instance()
+        .get(&key)
+        .unwrap_or_else(|| Vec::new(env))
 }
 
-pub fn add_to_commodity_index(
-    env: &Env,
-    commodity_type: &String,
-    token_id: &BytesN<32>,
-) {
+pub fn add_to_commodity_index(env: &Env, commodity_type: &String, token_id: &BytesN<32>) {
     let key = DataKey::CommodityIndex(commodity_type.clone());
-    let mut token_ids: Vec<BytesN<32>> = env.storage().instance().get(&key).unwrap_or_else(|| Vec::new(env));
+    let mut token_ids: Vec<BytesN<32>> = env
+        .storage()
+        .instance()
+        .get(&key)
+        .unwrap_or_else(|| Vec::new(env));
 
     if !token_ids.iter().any(|id| &id == token_id) {
         token_ids.push_back(token_id.clone());
@@ -68,11 +64,7 @@ pub fn add_to_commodity_index(
     }
 }
 
-pub fn remove_from_commodity_index(
-    env: &Env,
-    commodity_type: &String,
-    token_id: &BytesN<32>,
-) {
+pub fn remove_from_commodity_index(env: &Env, commodity_type: &String, token_id: &BytesN<32>) {
     let key = DataKey::CommodityIndex(commodity_type.clone());
     let token_ids_opt: Option<Vec<BytesN<32>>> = env.storage().instance().get(&key);
 

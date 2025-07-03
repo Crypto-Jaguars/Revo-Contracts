@@ -1,23 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "ContractsRevo/purchase-review-contract",
-    "ContractsRevo/rating-system-contract",
-    "ContractsRevo/transaction-nft-contract",
-    "ContractsRevo/product-auction-contract",
-    "ContractsRevo/agricultural-auction-contract",
-    "ContractsRevo/agricultural-quality-contract",
-    "ContractsRevo/cooperative-management-contract",
-    "ContractsRevo/microlending-contract",
-    "ContractsRevo/equipment-rental-contract",
-    "ContractsRevo/environmental-impact-tracking",
-    "ContractsRevo/certificate-management-contract",
-    "ContractsRevo/commodity-token-contract"
-]
 
+    "ContractsRevo/*",
+]
 [workspace.dependencies]
 soroban-sdk = "22.0.6"
-
 [profile.release]
 opt-level = "z"
 overflow-checks = true

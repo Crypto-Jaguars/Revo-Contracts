@@ -9,6 +9,7 @@ mod interface;
 mod membership;
 mod profit_distribution;
 mod resource_sharing;
+mod test;
 
 #[contract]
 pub struct CooperativeManagementContract;

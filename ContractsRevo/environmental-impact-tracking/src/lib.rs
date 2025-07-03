@@ -14,3 +14,6 @@ mod interfaces;
 mod reporting;
 mod retirement;
 mod verification;
+
+#[cfg(test)]
+mod test;
