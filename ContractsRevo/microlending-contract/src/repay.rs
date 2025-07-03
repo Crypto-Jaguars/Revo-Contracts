@@ -102,21 +102,16 @@ pub fn repay_loan(env: &Env, borrower: Address, loan_id: u32, amount: i128) {
     // Distribute repayment to lenders proportionally
     let mut contributions = get_loan_fundings(env, loan_id);
     for (i, mut contribution) in contributions.iter().enumerate() {
-        if !contribution.claimed {
-            let lender_share_percentage =
-                calculate_lender_share_percentage(env, contribution.lender.clone(), loan_id);
-            let lender_share = (amount as u128 * lender_share_percentage as u128 / 10000) as i128;
-            if lender_share > 0 {
-                token_client.transfer(
-                    &env.current_contract_address(),
-                    &contribution.lender,
-                    &lender_share,
-                );
-                contribution.claimed = true;
-                contributions.set(i as u32, contribution);
-            }
+        let lender_share_percentage =
+            calculate_lender_share_percentage(env, contribution.lender.clone(), loan_id);
+        let lender_share = (amount as u128 * lender_share_percentage as u128 / 10000) as i128;
+        if lender_share > 0 {
+            token_client.transfer(
+                &env.current_contract_address(),
+                &contribution.lender,
+                &lender_share,
+            );
         }
-    }
     env.storage()
         .persistent()
         .set(&DataKey::Funding(loan_id), &contributions);
