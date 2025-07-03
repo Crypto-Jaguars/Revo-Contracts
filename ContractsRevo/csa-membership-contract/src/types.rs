@@ -1,7 +1,7 @@
 use soroban_sdk::contracttype;
+use soroban_sdk::Address;
 use soroban_sdk::BytesN;
 use soroban_sdk::String;
-use soroban_sdk::Address;
 
 #[contracttype]
 #[derive(Clone, Debug)]

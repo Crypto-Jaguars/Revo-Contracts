@@ -17,7 +17,6 @@ pub enum IssueError {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AuditError {
     NotFound = 1,
-
 }
 
 #[contracterror]

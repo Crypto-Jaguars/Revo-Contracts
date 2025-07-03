@@ -16,9 +16,12 @@ impl PriceValidationError {
     #[allow(dead_code)]
     pub fn to_soroban_string(&self, env: &Env) -> String {
         match self {
-            PriceValidationError::InvalidDate => 
-                String::from_str(env, "Invalid date"),
-            PriceValidationError::PriceMismatch { proposed: _, expected: _, context: _ } => {
+            PriceValidationError::InvalidDate => String::from_str(env, "Invalid date"),
+            PriceValidationError::PriceMismatch {
+                proposed: _,
+                expected: _,
+                context: _,
+            } => {
                 // Use a simpler approach with just the basic information
                 String::from_str(env, "Price mismatch for rental")
             }
@@ -44,7 +47,7 @@ pub fn compute_total_price(
         .rental_price_per_day
         .checked_mul(duration_days.into())
         .ok_or(PriceValidationError::InvalidDate)
-} 
+}
 
 /// Validate that the proposed price matches the expected price for the rental period
 pub fn validate_price(

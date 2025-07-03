@@ -1,9 +1,18 @@
-use soroban_sdk::{BytesN, Env, String, IntoVal};
 use crate::Error;
+use soroban_sdk::{BytesN, Env, IntoVal, String};
 
-pub fn validate_season(env: &Env, farm_id: BytesN<32>, season: String, start_date: u64, end_date: u64) -> Result<(), Error> {
+pub fn validate_season(
+    env: &Env,
+    farm_id: BytesN<32>,
+    season: String,
+    start_date: u64,
+    end_date: u64,
+) -> Result<(), Error> {
     let current_time = env.ledger().timestamp();
-    env.logs().add("validate_season", &[start_date.into_val(env), current_time.into_val(env)]);
+    env.logs().add(
+        "validate_season",
+        &[start_date.into_val(env), current_time.into_val(env)],
+    );
 
     let empty_farm_id = BytesN::from_array(env, &[0; 32]);
     if farm_id == empty_farm_id {

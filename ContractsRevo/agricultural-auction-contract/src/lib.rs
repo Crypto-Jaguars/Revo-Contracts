@@ -5,8 +5,8 @@ mod auction_core;
 mod datatype;
 mod price_oracle;
 mod product_listing;
-mod time_management;
 mod test;
+mod time_management;
 
 pub use datatype::*;
 
