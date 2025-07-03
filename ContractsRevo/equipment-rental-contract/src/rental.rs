@@ -140,7 +140,9 @@ pub fn complete_rental(env: &Env, equipment_id: BytesN<32>) {
     // Find and update the rental in history
     for i in 0..eq_history.len() {
         let mut history_rental: Rental = eq_history.get(i).unwrap();
-        if history_rental.equipment_id == equipment_id {
+        if history_rental.equipment_id == equipment_id 
+            && history_rental.renter == rental.renter
+            && history_rental.start_date == rental.start_date {
             history_rental.status = RentalStatus::Completed;
             eq_history.set(i, history_rental);
             break;
