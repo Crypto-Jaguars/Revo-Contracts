@@ -6,6 +6,8 @@ mod maintenance;
 mod pricing;
 mod rental;
 
+mod test;
+
 /// Main contract for equipment rental management
 #[contract]
 pub struct EquipmentRentalContract;
