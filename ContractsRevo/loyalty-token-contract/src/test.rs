@@ -35,7 +35,7 @@ fn create_rewards(env: &Env) -> Vec<RedemptionOption> {
     rewards
 }
 
-pub fn get_user_points(env: &Env, program_id: BytesN<32>, user_address: Address) -> u64 {
+fn get_user_points(env: &Env, program_id: BytesN<32>, user_address: Address) -> u64 {
     // Return user's point balance
     let points_key = (
         soroban_sdk::Symbol::new(&env, "points"),
