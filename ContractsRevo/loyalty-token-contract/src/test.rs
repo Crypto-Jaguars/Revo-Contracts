@@ -136,8 +136,8 @@ fn test_redemption_with_insufficient_points() {
 #[should_panic(expected = "Reward is out of stock")]
 fn test_inventory_tracking_for_rewards() {
     let (env, contract_address, program_id) = setup_test();
-    let user1 = Address::generate(&env);
-    let user2 = Address::generate(&env);
+    let user1 = create_user(&env);
+    let user2 = create_user(&env);
     let rewards = create_rewards(&env);
     env.as_contract(&contract_address, || {
         LoyaltyContract::create_loyalty_program(env.clone(), program_id.clone(), 1, rewards);
