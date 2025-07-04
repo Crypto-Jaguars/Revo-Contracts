@@ -93,3 +93,6 @@ pub mod manage;
 pub mod metadata;
 pub mod types;
 pub mod validate;
+
+#[cfg(test)]
+mod tests;
