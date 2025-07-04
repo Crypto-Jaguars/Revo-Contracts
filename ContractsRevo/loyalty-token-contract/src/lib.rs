@@ -6,6 +6,9 @@ mod program;
 mod redeem;
 mod rewards;
 
+#[cfg(test)]
+mod test;
+
 #[contracttype]
 pub struct LoyaltyProgram {
     pub program_id: BytesN<32>,
