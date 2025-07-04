@@ -1,9 +1,6 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address, BytesN, Env, String, Vec,
-};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, String, Vec};
 
 use crate::{LoyaltyContract, RedemptionOption};
 
@@ -47,13 +44,15 @@ fn test_award_points_after_transaction() {
         LoyaltyContract::create_loyalty_program(env.clone(), program_id.clone(), 1, rewards);
         LoyaltyContract::award_points(env.clone(), program_id.clone(), user.clone(), 50);
         // Points per transaction = 1, amount = 50, expect 50 points
-        let points_key = (soroban_sdk::Symbol::new(&env, "points"), program_id.clone(), user.clone());
+        let points_key = (
+            soroban_sdk::Symbol::new(&env, "points"),
+            program_id.clone(),
+            user.clone(),
+        );
         let points: u64 = env.storage().persistent().get(&points_key).unwrap();
         assert_eq!(points, 50);
     });
 }
-
-
 
 #[test]
 fn test_dynamic_point_rate_handling() {
@@ -64,7 +63,11 @@ fn test_dynamic_point_rate_handling() {
         LoyaltyContract::create_loyalty_program(env.clone(), program_id.clone(), 2, rewards);
         LoyaltyContract::award_points(env.clone(), program_id.clone(), user.clone(), 50);
         // Points per transaction = 2, amount = 50, expect 100 points
-        let points_key = (soroban_sdk::Symbol::new(&env, "points"), program_id.clone(), user.clone());
+        let points_key = (
+            soroban_sdk::Symbol::new(&env, "points"),
+            program_id.clone(),
+            user.clone(),
+        );
         let points: u64 = env.storage().persistent().get(&points_key).unwrap();
         assert_eq!(points, 100);
     });
@@ -80,12 +83,15 @@ fn test_accurate_user_point_balances() {
         LoyaltyContract::award_points(env.clone(), program_id.clone(), user.clone(), 100);
         LoyaltyContract::award_points(env.clone(), program_id.clone(), user.clone(), 50);
         // User should have 150 points
-        let points_key = (soroban_sdk::Symbol::new(&env, "points"), program_id.clone(), user.clone());
+        let points_key = (
+            soroban_sdk::Symbol::new(&env, "points"),
+            program_id.clone(),
+            user.clone(),
+        );
         let points: u64 = env.storage().persistent().get(&points_key).unwrap();
         assert_eq!(points, 150);
     });
 }
-
 
 #[test]
 fn test_reward_redemption_with_sufficient_points() {
@@ -97,12 +103,20 @@ fn test_reward_redemption_with_sufficient_points() {
         LoyaltyContract::award_points(env.clone(), program_id.clone(), user.clone(), 200);
         // User has 200 points, redeem Gift Card (id=1, requires 200)
         LoyaltyContract::redeem_reward(env.clone(), program_id.clone(), user.clone(), 1);
-        let points_key = (soroban_sdk::Symbol::new(&env, "points"), program_id.clone(), user.clone());
+        let points_key = (
+            soroban_sdk::Symbol::new(&env, "points"),
+            program_id.clone(),
+            user.clone(),
+        );
         let points: u64 = env.storage().persistent().get(&points_key).unwrap();
         assert_eq!(points, 0);
         // Check inventory
         let program = LoyaltyContract::get_program_info(env.clone(), program_id.clone());
-        let gift_card = program.redemption_options.iter().find(|opt| opt.id == 1).unwrap();
+        let gift_card = program
+            .redemption_options
+            .iter()
+            .find(|opt| opt.id == 1)
+            .unwrap();
         assert_eq!(gift_card.available_quantity, 0);
     });
 }
