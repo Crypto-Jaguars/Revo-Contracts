@@ -1,9 +1,7 @@
 use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
-
 use crate::datatypes::{DataKey, Product, Stage, SupplyChainError};
 
 /// Add a new stage to the product lifecycle
-/// MANDATORY from roadmap.md
 pub fn add_stage(
     env: Env,
     product_id: BytesN<32>,
@@ -56,7 +54,6 @@ pub fn add_stage(
 }
 
 /// Get the full product trace including all stages
-/// MANDATORY from roadmap.md
 pub fn get_product_trace(
     env: Env,
     product_id: BytesN<32>,
@@ -67,14 +64,12 @@ pub fn get_product_trace(
         .get(&DataKey::Product(product_id))
         .ok_or(SupplyChainError::ProductNotFound)?;
 
-    // Stages are already embedded in product, just clone them
     let stages = product.stages.clone();
 
     Ok((product, stages))
 }
 
 /// Get the current stage of a product
-/// EXTENDED functionality
 pub fn get_current_stage(
     env: Env,
     product_id: BytesN<32>,
@@ -97,7 +92,6 @@ pub fn get_current_stage(
 }
 
 /// Get complete stage history for a product
-/// EXTENDED functionality
 pub fn get_stage_history(
     env: Env,
     product_id: BytesN<32>,
@@ -112,7 +106,6 @@ pub fn get_stage_history(
 }
 
 /// Validate stage transition logic
-/// EXTENDED functionality
 pub fn validate_stage_transition(
     env: Env,
     product_id: BytesN<32>,
@@ -146,7 +139,6 @@ pub fn validate_stage_transition(
 }
 
 /// Get a specific stage by ID
-/// EXTENDED functionality
 pub fn get_stage_by_id(
     env: Env,
     product_id: BytesN<32>,

@@ -1,6 +1,6 @@
 use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
-use crate::datatypes::{DataKey, Product, SupplyChainError};
+use crate::datatypes::{DataKey, Product, ProductRegistration, SupplyChainError};
 use crate::utils;
 
 /// Register a new agricultural product with initial details
@@ -11,7 +11,7 @@ pub fn register_product(
     product_type: String,
     batch_number: String,
     origin_location: String,
-    _metadata_hash: BytesN<32>,
+    metadata_hash: BytesN<32>,
 ) -> Result<BytesN<32>, SupplyChainError> {
     farmer_id.require_auth();
 
@@ -32,7 +32,7 @@ pub fn register_product(
     let product = Product {
         product_id: product_id.clone(),
         farmer_id: farmer_id.clone(),
-        stages: Vec::new(&env), // Empty stages, will be populated via add_stage()
+        stages: Vec::new(&env),
         certificate_id: None,
     };
 
@@ -40,6 +40,19 @@ pub fn register_product(
     env.storage()
         .persistent()
         .set(&DataKey::Product(product_id.clone()), &product);
+
+    // Create ProductRegistration struct to store all registration details
+    let registration = ProductRegistration {
+        product_type: product_type.clone(),
+        batch_number: batch_number.clone(),
+        origin_location: origin_location.clone(),
+        metadata_hash: metadata_hash.clone(),
+    };
+
+    // Store the registration details
+    env.storage()
+        .persistent()
+        .set(&DataKey::ProductRegistration(product_id.clone()), &registration);
 
     // Update farmer's product list
     update_farmer_products(&env, &farmer_id, &product_id)?;
@@ -56,8 +69,18 @@ pub fn register_product(
     Ok(product_id)
 }
 
+/// Get product registration details
+pub fn get_product_registration(
+    env: Env,
+    product_id: BytesN<32>,
+) -> Result<ProductRegistration, SupplyChainError> {
+    env.storage()
+        .persistent()
+        .get(&DataKey::ProductRegistration(product_id))
+        .ok_or(SupplyChainError::ProductNotFound)
+}
+
 /// Get product details
-/// EXTENDED functionality
 pub fn get_product_details(
     env: Env,
     product_id: BytesN<32>,
@@ -69,7 +92,6 @@ pub fn get_product_details(
 }
 
 /// List all products for a specific farmer
-/// EXTENDED functionality
 pub fn list_products_by_farmer(
     env: Env,
     farmer_id: Address,
@@ -84,7 +106,6 @@ pub fn list_products_by_farmer(
 }
 
 /// List products by product type for traceability
-/// EXTENDED functionality
 pub fn list_products_by_type(
     env: Env,
     product_type: String,

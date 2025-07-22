@@ -12,13 +12,9 @@ pub fn generate_product_id(
     let mut data = Bytes::new(env);
     data.append(&farmer_id.to_xdr(env));
     
-    // Convert Soroban String using slice and len
-    let product_slice = product_type.slice(env, 0..product_type.len());
-    data.append(&product_slice.into());
-    
-    let batch_slice = batch_number.slice(env, 0..batch_number.len());
-    data.append(&batch_slice.into());
-    
+    // Convert Soroban String to Bytes using proper API
+    data.append(&product_type.clone().to_xdr(env));
+    data.append(&batch_number.clone().to_xdr(env));
     data.append(&Bytes::from_array(env, &env.ledger().timestamp().to_be_bytes()));
     
     env.crypto().sha256(&data).into()
@@ -33,10 +29,8 @@ pub fn generate_stage_hash(
 ) -> BytesN<32> {
     let mut data = Bytes::new(env);
     
-    // Convert Soroban String using slice
-    let stage_slice = stage_data.slice(env, 0..stage_data.len());
-    data.append(&stage_slice.into());
-    
+    // Convert Soroban String to Bytes using proper API
+    data.append(&stage_data.clone().to_xdr(env));
     data.append(&Bytes::from_array(env, &timestamp.to_be_bytes()));
     data.append(&handler.to_xdr(env));
     
@@ -149,5 +143,5 @@ fn hex_encode(env: &Env, bytes: [u8; 32]) -> String {
         result_bytes[i * 2 + 1] = hex_chars[low];
     }
     
-    String::from_bytes(env, &result_bytes)
+    String::from_str(env, core::str::from_utf8(&result_bytes).unwrap())
 }

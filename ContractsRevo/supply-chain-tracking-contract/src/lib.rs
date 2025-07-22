@@ -38,10 +38,9 @@ impl SupplyChainTrackingContract {
             .ok_or(SupplyChainError::UnauthorizedAccess)
     }
 
-    // ========== MANDATORY ROADMAP FUNCTIONS - Must implement these 5 ==========
+    // ========== CORE FUNCTIONS ==========
 
     /// Register a new agricultural product with initial details
-    /// MANDATORY from roadmap.md
     pub fn register_product(
         env: Env,
         farmer_id: Address,
@@ -61,7 +60,6 @@ impl SupplyChainTrackingContract {
     }
 
     /// Record a new stage in the product's lifecycle
-    /// MANDATORY from roadmap.md
     pub fn add_stage(
         env: Env,
         product_id: BytesN<32>,
@@ -73,8 +71,15 @@ impl SupplyChainTrackingContract {
         tracking::add_stage(env, product_id, stage_name, location, handler, data_hash)
     }
 
+    /// Retrieve the full lifecycle of a product
+    pub fn get_product_trace(
+        env: Env,
+        product_id: BytesN<32>,
+    ) -> Result<(Product, Vec<Stage>), SupplyChainError> {
+        tracking::get_product_trace(env, product_id)
+    }
+
     /// Validate product authenticity against recorded data and certifications
-    /// MANDATORY from roadmap.md
     pub fn verify_authenticity(
         env: Env,
         product_id: BytesN<32>,
@@ -83,17 +88,7 @@ impl SupplyChainTrackingContract {
         validation::verify_authenticity(env, product_id, verification_data)
     }
 
-    /// Retrieve the full lifecycle of a product
-    /// MANDATORY from roadmap.md
-    pub fn get_product_trace(
-        env: Env,
-        product_id: BytesN<32>,
-    ) -> Result<(Product, Vec<Stage>), SupplyChainError> {
-        tracking::get_product_trace(env, product_id)
-    }
-
     /// Associate a product with a certification from certificate-management-contract
-    /// MANDATORY from roadmap.md
     pub fn link_certificate(
         env: Env,
         product_id: BytesN<32>,
@@ -103,7 +98,7 @@ impl SupplyChainTrackingContract {
         validation::link_certificate(env, product_id, certificate_id, authority)
     }
 
-    // ========== EXTENDED FUNCTIONS - Additional useful functionality ==========
+    // ========== ADDITIONAL FUNCTIONS ==========
 
     /// Get detailed information about a specific product
     pub fn get_product_details(
@@ -111,6 +106,14 @@ impl SupplyChainTrackingContract {
         product_id: BytesN<32>,
     ) -> Result<Product, SupplyChainError> {
         product::get_product_details(env, product_id)
+    }
+
+    /// Get product registration details
+    pub fn get_product_registration(
+        env: Env,
+        product_id: BytesN<32>,
+    ) -> Result<ProductRegistration, SupplyChainError> {
+        product::get_product_registration(env, product_id)
     }
 
     /// List all products for a specific farmer
@@ -129,6 +132,16 @@ impl SupplyChainTrackingContract {
         product::list_products_by_type(env, product_type)
     }
 
+    /// Validate stage transition logic
+    pub fn validate_stage_transition(
+        env: Env,
+        product_id: BytesN<32>,
+        from_stage: u32,
+        to_stage: u32,
+    ) -> Result<bool, SupplyChainError> {
+        tracking::validate_stage_transition(env, product_id, from_stage, to_stage)
+    }
+
     /// Get the current stage of a product
     pub fn get_current_stage(
         env: Env,
@@ -145,12 +158,13 @@ impl SupplyChainTrackingContract {
         tracking::get_stage_history(env, product_id)
     }
 
-    /// Generate QR code data for consumer access to traceability
-    pub fn generate_qr_code(
+    /// Get a specific stage by ID
+    pub fn get_stage_by_id(
         env: Env,
         product_id: BytesN<32>,
-    ) -> Result<String, SupplyChainError> {
-        utils::generate_qr_code_data(&env, &product_id)
+        stage_id: u32,
+    ) -> Result<Stage, SupplyChainError> {
+        tracking::get_stage_by_id(env, product_id, stage_id)
     }
 
     /// Get product trace using QR code
@@ -160,16 +174,6 @@ impl SupplyChainTrackingContract {
     ) -> Result<(Product, Vec<Stage>), SupplyChainError> {
         let product_id = utils::resolve_qr_code(&env, &qr_code)?;
         tracking::get_product_trace(env, product_id)
-    }
-
-    /// Validate stage transition logic
-    pub fn validate_stage_transition(
-        env: Env,
-        product_id: BytesN<32>,
-        from_stage: u32,
-        to_stage: u32,
-    ) -> Result<bool, SupplyChainError> {
-        tracking::validate_stage_transition(env, product_id, from_stage, to_stage)
     }
 
     /// Get linked certificate for a product
@@ -188,12 +192,11 @@ impl SupplyChainTrackingContract {
         utils::verify_hash_chain(&env, &product_id)
     }
 
-    /// Get a specific stage by ID
-    pub fn get_stage_by_id(
+    /// Generate QR code data for consumer access to traceability
+    pub fn generate_qr_code(
         env: Env,
         product_id: BytesN<32>,
-        stage_id: u32,
-    ) -> Result<Stage, SupplyChainError> {
-        tracking::get_stage_by_id(env, product_id, stage_id)
+    ) -> Result<String, SupplyChainError> {
+        utils::generate_qr_code_data(&env, &product_id)
     }
 }
