@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 use crate::datatypes::{DataKey, Product, Stage, SupplyChainError};
+use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
 /// Add a new stage to the product lifecycle
 pub fn add_stage(
@@ -13,7 +13,7 @@ pub fn add_stage(
     handler.require_auth();
 
     // Validate input data
-    if stage_name.len() == 0 || location.len() == 0 {
+    if stage_name.is_empty() || location.is_empty() {
         return Err(SupplyChainError::InvalidInput);
     }
 
@@ -25,7 +25,7 @@ pub fn add_stage(
         .ok_or(SupplyChainError::ProductNotFound)?;
 
     // Generate new stage ID
-    let stage_id = product.stages.len() as u32 + 1;
+    let stage_id = product.stages.len() + 1;
 
     // Create new stage
     let stage = Stage {
@@ -70,10 +70,7 @@ pub fn get_product_trace(
 }
 
 /// Get the current stage of a product
-pub fn get_current_stage(
-    env: Env,
-    product_id: BytesN<32>,
-) -> Result<Stage, SupplyChainError> {
+pub fn get_current_stage(env: Env, product_id: BytesN<32>) -> Result<Stage, SupplyChainError> {
     let product: Product = env
         .storage()
         .persistent()
@@ -92,10 +89,7 @@ pub fn get_current_stage(
 }
 
 /// Get complete stage history for a product
-pub fn get_stage_history(
-    env: Env,
-    product_id: BytesN<32>,
-) -> Result<Vec<Stage>, SupplyChainError> {
+pub fn get_stage_history(env: Env, product_id: BytesN<32>) -> Result<Vec<Stage>, SupplyChainError> {
     let product: Product = env
         .storage()
         .persistent()
@@ -124,13 +118,19 @@ pub fn validate_stage_transition(
     }
 
     // Check if from_stage exists in product
-    let stage_exists = product.stages.iter().any(|stage| stage.stage_id == from_stage);
+    let stage_exists = product
+        .stages
+        .iter()
+        .any(|stage| stage.stage_id == from_stage);
     if !stage_exists {
         return Err(SupplyChainError::StageNotFound);
     }
 
     // Check for duplicate stage
-    let duplicate_exists = product.stages.iter().any(|stage| stage.stage_id == to_stage);
+    let duplicate_exists = product
+        .stages
+        .iter()
+        .any(|stage| stage.stage_id == to_stage);
     if duplicate_exists {
         return Err(SupplyChainError::DuplicateStage);
     }

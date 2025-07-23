@@ -1,10 +1,8 @@
-use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
-
 use crate::datatypes::{DataKey, Product, ProductRegistration, SupplyChainError};
 use crate::utils;
+use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
 /// Register a new agricultural product with initial details
-/// MANDATORY from roadmap.md
 pub fn register_product(
     env: Env,
     farmer_id: Address,
@@ -16,7 +14,7 @@ pub fn register_product(
     farmer_id.require_auth();
 
     // Validate input data
-    if product_type.len() == 0 || batch_number.len() == 0 || origin_location.len() == 0 {
+    if product_type.is_empty() || batch_number.is_empty() || origin_location.is_empty() {
         return Err(SupplyChainError::InvalidInput);
     }
 
@@ -24,7 +22,11 @@ pub fn register_product(
     let product_id = utils::generate_product_id(&env, &farmer_id, &product_type, &batch_number);
 
     // Check if product already exists
-    if env.storage().persistent().has(&DataKey::Product(product_id.clone())) {
+    if env
+        .storage()
+        .persistent()
+        .has(&DataKey::Product(product_id.clone()))
+    {
         return Err(SupplyChainError::InvalidProductData);
     }
 
@@ -50,9 +52,10 @@ pub fn register_product(
     };
 
     // Store the registration details
-    env.storage()
-        .persistent()
-        .set(&DataKey::ProductRegistration(product_id.clone()), &registration);
+    env.storage().persistent().set(
+        &DataKey::ProductRegistration(product_id.clone()),
+        &registration,
+    );
 
     // Update farmer's product list
     update_farmer_products(&env, &farmer_id, &product_id)?;
@@ -81,10 +84,7 @@ pub fn get_product_registration(
 }
 
 /// Get product details
-pub fn get_product_details(
-    env: Env,
-    product_id: BytesN<32>,
-) -> Result<Product, SupplyChainError> {
+pub fn get_product_details(env: Env, product_id: BytesN<32>) -> Result<Product, SupplyChainError> {
     env.storage()
         .persistent()
         .get(&DataKey::Product(product_id))
@@ -134,6 +134,11 @@ fn update_farmer_products(
 
     products.push_back(product_id.clone());
     env.storage().persistent().set(&key, &products);
+
+    env.events().publish(
+        (Symbol::new(env, "farmer_products_updated"),),
+        (farmer_id.clone(), product_id.clone()),
+    );
 
     Ok(())
 }

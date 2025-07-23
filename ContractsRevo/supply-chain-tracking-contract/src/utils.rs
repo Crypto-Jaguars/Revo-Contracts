@@ -1,6 +1,5 @@
-use soroban_sdk::{Address, Bytes, BytesN, Env, String, xdr::ToXdr};
-
 use crate::datatypes::{DataKey, Product, SupplyChainError};
+use soroban_sdk::{xdr::ToXdr, Address, Bytes, BytesN, Env, String};
 
 /// Generate unique product ID using hash of farmer, product type, batch, and timestamp
 pub fn generate_product_id(
@@ -11,12 +10,15 @@ pub fn generate_product_id(
 ) -> BytesN<32> {
     let mut data = Bytes::new(env);
     data.append(&farmer_id.to_xdr(env));
-    
+
     // Convert Soroban String to Bytes using proper API
     data.append(&product_type.clone().to_xdr(env));
     data.append(&batch_number.clone().to_xdr(env));
-    data.append(&Bytes::from_array(env, &env.ledger().timestamp().to_be_bytes()));
-    
+    data.append(&Bytes::from_array(
+        env,
+        &env.ledger().timestamp().to_be_bytes(),
+    ));
+
     env.crypto().sha256(&data).into()
 }
 
@@ -28,12 +30,12 @@ pub fn generate_stage_hash(
     handler: &Address,
 ) -> BytesN<32> {
     let mut data = Bytes::new(env);
-    
-    // Convert Soroban String to Bytes using proper API
+
+    // Convert Soroban String to Bytes
     data.append(&stage_data.clone().to_xdr(env));
     data.append(&Bytes::from_array(env, &timestamp.to_be_bytes()));
     data.append(&handler.to_xdr(env));
-    
+
     env.crypto().sha256(&data).into()
 }
 
@@ -71,27 +73,27 @@ pub fn generate_qr_code_data(
     product_id: &BytesN<32>,
 ) -> Result<String, SupplyChainError> {
     // Verify product exists
-    if !env.storage().persistent().has(&DataKey::Product(product_id.clone())) {
+    if !env
+        .storage()
+        .persistent()
+        .has(&DataKey::Product(product_id.clone()))
+    {
         return Err(SupplyChainError::ProductNotFound);
     }
 
     // Create QR code data with hex representation of product ID
     let hex_str = hex_encode(env, product_id.to_array());
-    
+
     // Store QR mapping for resolution - use hex string as key
-    env.storage().persistent().set(
-        &DataKey::QRCodeMapping(hex_str.clone()),
-        product_id,
-    );
-    
+    env.storage()
+        .persistent()
+        .set(&DataKey::QRCodeMapping(hex_str.clone()), product_id);
+
     Ok(hex_str)
 }
 
 /// Resolve QR code to product ID
-pub fn resolve_qr_code(
-    env: &Env,
-    qr_code: &String,
-) -> Result<BytesN<32>, SupplyChainError> {
+pub fn resolve_qr_code(env: &Env, qr_code: &String) -> Result<BytesN<32>, SupplyChainError> {
     env.storage()
         .persistent()
         .get(&DataKey::QRCodeMapping(qr_code.clone()))
@@ -99,10 +101,7 @@ pub fn resolve_qr_code(
 }
 
 /// Verify the hash chain integrity of a product's supply chain
-pub fn verify_hash_chain(
-    env: &Env,
-    product_id: &BytesN<32>,
-) -> Result<bool, SupplyChainError> {
+pub fn verify_hash_chain(env: &Env, product_id: &BytesN<32>) -> Result<bool, SupplyChainError> {
     let product: Product = env
         .storage()
         .persistent()
@@ -131,17 +130,17 @@ pub fn verify_hash_chain(
     Ok(true)
 }
 
-/// Simple hex encoding helper (since we can't use external crates in contracts)
+/// Simple hex encoding helper
 fn hex_encode(env: &Env, bytes: [u8; 32]) -> String {
     let hex_chars = b"0123456789abcdef";
     let mut result_bytes: [u8; 64] = [0; 64];
-    
+
     for (i, byte) in bytes.iter().enumerate() {
         let high = (byte >> 4) as usize;
         let low = (byte & 0xF) as usize;
         result_bytes[i * 2] = hex_chars[high];
         result_bytes[i * 2 + 1] = hex_chars[low];
     }
-    
+
     String::from_str(env, core::str::from_utf8(&result_bytes).unwrap())
 }
