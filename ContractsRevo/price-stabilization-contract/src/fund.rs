@@ -28,15 +28,22 @@ impl FundManagement for PriceStabilizationContract {
         }
         
         // Generate a unique fund ID using the env.crypto API
-        // Generate a unique ID using timestamp
+        // Generate a unique ID using timestamp and additional entropy
         let timestamp = env.ledger().timestamp();
-        
-        // Convert timestamp to bytes and create a Bytes object
-        let timestamp_bytes = timestamp.to_be_bytes();
         let mut bytes_data = Bytes::new(&env);
-        for b in timestamp_bytes.iter() {
+        
+        // Add timestamp bytes
+        for b in timestamp.to_be_bytes().iter() {
             bytes_data.push_back(*b);
         }
+        
+        // Add sequence number for additional entropy
+        let sequence = env.ledger().sequence();
+        for b in sequence.to_be_bytes().iter() {
+            bytes_data.push_back(*b);
+        }
+        
+
         
         // Create a unique fund ID
         let fund_id = env.crypto().sha256(&bytes_data);

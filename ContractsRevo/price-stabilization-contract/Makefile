@@ -1,5 +1,9 @@
 # Makefile for Price Stabilization Contract
 
+SHELL := bash
+.ONESHELL:
+SHELLFLAGS := -eu -o pipefail -c
+
 .PHONY: all build test clean deploy
 
 all: build test
@@ -20,6 +24,10 @@ clean:
 	cargo clean
 
 # Deploy to Stellar testnet
+ifeq ($(strip $(ADMIN_SECRET)),)
+  $(error ADMIN_SECRET environment variable is not set)
+endif
+
 deploy-testnet:
 	@echo "Deploying to Stellar testnet..."
 	stellar contract deploy \
@@ -28,13 +36,20 @@ deploy-testnet:
 		--source $(ADMIN_SECRET)
 
 # Deploy to Stellar mainnet (use with caution)
+ifeq ($(strip $(ADMIN_SECRET)),)
+  $(error ADMIN_SECRET environment variable is not set)
+endif
+
 deploy-mainnet:
 	@echo "Deploying to Stellar mainnet..."
-	@echo "WARNING: You are about to deploy to mainnet. Press Ctrl+C to cancel or Enter to continue."
-	@read
+	@read -p "Are you sure you want to deploy to MAINNET? (yes/no): " CONF; \
+	if [ "$$CONF" != "yes" ]; then \
+	  echo "Aborting mainnet deployment."; \
+	  exit 1; \
+	fi; \
 	stellar contract deploy \
 		--wasm target/wasm32-unknown-unknown/release/price_stabilization_contract.wasm \
-		--network public \
+		--network mainnet \
 		--source $(ADMIN_SECRET)
 
 # Generate documentation

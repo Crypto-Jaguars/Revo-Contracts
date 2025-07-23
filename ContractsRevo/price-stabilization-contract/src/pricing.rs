@@ -48,6 +48,11 @@ impl PriceMonitoring for PriceStabilizationContract {
             return Err(StabilizationError::InvalidInput);
         }
         
+        // Validate timestamp using existing utility
+        if !crate::utils::PriceUtils::validate_timestamp(&env, timestamp) {
+            return Err(StabilizationError::InvalidInput);
+        }
+        
         // Check if oracle is registered for this crop type
         let oracle_key = DataKey::PriceOracle(crop_type.clone());
         if !env.storage().persistent().has(&oracle_key) {

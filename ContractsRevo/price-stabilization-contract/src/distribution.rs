@@ -75,7 +75,9 @@ impl PayoutDistribution for PriceStabilizationContract {
             }
             
             let farmer_crop: FarmerCrop = env.storage().persistent().get(&farmer_crop_key).unwrap();
-            total_capacity += farmer_crop.production_capacity;
+            total_capacity = total_capacity
+                .checked_add(farmer_crop.production_capacity)
+                .ok_or(StabilizationError::InvalidInput)?;
             valid_farmers.push_back(farmer_address.clone());
         }
         
@@ -85,7 +87,9 @@ impl PayoutDistribution for PriceStabilizationContract {
         }
         
         // Check if fund has sufficient balance
-        let total_payout_needed = price_difference * total_capacity;
+        let total_payout_needed = price_difference
+            .checked_mul(total_capacity)
+            .ok_or(StabilizationError::InvalidInput)?;
         if fund.total_balance < total_payout_needed {
             return Err(StabilizationError::InsufficientFunds);
         }
@@ -100,19 +104,24 @@ impl PayoutDistribution for PriceStabilizationContract {
             let farmer_crop: FarmerCrop = env.storage().persistent().get(&farmer_crop_key).unwrap();
             
             // Calculate farmer's share
-            let farmer_share = (price_difference * farmer_crop.production_capacity) / total_capacity;
+            let farmer_share = farmer_crop.production_capacity
+                .checked_mul(total_payout_needed)
+                .and_then(|product| product.checked_div(total_capacity))
+                .ok_or(StabilizationError::InvalidInput)?;
             
             // Update farmer's total received payouts
             let farmer_key = DataKey::Farmer(farmer_address.clone());
             let mut farmer: Farmer = env.storage().persistent().get(&farmer_key).unwrap();
-            farmer.total_received_payouts += farmer_share;
+            farmer.total_received_payouts = farmer.total_received_payouts
+                .checked_add(farmer_share)
+                .ok_or(StabilizationError::InvalidInput)?;
             env.storage().persistent().set(&farmer_key, &farmer);
             
             // Record the payout
             let payout_counter_key = DataKey::PayoutCounter(fund_id.clone(), farmer_address.clone());
             let payout_counter = if env.storage().persistent().has(&payout_counter_key) {
                 let counter: u64 = env.storage().persistent().get(&payout_counter_key).unwrap();
-                counter + 1
+                counter.checked_add(1).ok_or(StabilizationError::InvalidInput)?
             } else {
                 1
             };
@@ -280,7 +289,9 @@ impl PayoutDistribution for PriceStabilizationContract {
         let farmer_crop: FarmerCrop = env.storage().persistent().get(&farmer_crop_key).unwrap();
         
         // Calculate potential payout
-        let potential_payout = price_difference * farmer_crop.production_capacity;
+        let potential_payout = price_difference
+            .checked_mul(farmer_crop.production_capacity)
+            .ok_or(StabilizationError::InvalidInput)?;
         
         Ok(potential_payout)
     }

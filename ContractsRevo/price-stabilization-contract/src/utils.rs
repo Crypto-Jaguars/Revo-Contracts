@@ -5,8 +5,8 @@ use soroban_sdk::{Address, BytesN, Env, String, Vec};
 pub struct PriceUtils;
 
 impl PriceUtils {
-    /// Calculate the average price from multiple oracles
-    pub fn calculate_average_price(env: &Env, crop_type: &String) -> Result<i128, StabilizationError> {
+    /// Retrieve the stored market price for a crop type
+    pub fn get_market_price(env: &Env, crop_type: &String) -> Result<i128, StabilizationError> {
         
         // Check if price data exists for this crop type
         let price_key = DataKey::MarketPrice(crop_type.clone());
@@ -35,7 +35,7 @@ impl PriceUtils {
         let fund: StabilizationFund = env.storage().persistent().get(&fund_key).unwrap();
         
         // Get the current market price
-        let current_price = Self::calculate_average_price(env, &fund.crop_type)?;
+        let current_price = Self::get_market_price(env, &fund.crop_type)?;
         
         // Calculate the difference (will be positive if threshold is higher than market price)
         let difference = fund.price_threshold - current_price;
@@ -79,12 +79,16 @@ impl PriceUtils {
             let farmer_crop_key = DataKey::FarmerCrops(farmer_address.clone(), fund.crop_type.clone());
             if env.storage().persistent().has(&farmer_crop_key) {
                 let farmer_crop = env.storage().persistent().get::<DataKey, FarmerCrop>(&farmer_crop_key);
-                total_capacity += farmer_crop.unwrap().production_capacity;
+                total_capacity = total_capacity
+                    .checked_add(farmer_crop.unwrap().production_capacity)
+                    .ok_or(StabilizationError::InvalidInput)?;
             }
         }
         
-        // Calculate total payout needed
-        let total_payout_needed = price_difference * total_capacity;
+        // Calculate total payout needed with overflow check
+        let total_payout_needed = price_difference
+            .checked_mul(total_capacity)
+            .ok_or(StabilizationError::InvalidInput)?;
         
         // Check if fund has sufficient balance
         Ok(fund.total_balance >= total_payout_needed)
