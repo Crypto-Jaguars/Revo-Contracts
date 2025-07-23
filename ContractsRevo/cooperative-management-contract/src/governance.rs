@@ -1,8 +1,9 @@
 use crate::datatype::{CooperativeError, DataKey, Proposal};
 use crate::interface::Governance;
-use crate::CooperativeManagementContract;
-use soroban_sdk::{Address, Env, String};
+use crate::{CooperativeManagementContract, CooperativeManagementContractArgs, CooperativeManagementContractClient};
+use soroban_sdk::{contractimpl, Address, Env, String};
 
+#[contractimpl]
 impl Governance for CooperativeManagementContract {
     fn submit_proposal(
         env: Env,

@@ -1,8 +1,9 @@
 use crate::datatype::{CooperativeError, DataKey};
 use crate::interface::ProfitDistribution;
-use crate::CooperativeManagementContract;
-use soroban_sdk::{Address, Env, Map, Vec};
+use crate::{CooperativeManagementContract, CooperativeManagementContractArgs, CooperativeManagementContractClient};
+use soroban_sdk::{contractimpl, Address, Env, Map, Vec};
 
+#[contractimpl]
 impl ProfitDistribution for CooperativeManagementContract {
     fn distribute_profits(
         env: Env,
@@ -63,7 +64,7 @@ impl ProfitDistribution for CooperativeManagementContract {
             if balance < amount {
                 return Err(CooperativeError::InsufficientFunds);
             }
-            balance -= amount;
+            balance -= &amount;
             env.storage().persistent().set(&key, &balance);
         }
         Ok(())
