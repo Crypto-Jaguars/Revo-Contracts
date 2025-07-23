@@ -1,11 +1,11 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Vec};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Vec};
 
 mod datatypes;
 mod product;
 mod tracking;
-mod validation;
 mod utils;
+mod validation;
 
 #[cfg(test)]
 mod test;
@@ -17,17 +17,77 @@ pub struct SupplyChainTrackingContract;
 
 #[contractimpl]
 impl SupplyChainTrackingContract {
-    /// Initialize the contract with an admin
-    pub fn initialize(env: Env, admin: Address) -> Result<(), SupplyChainError> {
+    // ========== ADMIN FUNCTIONS ==========
+
+    /// Initialize the contract with an admin and certificate management contract address
+    pub fn initialize(
+        env: Env,
+        admin: Address,
+        cert_management_contract: Address,
+    ) -> Result<(), SupplyChainError> {
         admin.require_auth();
-        
+
         // Check if already initialized
         if env.storage().instance().has(&DataKey::Admin) {
-            return Err(SupplyChainError::InvalidInput);
+            return Err(SupplyChainError::AlreadyInitialized);
         }
-        
+
         env.storage().instance().set(&DataKey::Admin, &admin);
+
+        // Store certificate management contract address for production cross-contract calls
+        env.storage().instance().set(
+            &Symbol::new(&env, CERTIFICATE_MANAGEMENT_CONTRACT_KEY),
+            &cert_management_contract,
+        );
+
+        // Emit initialization event
+        env.events().publish(
+            (Symbol::new(&env, "contract_initialized"), admin.clone()),
+            env.ledger().timestamp(),
+        );
+
         Ok(())
+    }
+
+    /// Set or update the certificate management contract address (admin only)
+    pub fn set_cert_mgmt_contract(
+        env: Env,
+        admin: Address,
+        cert_management_contract: Address,
+    ) -> Result<(), SupplyChainError> {
+        admin.require_auth();
+
+        // Verify admin
+        let stored_admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(SupplyChainError::NotInitialized)?;
+
+        if admin != stored_admin {
+            return Err(SupplyChainError::UnauthorizedAccess);
+        }
+
+        env.storage().instance().set(
+            &Symbol::new(&env, CERTIFICATE_MANAGEMENT_CONTRACT_KEY),
+            &cert_management_contract,
+        );
+
+        // Emit configuration event
+        env.events().publish(
+            (Symbol::new(&env, "cert_contract_configured"), admin),
+            cert_management_contract,
+        );
+
+        Ok(())
+    }
+
+    /// Get the certificate management contract address
+    pub fn get_cert_mgmt_contract(env: Env) -> Result<Address, SupplyChainError> {
+        env.storage()
+            .instance()
+            .get(&Symbol::new(&env, CERTIFICATE_MANAGEMENT_CONTRACT_KEY))
+            .ok_or(SupplyChainError::NotInitialized)
     }
 
     /// Get the contract admin
@@ -35,7 +95,7 @@ impl SupplyChainTrackingContract {
         env.storage()
             .instance()
             .get(&DataKey::Admin)
-            .ok_or(SupplyChainError::UnauthorizedAccess)
+            .ok_or(SupplyChainError::NotInitialized)
     }
 
     // ========== CORE FUNCTIONS ==========
@@ -82,10 +142,11 @@ impl SupplyChainTrackingContract {
     /// Validate product authenticity against recorded data and certifications
     pub fn verify_authenticity(
         env: Env,
+        farmer_id: Address,
         product_id: BytesN<32>,
         verification_data: BytesN<32>,
     ) -> Result<bool, SupplyChainError> {
-        validation::verify_authenticity(env, product_id, verification_data)
+        validation::verify_authenticity(env, farmer_id, product_id, verification_data)
     }
 
     /// Associate a product with a certification from certificate-management-contract
@@ -143,10 +204,7 @@ impl SupplyChainTrackingContract {
     }
 
     /// Get the current stage of a product
-    pub fn get_current_stage(
-        env: Env,
-        product_id: BytesN<32>,
-    ) -> Result<Stage, SupplyChainError> {
+    pub fn get_current_stage(env: Env, product_id: BytesN<32>) -> Result<Stage, SupplyChainError> {
         tracking::get_current_stage(env, product_id)
     }
 
@@ -185,18 +243,12 @@ impl SupplyChainTrackingContract {
     }
 
     /// Verify the hash chain integrity of a product's supply chain
-    pub fn verify_hash_chain(
-        env: Env,
-        product_id: BytesN<32>,
-    ) -> Result<bool, SupplyChainError> {
+    pub fn verify_hash_chain(env: Env, product_id: BytesN<32>) -> Result<bool, SupplyChainError> {
         utils::verify_hash_chain(&env, &product_id)
     }
 
     /// Generate QR code data for consumer access to traceability
-    pub fn generate_qr_code(
-        env: Env,
-        product_id: BytesN<32>,
-    ) -> Result<String, SupplyChainError> {
+    pub fn generate_qr_code(env: Env, product_id: BytesN<32>) -> Result<String, SupplyChainError> {
         utils::generate_qr_code_data(&env, &product_id)
     }
 }
