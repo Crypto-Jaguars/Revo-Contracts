@@ -25,7 +25,10 @@ pub fn create_barter_agreement(
     agreement_id
 }
 
-pub fn get_barter_agreement(env: Env, agreement_id: BytesN<32>) -> Result<BarterAgreement, TradeError> {
+pub fn get_barter_agreement(
+    env: Env,
+    agreement_id: BytesN<32>,
+) -> Result<BarterAgreement, TradeError> {
     env.storage()
         .persistent()
         .get(&DataKey::BarterAgreement(agreement_id))

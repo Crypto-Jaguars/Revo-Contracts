@@ -171,7 +171,6 @@ fn test_create_trade_offer_invalid_products() {
     }
 }
 
-
 #[test]
 fn test_accept_trade_success() {
     let env = Env::default();
@@ -216,7 +215,10 @@ fn test_accept_trade_success() {
     assert_eq!(trade_offer.status, String::from_str(&env, "Accepted"));
 
     // Verify barter agreement was created
-    let barter_agreement = client.try_get_barter_agreement(&agreement_id).unwrap().expect("Barter agreement should exist");
+    let barter_agreement = client
+        .try_get_barter_agreement(&agreement_id)
+        .unwrap()
+        .expect("Barter agreement should exist");
     assert_eq!(barter_agreement.trade_offer_id, offer_id);
     assert_eq!(barter_agreement.offering_cooperative, offering_cooperative);
     assert_eq!(
@@ -601,9 +603,7 @@ fn test_list_active_offers_with_offers() {
                 !offers.contains(&offer_id1),
                 "Should not contain accepted offer"
             );
-            assert!(
-                offers.contains(&offer_id2),
-            );
+            assert!(offers.contains(&offer_id2),);
         }
         Ok(Err(trade_error)) => panic!("List active offers failed with error: {:?}", trade_error),
         Err(call_error) => panic!("Contract call failed with error: {:?}", call_error),
@@ -616,27 +616,34 @@ fn test_get_barter_agreement_success() {
     let admin = Address::generate(&env);
     let offering_cooperative = Address::generate(&env);
     let accepting_cooperative = Address::generate(&env);
-    
+
     let contract_id = env.register(CrossCooperativeTradeContract, ());
     let client = CrossCooperativeTradeContractClient::new(&env, &contract_id);
-    
+
     env.mock_all_auths();
-    
+
     let _ = client.try_initialize(&admin);
-    
+
     // Create and accept a trade offer to generate a barter agreement
-    let offered_product = env.crypto().keccak256(&Bytes::from_array(&env, b"corn")).into();
-    let requested_product = env.crypto().keccak256(&Bytes::from_array(&env, b"wheat")).into();
-    
-    let offer_id = client.try_create_trade_offer(
-        &offering_cooperative,
-        &offered_product,
-        &requested_product,
-    ).unwrap().expect("Trade offer creation should succeed");
-    
-    let agreement_id = client.try_accept_trade(&offer_id, &accepting_cooperative)
-        .unwrap().expect("Accept trade should succeed");
-    
+    let offered_product = env
+        .crypto()
+        .keccak256(&Bytes::from_array(&env, b"corn"))
+        .into();
+    let requested_product = env
+        .crypto()
+        .keccak256(&Bytes::from_array(&env, b"wheat"))
+        .into();
+
+    let offer_id = client
+        .try_create_trade_offer(&offering_cooperative, &offered_product, &requested_product)
+        .unwrap()
+        .expect("Trade offer creation should succeed");
+
+    let agreement_id = client
+        .try_accept_trade(&offer_id, &accepting_cooperative)
+        .unwrap()
+        .expect("Accept trade should succeed");
+
     // Test successful retrieval of barter agreement details
     let result = client.try_get_barter_agreement(&agreement_id);
     match result {
@@ -644,7 +651,10 @@ fn test_get_barter_agreement_success() {
             assert_eq!(barter_agreement.agreement_id, agreement_id);
             assert_eq!(barter_agreement.trade_offer_id, offer_id);
             assert_eq!(barter_agreement.offering_cooperative, offering_cooperative);
-            assert_eq!(barter_agreement.accepting_cooperative, accepting_cooperative);
+            assert_eq!(
+                barter_agreement.accepting_cooperative,
+                accepting_cooperative
+            );
             assert_eq!(barter_agreement.status, String::from_str(&env, "Active"));
         }
         Ok(Err(trade_error)) => panic!("Get barter agreement failed with error: {:?}", trade_error),
@@ -656,21 +666,27 @@ fn test_get_barter_agreement_success() {
 fn test_get_barter_agreement_not_found() {
     let env = Env::default();
     let admin = Address::generate(&env);
-    
+
     let contract_id = env.register(CrossCooperativeTradeContract, ());
     let client = CrossCooperativeTradeContractClient::new(&env, &contract_id);
-    
+
     env.mock_all_auths();
-    
+
     let _ = client.try_initialize(&admin);
-    
+
     // Try to get details for non-existent barter agreement
-    let non_existent_agreement_id = env.crypto().keccak256(&Bytes::from_array(&env, b"nonexistent")).into();
+    let non_existent_agreement_id = env
+        .crypto()
+        .keccak256(&Bytes::from_array(&env, b"nonexistent"))
+        .into();
     let result = client.try_get_barter_agreement(&non_existent_agreement_id);
-    
+
     match result {
         Ok(inner_result) => {
-            assert!(inner_result.is_err(), "Expected error for non-existent barter agreement");
+            assert!(
+                inner_result.is_err(),
+                "Expected error for non-existent barter agreement"
+            );
             // Verify it's the correct error type
             match inner_result {
                 Err(_trade_error) => {

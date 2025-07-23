@@ -131,11 +131,7 @@ pub fn complete_trade(env: Env, offer_id: BytesN<32>, caller: Address) -> Result
         .set(&DataKey::TradeOffer(offer_id.clone()), &trade_offer);
 
     // Update reputations for both cooperatives
-    crate::reputation::update_reputation_after_trade(
-        &env,
-        &trade_offer.cooperative_id,
-        true,
-    )?;
+    crate::reputation::update_reputation_after_trade(&env, &trade_offer.cooperative_id, true)?;
 
     Ok(())
 }

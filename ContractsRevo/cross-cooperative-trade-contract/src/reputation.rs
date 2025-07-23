@@ -39,7 +39,6 @@ pub fn update_reputation_after_trade(
     env.storage()
         .persistent()
         .set(&DataKey::Reputation(cooperative_id.clone()), &reputation);
-    
+
     Ok(())
 }
-

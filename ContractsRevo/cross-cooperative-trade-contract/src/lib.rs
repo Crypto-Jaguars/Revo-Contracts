@@ -136,16 +136,20 @@ impl CrossCooperativeTradeContract {
 
     // Barter Agreement Functions
     /// Get barter agreement details
-    pub fn get_barter_agreement(env: Env, agreement_id: BytesN<32>) -> Result<BarterAgreement, TradeError> {
+    pub fn get_barter_agreement(
+        env: Env,
+        agreement_id: BytesN<32>,
+    ) -> Result<BarterAgreement, TradeError> {
         barter::get_barter_agreement(env, agreement_id)
     }
 
     // Reputation Functions
     /// Update reputation after trade
-    pub fn update_reputation(env: Env, cooperative_id: Address, successful: bool) -> Result<(), TradeError> {
+    pub fn update_reputation(
+        env: Env,
+        cooperative_id: Address,
+        successful: bool,
+    ) -> Result<(), TradeError> {
         reputation::update_reputation_after_trade(&env, &cooperative_id, successful)
     }
-
-    
-
 }
