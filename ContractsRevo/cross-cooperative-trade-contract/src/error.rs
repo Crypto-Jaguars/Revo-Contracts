@@ -17,4 +17,5 @@ pub enum TradeError {
     TradeExpired = 4,
     CannotAcceptOwnOffer = 5,
     InvalidQuantity = 6,
+    BarterAgreementNotFound = 7,
 }

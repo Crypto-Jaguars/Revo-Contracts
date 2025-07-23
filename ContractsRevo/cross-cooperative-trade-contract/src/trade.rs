@@ -12,7 +12,7 @@ pub fn create_trade_offer(
 
     // Basic validation: offered and requested products should be different
     if offered_product == requested_product {
-        return Err(TradeError::InvalidQuantity); // Using existing error variant for validation
+        return Err(TradeError::InvalidQuantity);
     }
 
     // Generate unique offer ID
@@ -136,9 +136,6 @@ pub fn complete_trade(env: Env, offer_id: BytesN<32>, caller: Address) -> Result
         &trade_offer.cooperative_id,
         true,
     )?;
-
-    // Note: In a real implementation, we would also update the accepting cooperative's reputation
-    // This would require storing the accepting cooperative in the trade offer or barter agreement
 
     Ok(())
 }

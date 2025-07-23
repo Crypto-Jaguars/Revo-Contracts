@@ -29,5 +29,5 @@ pub fn get_barter_agreement(env: Env, agreement_id: BytesN<32>) -> Result<Barter
     env.storage()
         .persistent()
         .get(&DataKey::BarterAgreement(agreement_id))
-        .ok_or(TradeError::TradeOfferNotFound) // Reusing existing error variant for consistency
+        .ok_or(TradeError::BarterAgreementNotFound)
 }
