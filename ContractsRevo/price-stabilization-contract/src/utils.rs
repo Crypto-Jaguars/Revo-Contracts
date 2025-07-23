@@ -99,6 +99,11 @@ impl PriceUtils {
         let current_time = env.ledger().timestamp();
         let one_hour = 3600; // seconds
         
+        // Reject future timestamps
+        if timestamp > current_time {
+            return false;
+        }
+        
         // Check if timestamp is within the last hour
         current_time - timestamp <= one_hour
     }
