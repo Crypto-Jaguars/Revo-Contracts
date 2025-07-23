@@ -1,20 +1,20 @@
-use soroban_sdk::{contracttype, Address, String, Vec};
+use soroban_sdk::{contracttype, contracterror, Address, String, Vec};
 
 #[derive(Debug)]
-#[contracttype]
+#[contracterror]
 pub enum CooperativeError {
-    MemberNotFound,
-    MemberAlreadyExists,
-    ResourceNotAvailable,
-    ResourceNotFound,
-    TimeSlotConflict,
-    Unauthorized,
-    NotAMember,
-    ProposalNotFound,
-    ProposalAlreadyExecuted,
-    ProposalRejected,
-    InsufficientFunds,
-    InvalidInput,
+    MemberNotFound = 1,
+    MemberAlreadyExists = 2,
+    ResourceNotAvailable = 3,
+    ResourceNotFound = 4,
+    TimeSlotConflict = 5,
+    Unauthorized = 6,
+    NotAMember = 7,
+    ProposalNotFound = 8,
+    ProposalAlreadyExecuted = 9,
+    ProposalRejected = 10,
+    InsufficientFunds = 11,
+    InvalidInput = 12,
 }
 
 #[derive(Debug)]
@@ -38,6 +38,7 @@ pub enum DataKey {
 pub struct Member {
     pub address: Address,
     pub name: String,
+    pub role: String,
     pub reputation: u32,
     pub contributions: u32,
     pub verified: bool,
