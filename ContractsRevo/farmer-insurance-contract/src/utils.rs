@@ -20,7 +20,7 @@ pub enum ContractError {
 pub fn generate_policy_id(env: &Env) -> Result<BytesN<32>, ContractError> {
     let count: u64 = env
         .storage()
-        .instance()
+        .persistent()
         .get::<_, u64>(&DataKey::PolicyCount)
         .unwrap_or(0);
 
@@ -28,7 +28,9 @@ pub fn generate_policy_id(env: &Env) -> Result<BytesN<32>, ContractError> {
         .checked_add(1)
         .ok_or(ContractError::PolicyCountOverflow)?;
 
-    env.storage().instance().set(&DataKey::PolicyCount, &new_count);
+    env.storage().persistent().set(&DataKey::PolicyCount, &new_count);
+    // Set TTL for persistent storage (~30 days)
+    env.storage().persistent().extend_ttl(&DataKey::PolicyCount, 17280, 17280);
 
     let timestamp = env.ledger().timestamp();
     let mut buffer = Bytes::new(env);
@@ -41,7 +43,7 @@ pub fn generate_policy_id(env: &Env) -> Result<BytesN<32>, ContractError> {
 pub fn generate_claim_id(env: &Env) -> Result<BytesN<32>, ContractError> {
     let count: u64 = env
         .storage()
-        .instance()
+        .persistent()
         .get::<_, u64>(&DataKey::ClaimCount)
         .unwrap_or(0);
 
@@ -49,7 +51,9 @@ pub fn generate_claim_id(env: &Env) -> Result<BytesN<32>, ContractError> {
         .checked_add(1)
         .ok_or(ContractError::ClaimCountOverflow)?;
 
-    env.storage().instance().set(&DataKey::ClaimCount, &new_count);
+    env.storage().persistent().set(&DataKey::ClaimCount, &new_count);
+    // Set TTL for persistent storage (~30 days)
+    env.storage().persistent().extend_ttl(&DataKey::ClaimCount, 17280, 17280);
 
     let timestamp = env.ledger().timestamp();
     let mut buffer = Bytes::new(env);
