@@ -24,7 +24,7 @@ fn test_full_insurance_flow() {
     let contract_id = env.register(FarmerInsuranceContract, ());
 
     let policy_id = env.as_contract(&contract_id, || {
-        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100)
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100).unwrap()
     });
 
     let policy = env.as_contract(&contract_id, || {
@@ -49,7 +49,7 @@ fn test_full_insurance_flow() {
     let payout_amount = 300;
 
     let claim_id = env.as_contract(&contract_id, || {
-        claims::sub_claim(env.clone(), policy_id.clone(), event_hash.clone(), payout_amount)
+        claims::sub_claim(env.clone(), policy_id.clone(), event_hash.clone(), payout_amount).unwrap()
     });
 
     let claim = env.as_contract(&contract_id, || {
@@ -84,11 +84,11 @@ fn test_create_pol_generates_unique_policy_ids() {
     let contract_id = env.register(FarmerInsuranceContract, ());
 
     let policy_id_1 = env.as_contract(&contract_id, || {
-        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100)
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100).unwrap()
     });
 
     let policy_id_2 = env.as_contract(&contract_id, || {
-        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("pest"), 150)
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("pest"), 150).unwrap()
     });
 
     assert_ne!(policy_id_1, policy_id_2);
@@ -104,7 +104,7 @@ fn test_new_policy_is_inactive_by_default() {
     let contract_id = env.register(FarmerInsuranceContract, ());
 
     let policy_id = env.as_contract(&contract_id, || {
-        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100)
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100).unwrap()
     });
 
     let policy = env.as_contract(&contract_id, || {
@@ -125,7 +125,7 @@ fn test_pay_prem_fails_when_called_twice() {
     let contract_id = env.register(FarmerInsuranceContract, ());
 
     let policy_id = env.as_contract(&contract_id, || {
-        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100)
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100).unwrap()
     });
 
     env.as_contract(&contract_id, || {
@@ -148,12 +148,12 @@ fn test_sub_claim_fails_if_policy_not_active() {
     let contract_id = env.register(FarmerInsuranceContract, ());
 
     let policy_id = env.as_contract(&contract_id, || {
-        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100)
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 100).unwrap()
     });
 
     let event_hash = BytesN::random(&env);
 
     env.as_contract(&contract_id, || {
-        claims::sub_claim(env.clone(), policy_id.clone(), event_hash.clone(), 300)
+        claims::sub_claim(env.clone(), policy_id.clone(), event_hash.clone(), 300).unwrap()
     });
 }
