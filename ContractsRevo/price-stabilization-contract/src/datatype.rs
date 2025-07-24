@@ -20,6 +20,7 @@ pub enum StabilizationError {
     InvalidChainlinkResponse = 15,
     ChainlinkFeedNotRegistered = 16,
     ChainlinkFeedAlreadyRegistered = 17,
+    CropAlreadyRegistered = 18,
 }
 
 #[derive(Debug)]

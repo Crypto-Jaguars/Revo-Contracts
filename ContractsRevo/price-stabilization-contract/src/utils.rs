@@ -37,17 +37,14 @@ impl PriceUtils {
         // Get the current market price
         let current_price = Self::get_market_price(env, &fund.crop_type)?;
         
-        // Calculate the difference with overflow protection
-        let difference = fund.price_threshold
-            .checked_sub(current_price)
-            .ok_or(StabilizationError::InvalidInput)?;
-        
-        if difference <= 0 {
+        // Calculate the difference
+        if current_price >= fund.price_threshold {
             // Price is at or above threshold, no payout needed
             return Ok(0);
         }
         
-        Ok(difference)
+        // Safe to subtract since we checked current_price < threshold
+        Ok(fund.price_threshold - current_price)
     }
     
     /// Check if a fund has sufficient balance for potential payouts

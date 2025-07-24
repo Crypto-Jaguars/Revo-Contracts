@@ -52,8 +52,7 @@ impl DistributionManagement for PriceStabilizationContract {
             .checked_sub(price_data.price)
             .ok_or(StabilizationError::InvalidInput)?;
         
-        // Calculate total production capacity of all farmers
-        let mut total_capacity: i128 = 0;
+        // Collect valid farmers and validate their eligibility
         let mut valid_farmers = Vec::new(&env);
         
         for farmer_address in farmers.iter() {
@@ -76,10 +75,6 @@ impl DistributionManagement for PriceStabilizationContract {
                 continue;
             }
             
-            let farmer_crop: FarmerCrop = env.storage().persistent().get(&farmer_crop_key).unwrap();
-            total_capacity = total_capacity
-                .checked_add(farmer_crop.production_capacity)
-                .ok_or(StabilizationError::InvalidInput)?;
             valid_farmers.push_back(farmer_address.clone());
         }
         
@@ -88,10 +83,19 @@ impl DistributionManagement for PriceStabilizationContract {
             return Err(StabilizationError::FarmerNotRegistered);
         }
         
-        // Check if fund has sufficient balance
-        let total_payout_needed = price_difference
-            .checked_mul(total_capacity)
-            .ok_or(StabilizationError::InvalidInput)?;
+        // Calculate actual total payout needed
+        let mut total_payout_needed: i128 = 0;
+        for farmer_address in valid_farmers.iter() {
+            let farmer_crop_key = DataKey::FarmerCrops(farmer_address.clone(), fund.crop_type.clone());
+            let farmer_crop: FarmerCrop = env.storage().persistent().get(&farmer_crop_key).unwrap();
+            let farmer_payout = price_difference
+                .checked_mul(farmer_crop.production_capacity)
+                .ok_or(StabilizationError::InvalidInput)?;
+            total_payout_needed = total_payout_needed
+                .checked_add(farmer_payout)
+                .ok_or(StabilizationError::InvalidInput)?;
+        }
+        
         if fund.total_balance < total_payout_needed {
             return Err(StabilizationError::InsufficientFunds);
         }
@@ -203,7 +207,7 @@ impl DistributionManagement for PriceStabilizationContract {
         
         // Check if farmer already registered this crop
         if env.storage().persistent().has(&farmer_crop_key) {
-            return Err(StabilizationError::FarmerAlreadyRegistered);
+            return Err(StabilizationError::CropAlreadyRegistered);
         }
         
         let farmer_crop = FarmerCrop {

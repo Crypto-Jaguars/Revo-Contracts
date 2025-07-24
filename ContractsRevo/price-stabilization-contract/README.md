@@ -86,6 +86,8 @@ fn update_chainlink_price(
 - **Payout Amount Calculation**: Uses `checked_mul()` for safe multiplication
 - **Price Conversion**: Protected decimal conversion with overflow checks
 - **Production Capacity**: Safe arithmetic for farmer payout calculations
+- **Accurate Fund Balance Check**: Validates total payout against actual distribution amounts
+- **Logical Price Difference**: Proper handling of price threshold comparisons
 
 ## 📦 Key Data Structures
 
@@ -245,6 +247,8 @@ await contract.call(
 - **Chainlink data includes staleness checks and round ID validation**
 - **Overflow protection** prevents integer overflow in price calculations
 - **Checked arithmetic** ensures safe mathematical operations
+- **Accurate fund balance validation** prevents over-distribution of funds
+- **Specific error handling** provides clear feedback for different scenarios
 
 ## 🔄 Integration Points
 
