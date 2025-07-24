@@ -7,7 +7,8 @@ A complete smart contract for tracking the lifecycle of agricultural products fr
 This contract enables comprehensive supply chain tracking with:
 
 - **Product Registration**: Register agricultural products with unique identifiers
-- **Stage Tracking**: Record key stages (planting, harvesting, processing, transport, sale) with timestamps
+- **Stage Tier Validation**: Enforce strict sequential progression through agricultural supply chain stages
+- **Stage Tracking**: Record key stages with tier validation, timestamps, and cryptographic verification
 - **Authenticity Verification**: Validate product authenticity and prevent fraud
 - **Certificate Integration**: Link to existing certifications from certificate-management-contract
 - **Consumer Access**: Generate QR codes for consumer access to traceability data
@@ -20,7 +21,7 @@ supply-chain-tracking-contract/src/
 ├── lib.rs           # Main contract and exports
 ├── datatypes.rs     # Data structures and error types
 ├── product.rs       # Product registration and management
-├── tracking.rs      # Stage management and supply chain tracking
+├── tracking.rs      # Stage management and supply chain tracking with stage tier validation
 ├── validation.rs    # Authenticity verification and certificate linking
 ├── utils.rs         # Utilities for hash generation and QR codes
 └── test.rs          # Comprehensive test suite
@@ -44,6 +45,7 @@ struct Product {
 ```rust
 struct Stage {
     stage_id: u32,                 // Sequential stage number
+    tier: StageTier,               // Validated agricultural tier
     name: String,                  // Stage name (e.g., "Harvesting")
     timestamp: u64,                // When stage occurred
     location: String,              // Geographic location
@@ -51,14 +53,37 @@ struct Stage {
 }
 ```
 
+### Stage Tier
+
+```rust
+enum StageTier {
+    Planting = 1,       // Seeds/planting stage
+    Cultivation = 2,    // Growing/nurturing stage
+    Harvesting = 3,     // Harvest/collection stage
+    Processing = 4,     // Initial processing/cleaning
+    Packaging = 5,      // Packaging for distribution
+    Storage = 6,        // Storage/warehousing
+    Transportation = 7, // Transport to distribution centers
+    Distribution = 8,   // Distribution to retailers
+    Retail = 9,         // Retail/market stage
+    Consumer = 10,      // Final consumer stage
+}
+```
+
+### Validation Functions
+
+- `get_current_tier()` – Get the current stage tier for a product
+- `get_next_expected_tier()` – Get the next valid tier in the progression
+- `validate_tier_progression()` – Internal validation logic
+
 ## 🔑 Core Functions
 
 ### Mandatory Functions
 
 - `register_product()` – Register a new agricultural product with initial details
-- `add_stage()` – Record a new stage in the product's lifecycle
+- `add_stage(env, product_id, stage_tier, stage_name, location, handler, data_hash)` – Record a new stage with tier validation
 - `verify_authenticity()` – Validate product authenticity against recorded data
-- `get_product_trace()` – Retrieve the full lifecycle of a product
+- `get_product_trace()` – Retrieve the full lifecycle of a product with tier information
 - `link_certificate()` – Associate a product with a certification
 
 ### Extended Functions
@@ -68,6 +93,8 @@ struct Stage {
 - `generate_qr_code()` – Generate QR code for consumer access
 - `trace_by_qr_code()` – Get product trace using QR code
 - `validate_stage_transition()` – Validate stage transition logic
+- `get_current_tier()` – Get current stage tier for a product
+- `get_next_expected_tier()` – Get next expected tier in progression
 
 ## 🚀 Quick Start
 
@@ -112,33 +139,66 @@ let product_id = contract.register_product(
 ### 2. Add Supply Chain Stages
 
 ```rust
-// Stage 1: Harvesting
+// Stage 1: Must start with Planting tier
 contract.add_stage(
     product_id,
-    "Harvesting",
+    StageTier::Planting,        // Tier validation - must be first
+    "Seed Planting",
+    "Field 3, Farm A",
+    handler_address,
+    planting_data_hash,
+);
+
+// Stage 2: Must follow with Cultivation tier
+contract.add_stage(
+    product_id,
+    StageTier::Cultivation,     // Next tier in sequence
+    "Crop Growing",
+    "Field 3, Farm A",
+    handler_address,
+    cultivation_data_hash,
+);
+
+// Stage 3: Harvesting tier
+contract.add_stage(
+    product_id,
+    StageTier::Harvesting,      // Next tier in sequence
+    "Crop Harvesting",
     "Field 3, Farm A",
     handler_address,
     harvest_data_hash,
 );
+```
 
-// Stage 2: Processing
+### 3. Validate Tier Progression
+
+```rust
+// Check current tier
+let current_tier = contract.get_current_tier(product_id);
+// Returns: Some(StageTier::Harvesting)
+
+// Check next expected tier
+let next_tier = contract.get_next_expected_tier(product_id);
+// Returns: Some(StageTier::Processing)
+
+// Add next stage in correct progression
 contract.add_stage(
     product_id,
-    "Processing",
+    StageTier::Processing,      // Matches expected next tier
+    "Initial Processing",
     "Processing Plant B",
     processor_address,
     processing_data_hash,
 );
-
-// Stage 3: Packaging
-contract.add_stage(
-    product_id,
-    "Packaging",
-    "Packaging Facility C",
-    packager_address,
-    packaging_data_hash,
-);
 ```
+
+#### Tier Validation Rules
+
+✅ **Sequential Progression**: Must follow exact tier order (1→2→3→...→10)  
+✅ **No Skipping**: Cannot jump from Planting to Processing  
+✅ **No Backwards**: Cannot go from Harvesting back to Cultivation  
+✅ **Duplicate Prevention**: Cannot add the same tier twice  
+✅ **Complete Lifecycle**: Supports full farm-to-consumer tracking  
 
 ### 3. Link Certification
 
@@ -257,44 +317,69 @@ The contract emits events for:
 Comprehensive test suite covers:
 
 - ✅ Product registration and validation
-- ✅ Stage addition and sequencing
-- ✅ Supply chain traceability
+- ✅ Stage tier validation and progression rules
+- ✅ Wrong tier progression attempts (comprehensive error testing)
+- ✅ Sequential tier enforcement
+- ✅ Duplicate tier prevention
+- ✅ Complete lifecycle validation (all 10 tiers)
+- ✅ Edge cases for tier validation
+- ✅ Supply chain traceability with tier information
 - ✅ Certificate linking
 - ✅ QR code generation and resolution
 - ✅ Authentication and error handling
+- ✅ Backwards progression prevention
 - ✅ Edge cases and invalid inputs
 
-## 🛡 Security
+## 🛡 Security & Validation
 
 - **Authentication**: All operations require proper authorization
 - **Immutability**: Stage records cannot be modified once added
-- **Validation**: Input validation prevents invalid data
+- **Tier Validation**: Strict enforcement of agricultural supply chain progression
+- **Input Validation**: Prevents invalid data and tier sequences
 - **Hash Verification**: Cryptographic verification of data integrity
+- **Sequential Integrity**: Ensures logical supply chain progression
+
+### Error Handling
+
+```rust
+enum SupplyChainError {
+    UnauthorizedAccess = 1,
+    NotInitialized = 2,
+    AlreadyInitialized = 3,
+    CertificateNotFound = 4,
+    ProductNotFound = 5,
+    StageNotFound = 6,
+    InvalidInput = 7,
+    InvalidHash = 8,
+    // ... other errors
+}
+```
 
 ## 📈 Future Enhancements
 
-- Advanced stage validation rules
-- Multi-signature approvals for critical stages
-- Integration with IoT sensors for automated stage updates
-- Advanced analytics and supply chain metrics
-- Support for batch operations and bulk imports
+- **IoT Integration**: Automated tier progression with sensor data
+- **Multi-signature**: Approvals for critical tier transitions
+- **Analytics**: Supply chain metrics and tier timing analysis
+- **Batch Operations**: Bulk tier progression for large harvests
+- **Quality Gates**: Quality checks required for tier progression
+- **Conditional Progression**: Weather or quality-based tier validation
 
-## 📄 License
+## 📊 Production Benefits
 
-This project follows the same license as the parent repository.
+### For Farmers
 
-## 🤝 Contributing
+- **Compliance**: Ensures proper agricultural process documentation
+- **Certification**: Links to organic/quality certifications at each tier
+- **Traceability**: Complete farm-to-consumer tracking
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run the full test suite: `make ci`
-5. Submit a pull request
+### For Consumers
 
-## 📞 Support
+- **Transparency**: Full visibility into product journey
+- **Trust**: Cryptographically verified supply chain integrity
+- **Quality**: Assurance of proper agricultural processes
 
-For questions or issues:
-    - Check the test suite for usage examples
-    - Review the code documentation
-    - Open an issue in the repository
-  
+### For Regulators
+
+- **Audit Trail**: Immutable record of agricultural processes
+- **Compliance**: Ensures proper food safety protocols
+- **Verification**: Cryptographic proof of supply chain integrity
