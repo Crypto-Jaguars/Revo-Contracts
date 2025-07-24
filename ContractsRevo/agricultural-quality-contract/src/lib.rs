@@ -7,6 +7,7 @@ mod interface;
 mod quality_metrics;
 mod resolution;
 mod verification;
+mod test;
 
 use datatypes::*;
 use interface::*;

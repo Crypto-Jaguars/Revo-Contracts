@@ -70,8 +70,7 @@ pub fn submit_for_certification(
     {
         return Err(AgricQualityError::AlreadyExists);
     }
-
-    let empty_string: &str = "0";
+    
 
     // Create certification data
     let certification = CertificationData {
@@ -80,7 +79,7 @@ pub fn submit_for_certification(
         status: CertificationStatus::Pending,
         issue_date: env.ledger().timestamp(),
         expiry_date: 0,
-        issuer: Address::from_str(&env, &empty_string),
+        issuer: Address::from_str(&env, "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"),
         audit_score: 0,
         conditions,
     };
@@ -237,16 +236,16 @@ pub fn get_certification_history(
     holder: &Address,
 ) -> Result<Vec<CertificationData>, AgricQualityError> {
     let cert_ids: Vec<BytesN<32>> = env
-        .storage()
-        .instance()
-        .get(&DataKey::HolderCertifications(holder.clone()))
-        .unwrap_or_else(|| vec![env]);
+    .storage()
+    .persistent()
+    .get(&DataKey::HolderCertifications(holder.clone()))
+    .unwrap_or_else(|| vec![env]);
 
     let mut certifications = vec![env];
     for id in cert_ids.iter() {
         if let Some(cert) = env
             .storage()
-            .instance()
+            .persistent()
             .get(&DataKey::Certification(id.clone()))
         {
             certifications.push_back(cert);
