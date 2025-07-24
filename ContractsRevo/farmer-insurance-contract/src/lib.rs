@@ -1,7 +1,7 @@
-
 #![no_std]
 
 use soroban_sdk::{contract, contractimpl, BytesN, Address, Symbol, Env};
+use crate::utils::ContractError;
 
 mod utils;
 mod insurance;
@@ -13,7 +13,7 @@ pub struct FarmerInsuranceContract;
 
 #[contractimpl]
 impl FarmerInsuranceContract {
-    pub fn create_pol(env: Env, farmer: Address, coverage: Symbol, premium: i128) -> BytesN<32> {
+    pub fn create_pol(env: Env, farmer: Address, coverage: Symbol, premium: i128) -> Result<BytesN<32>, ContractError> {
         insurance::create_pol(env, farmer, coverage, premium)
     }
 
@@ -21,7 +21,7 @@ impl FarmerInsuranceContract {
         insurance::pay_prem(env, policy_id)
     }
 
-    pub fn sub_claim(env: Env, policy_id: BytesN<32>, event_hash: BytesN<32>, payout: i128) -> BytesN<32> {
+    pub fn sub_claim(env: Env, policy_id: BytesN<32>, event_hash: BytesN<32>, payout: i128) -> Result<BytesN<32>, ContractError> {
         claims::sub_claim(env, policy_id, event_hash, payout)
     }
 
