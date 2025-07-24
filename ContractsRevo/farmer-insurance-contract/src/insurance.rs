@@ -13,6 +13,10 @@ pub struct InsurancePolicy {
 
 pub fn create_pol(env: Env, farmer: Address, coverage: Symbol, premium: i128) -> Result<BytesN<32>, ContractError> {
     farmer.require_auth();
+    
+    if premium <= 0 {
+        panic!("Premium must be positive");
+    }
 
     let policy_id = generate_policy_id(&env)?;
     let policy = InsurancePolicy {
