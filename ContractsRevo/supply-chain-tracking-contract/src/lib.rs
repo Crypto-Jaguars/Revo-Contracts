@@ -43,7 +43,8 @@ impl SupplyChainTrackingContract {
         // Emit initialization event
         env.events().publish(
             (Symbol::new(&env, "contract_initialized"), admin.clone()),
-            env.ledger().timestamp(),
+            cert_management_contract.clone(),
+            // env.ledger().timestamp(),
         );
 
         Ok(())
@@ -119,16 +120,19 @@ impl SupplyChainTrackingContract {
         )
     }
 
-    /// Record a new stage in the product's lifecycle
+    /// Record a new stage in the product's lifecycle with tier validation
     pub fn add_stage(
         env: Env,
         product_id: BytesN<32>,
+        stage_tier: StageTier,
         stage_name: String,
         location: String,
         handler: Address,
         data_hash: BytesN<32>,
     ) -> Result<u32, SupplyChainError> {
-        tracking::add_stage(env, product_id, stage_name, location, handler, data_hash)
+        tracking::add_stage(
+            env, product_id, stage_tier, stage_name, location, handler, data_hash,
+        )
     }
 
     /// Retrieve the full lifecycle of a product
@@ -153,7 +157,7 @@ impl SupplyChainTrackingContract {
     pub fn link_certificate(
         env: Env,
         product_id: BytesN<32>,
-        certificate_id: BytesN<32>,
+        certificate_id: CertificateId,
         authority: Address,
     ) -> Result<(), SupplyChainError> {
         validation::link_certificate(env, product_id, certificate_id, authority)
@@ -225,6 +229,22 @@ impl SupplyChainTrackingContract {
         tracking::get_stage_by_id(env, product_id, stage_id)
     }
 
+    /// Get the next expected tier for a product
+    pub fn get_next_expected_tier(
+        env: Env,
+        product_id: BytesN<32>,
+    ) -> Result<Option<StageTier>, SupplyChainError> {
+        tracking::get_next_expected_tier(env, product_id)
+    }
+
+    /// Get the current tier for a product
+    pub fn get_current_tier(
+        env: Env,
+        product_id: BytesN<32>,
+    ) -> Result<Option<StageTier>, SupplyChainError> {
+        tracking::get_current_tier(env, product_id)
+    }
+
     /// Get product trace using QR code
     pub fn trace_by_qr_code(
         env: Env,
@@ -238,7 +258,7 @@ impl SupplyChainTrackingContract {
     pub fn get_linked_certificate(
         env: Env,
         product_id: BytesN<32>,
-    ) -> Result<Option<BytesN<32>>, SupplyChainError> {
+    ) -> Result<CertificateId, SupplyChainError> {
         validation::get_linked_certificate(env, product_id)
     }
 

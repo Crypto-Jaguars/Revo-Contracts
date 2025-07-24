@@ -1,10 +1,11 @@
-use crate::datatypes::{DataKey, Product, Stage, SupplyChainError};
+use crate::datatypes::{DataKey, Product, Stage, StageTier, SupplyChainError};
 use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
-/// Add a new stage to the product lifecycle
+/// Add a new stage to the product lifecycle with tier validation
 pub fn add_stage(
     env: Env,
     product_id: BytesN<32>,
+    stage_tier: StageTier,
     stage_name: String,
     location: String,
     handler: Address,
@@ -24,12 +25,16 @@ pub fn add_stage(
         .get(&DataKey::Product(product_id.clone()))
         .ok_or(SupplyChainError::ProductNotFound)?;
 
+    // Validate tier progression
+    validate_tier_progression(&product, &stage_tier)?;
+
     // Generate new stage ID
     let stage_id = product.stages.len() + 1;
 
     // Create new stage
     let stage = Stage {
         stage_id,
+        tier: stage_tier,
         name: stage_name.clone(),
         timestamp: env.ledger().timestamp(),
         location: location.clone(),
@@ -136,6 +141,84 @@ pub fn validate_stage_transition(
     }
 
     Ok(true)
+}
+
+/// Validate tier progression logic
+fn validate_tier_progression(
+    product: &Product,
+    new_tier: &StageTier,
+) -> Result<(), SupplyChainError> {
+    // Check for duplicate tier
+    for existing_stage in product.stages.iter() {
+        if existing_stage.tier == *new_tier {
+            return Err(SupplyChainError::DuplicateStageTier);
+        }
+    }
+
+    // If no stages exist, must start with Planting
+    if product.stages.is_empty() {
+        if *new_tier != StageTier::Planting {
+            return Err(SupplyChainError::InvalidTierProgression);
+        }
+        return Ok(());
+    }
+
+    // Get the current (last) stage tier
+    let current_stage = product.stages.get(product.stages.len() - 1).unwrap();
+    let current_tier = &current_stage.tier;
+
+    // Check if new tier is the next expected tier
+    match current_tier.next() {
+        Some(expected_next_tier) => {
+            if *new_tier != expected_next_tier {
+                return Err(SupplyChainError::InvalidTierProgression);
+            }
+        }
+        None => {
+            // Current tier is Consumer (final stage), no more stages allowed
+            return Err(SupplyChainError::InvalidTierProgression);
+        }
+    }
+
+    Ok(())
+}
+
+/// Get the next expected tier for a product
+pub fn get_next_expected_tier(
+    env: Env,
+    product_id: BytesN<32>,
+) -> Result<Option<StageTier>, SupplyChainError> {
+    let product: Product = env
+        .storage()
+        .persistent()
+        .get(&DataKey::Product(product_id))
+        .ok_or(SupplyChainError::ProductNotFound)?;
+
+    if product.stages.is_empty() {
+        return Ok(Some(StageTier::Planting));
+    }
+
+    let current_stage = product.stages.get(product.stages.len() - 1).unwrap();
+    Ok(current_stage.tier.next())
+}
+
+/// Get the current tier for a product
+pub fn get_current_tier(
+    env: Env,
+    product_id: BytesN<32>,
+) -> Result<Option<StageTier>, SupplyChainError> {
+    let product: Product = env
+        .storage()
+        .persistent()
+        .get(&DataKey::Product(product_id))
+        .ok_or(SupplyChainError::ProductNotFound)?;
+
+    if product.stages.is_empty() {
+        return Ok(None);
+    }
+
+    let current_stage = product.stages.get(product.stages.len() - 1).unwrap();
+    Ok(Some(current_stage.tier.clone()))
 }
 
 /// Get a specific stage by ID
