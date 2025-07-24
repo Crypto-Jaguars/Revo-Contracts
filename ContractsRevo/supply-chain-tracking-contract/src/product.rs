@@ -1,4 +1,7 @@
-use crate::datatypes::{CertificateId, DataKey, Product, ProductRegistration, SupplyChainError, MAX_PRODUCTS_PER_FARMER, MAX_PRODUCTS_PER_TYPE};
+use crate::datatypes::{
+    CertificateId, DataKey, Product, ProductRegistration, SupplyChainError,
+    MAX_PRODUCTS_PER_FARMER, MAX_PRODUCTS_PER_TYPE,
+};
 use crate::utils;
 use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
@@ -27,7 +30,7 @@ pub fn register_product(
         .persistent()
         .has(&DataKey::Product(product_id.clone()))
     {
-        return Err(SupplyChainError::ProductAlreadyExists);
+        return Err(SupplyChainError::DuplicateProduct);
     }
 
     // Create product with EMPTY stages vector initially

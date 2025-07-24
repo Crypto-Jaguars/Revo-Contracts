@@ -43,8 +43,7 @@ impl SupplyChainTrackingContract {
         // Emit initialization event
         env.events().publish(
             (Symbol::new(&env, "contract_initialized"), admin.clone()),
-            cert_management_contract.clone(),
-            // env.ledger().timestamp(),
+            env.ledger().timestamp(),
         );
 
         Ok(())

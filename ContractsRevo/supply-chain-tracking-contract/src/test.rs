@@ -434,7 +434,7 @@ fn test_register_duplicate_product() {
     );
     assert_eq!(
         result,
-        Err(Ok(SupplyChainError::ProductAlreadyExists)),
+        Err(Ok(SupplyChainError::DuplicateProduct)),
         "Should fail with duplicate product"
     );
 }

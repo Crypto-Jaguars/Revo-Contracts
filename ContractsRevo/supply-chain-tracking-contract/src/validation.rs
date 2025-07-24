@@ -18,6 +18,11 @@ pub fn verify_authenticity(
         .get(&DataKey::Product(product_id.clone()))
         .ok_or(SupplyChainError::ProductNotFound)?;
 
+    // Validate farmer_id matches the product owner
+    if product.farmer_id != farmer_id {
+        return Err(SupplyChainError::UnauthorizedAccess);
+    }
+
     // Basic verification against stages data
     let is_authentic = verify_stages_integrity(&env, &product, &verification_data);
 
@@ -169,7 +174,7 @@ fn confirm_certificate_status_valid(
     let cert_id_u32 = utils::convert_bytes_to_u32(env, cert_id_bytes);
 
     let args = vec![&env, farmer_id.into_val(env), cert_id_u32.into_val(env)];
-    
+
     // Invoke certificate management contract and validate certificate status
     match env.invoke_contract::<CertStatus>(
         &cert_mgmt,

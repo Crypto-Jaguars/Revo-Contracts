@@ -118,6 +118,7 @@ pub fn validate_stage_transition(
         .ok_or(SupplyChainError::ProductNotFound)?;
 
     // Basic validation: to_stage should be sequential
+    // This validation assumes stages are never deleted and IDs remain sequential
     if to_stage != from_stage + 1 {
         return Ok(false);
     }

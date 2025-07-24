@@ -76,18 +76,7 @@ pub enum StageTier {
 impl StageTier {
     /// Get the numeric value of the tier
     pub fn value(&self) -> u32 {
-        match self {
-            StageTier::Planting => 1,
-            StageTier::Cultivation => 2,
-            StageTier::Harvesting => 3,
-            StageTier::Processing => 4,
-            StageTier::Packaging => 5,
-            StageTier::Storage => 6,
-            StageTier::Transportation => 7,
-            StageTier::Distribution => 8,
-            StageTier::Retail => 9,
-            StageTier::Consumer => 10,
-        }
+        self.clone() as u32
     }
 
     /// Get the next tier in the sequence
@@ -144,7 +133,7 @@ pub enum SupplyChainError {
     StageNotFound = 6,
     InvalidInput = 7,
     InvalidHash = 8,
-    ProductAlreadyExists = 9,
+    DuplicateProduct = 9,
     InvalidStageTransition = 10,
     DuplicateStage = 11,
     QRCodeNotFound = 12,

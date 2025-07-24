@@ -4,6 +4,9 @@
 # Default target
 default: build
 
+# Build all targets
+all: build stellar-build
+
 # Build the contract
 build:
 	@echo "Building supply chain tracking contract..."

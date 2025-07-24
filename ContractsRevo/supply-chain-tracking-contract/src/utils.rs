@@ -23,6 +23,7 @@ pub fn generate_product_id(
 }
 
 /// Generate hash for stage data for off-chain verification
+/// This function is reserved for future off-chain verification features
 #[allow(dead_code)]
 pub fn generate_stage_hash(
     env: &Env,
