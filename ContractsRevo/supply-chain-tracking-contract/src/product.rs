@@ -1,4 +1,4 @@
-use crate::datatypes::{DataKey, Product, ProductRegistration, SupplyChainError};
+use crate::datatypes::{CertificateId, DataKey, Product, ProductRegistration, SupplyChainError};
 use crate::utils;
 use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
@@ -35,7 +35,7 @@ pub fn register_product(
         product_id: product_id.clone(),
         farmer_id: farmer_id.clone(),
         stages: Vec::new(&env),
-        certificate_id: None,
+        certificate_id: CertificateId::None,
     };
 
     // Store product
@@ -61,7 +61,7 @@ pub fn register_product(
     update_farmer_products(&env, &farmer_id, &product_id)?;
 
     // Update product type index for traceability
-    update_traceability_index(&env, &product_type, &product_id)?;
+    update_product_type_index(&env, &product_type, &product_id)?;
 
     // Emit event
     env.events().publish(
@@ -113,7 +113,7 @@ pub fn list_products_by_type(
     let products = env
         .storage()
         .persistent()
-        .get(&DataKey::TraceabilityIndex(product_type))
+        .get(&DataKey::ProductTypeIndex(product_type))
         .unwrap_or_else(|| Vec::new(&env));
 
     Ok(products)
@@ -144,12 +144,12 @@ fn update_farmer_products(
 }
 
 /// Helper function to update product type index
-fn update_traceability_index(
+fn update_product_type_index(
     env: &Env,
     product_type: &String,
     product_id: &BytesN<32>,
 ) -> Result<(), SupplyChainError> {
-    let key = DataKey::TraceabilityIndex(product_type.clone());
+    let key = DataKey::ProductTypeIndex(product_type.clone());
     let mut products: Vec<BytesN<32>> = env
         .storage()
         .persistent()

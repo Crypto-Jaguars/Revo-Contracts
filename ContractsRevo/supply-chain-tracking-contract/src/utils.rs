@@ -144,3 +144,13 @@ fn hex_encode(env: &Env, bytes: [u8; 32]) -> String {
 
     String::from_str(env, core::str::from_utf8(&result_bytes).unwrap())
 }
+
+/// Convert BytesN<32> certificate ID to u32 using deterministic hashing
+pub fn convert_bytes_to_u32(env: &Env, certificate_id_bytes: &BytesN<32>) -> u32 {
+    // Create a deterministic hash of the certificate ID
+    let hash = env.crypto().sha256(&certificate_id_bytes.into());
+
+    // Take the first 4 bytes of the hash and convert to u32
+    let hash_bytes = hash.to_array();
+    u32::from_be_bytes([hash_bytes[0], hash_bytes[1], hash_bytes[2], hash_bytes[3]])
+}
