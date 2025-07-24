@@ -2,10 +2,10 @@
 
 use super::*;
 use soroban_sdk::{
-    auth, contract, contractimpl, log, symbol_short,
+    contract, contractimpl, log, symbol_short,
     testutils::{Address as _, Ledger},
     xdr::ToXdr,
-    Address, BytesN, Env, Map, String, Symbol, Vec,
+    Address, BytesN, Env, Map, String, Symbol,
 };
 
 // Test Constants
