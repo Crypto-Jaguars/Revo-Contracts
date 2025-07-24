@@ -1,6 +1,7 @@
 #![no_std]
 
 use datatype::DataKey;
+// Traits are implemented in separate modules
 use soroban_sdk::{contract, contractimpl, Address, Env};
 
 mod datatype;

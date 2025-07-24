@@ -1,8 +1,9 @@
 use crate::datatype::{CooperativeError, DataKey, Resource};
 use crate::interface::ResourceSharing;
-use crate::CooperativeManagementContract;
-use soroban_sdk::{Address, Env, String, Vec};
+use crate::{CooperativeManagementContract, CooperativeManagementContractArgs, CooperativeManagementContractClient};
+use soroban_sdk::{contractimpl, Address, Env, String, Vec};
 
+#[contractimpl]
 impl ResourceSharing for CooperativeManagementContract {
     // fn register_resource(env: Env, owner: Address, description: String) {
     //     let resource = Resource {
@@ -58,7 +59,7 @@ impl ResourceSharing for CooperativeManagementContract {
     }
 
     fn get_resources_by_owner(env: Env, owner: Address) -> Vec<u32> {
-        let owner_key = DataKey::OwnerResources(owner);
+        let owner_key = DataKey::OwnerResources(owner.clone());
         env.storage()
             .persistent()
             .get::<DataKey, Vec<u32>>(&owner_key)
@@ -77,7 +78,7 @@ impl ResourceSharing for CooperativeManagementContract {
             return Err(CooperativeError::NotAMember);
         }
 
-        let owner_key = DataKey::Resource(owner, counter);
+        let owner_key = DataKey::Resource(owner.clone(), counter);
         if let Some(mut resource) = env
             .storage()
             .persistent()
@@ -85,7 +86,7 @@ impl ResourceSharing for CooperativeManagementContract {
         {
             if resource.available {
                 resource.available = false;
-                resource.borrower = Some(borrower);
+                resource.borrower = Some(borrower.clone());
                 env.storage().persistent().set(&owner_key, &resource);
                 Ok(())
             } else {
@@ -109,7 +110,7 @@ impl ResourceSharing for CooperativeManagementContract {
             .get::<DataKey, Resource>(&owner_key)
         {
             // Verify caller is either the owner or current borrower
-            if caller != owner && resource.borrower != Some(caller) {
+            if caller != owner && resource.borrower != Some(caller.clone()) {
                 return Err(CooperativeError::Unauthorized);
             }
 
@@ -135,7 +136,7 @@ impl ResourceSharing for CooperativeManagementContract {
             return Err(CooperativeError::NotAMember);
         }
 
-        let owner_key = DataKey::Resource(owner, counter);
+        let owner_key = DataKey::Resource(owner.clone(), counter);
         if let Some(mut resource) = env
             .storage()
             .persistent()
@@ -180,7 +181,7 @@ impl ResourceSharing for CooperativeManagementContract {
             return Err(CooperativeError::ResourceNotFound);
         }
 
-        let maintenance_log_key = DataKey::MaintenanceLog(owner);
+        let maintenance_log_key = DataKey::MaintenanceLog(owner.clone());
         let mut logs = env
             .storage()
             .persistent()
