@@ -15,6 +15,10 @@ pub enum StabilizationError {
     NoPayoutNeeded = 10,
     PayoutAlreadyProcessed = 11,
     ThresholdNotReached = 12,
+    ChainlinkFeedNotFound = 13,
+    StalePriceData = 14,
+    InvalidChainlinkResponse = 15,
+    ChainlinkFeedNotRegistered = 16,
 }
 
 #[derive(Debug)]
@@ -30,6 +34,8 @@ pub enum DataKey {
     FarmerCrops(Address, String),
     Payout(BytesN<32>, Address, u64),
     PayoutCounter(BytesN<32>, Address),
+    ChainlinkFeed(String),
+    ChainlinkPrice(String),
 }
 
 #[contracttype]
@@ -81,4 +87,23 @@ pub struct Payout {
     pub timestamp: u64,
     pub market_price: i128,
     pub threshold_price: i128,
+}
+
+#[contracttype]
+pub struct ChainlinkPriceFeed {
+    pub feed_address: Address,
+    pub decimals: u32,
+    pub description: String,
+    pub crop_type: String,
+    pub registered_time: u64,
+    pub active: bool,
+}
+
+#[contracttype]
+pub struct ChainlinkPriceData {
+    pub price: i128,
+    pub timestamp: u64,
+    pub feed_address: Address,
+    pub round_id: u64,
+    pub decimals: u32,
 }

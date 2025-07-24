@@ -18,6 +18,7 @@ This contract helps protect farmers from market price fluctuations while ensurin
 ### **2. Price Monitoring**
 
 - Integrate with off-chain oracles to fetch real-time market prices
+- Chainlink Oracle Integration** - Decentralized price feeds with high reliability
 - Define and update price thresholds for triggering distributions
 - Monitor price movements and identify when thresholds are crossed
 - Maintain historical price data for analysis
@@ -28,6 +29,55 @@ This contract helps protect farmers from market price fluctuations while ensurin
 - Distribute funds to eligible farmers when prices fall below thresholds
 - Track payout history and fund utilization
 - Ensure fair distribution based on production capacity
+
+## 🔗 Chainlink Integration
+
+### **Chainlink Oracle Features**
+
+- **Decentralized Price Feeds**: Multiple oracle nodes provide price data
+- **High Reliability**: Redundant data sources prevent single points of failure
+- **Real-time Updates**: Automated price feed updates
+- **Tamper-resistant**: Cryptographic proof of data integrity
+- **Multi-source Aggregation**: Reduces manipulation risk
+
+### **Chainlink Functions**
+
+```rust
+// Register a Chainlink price feed for a crop type
+fn register_chainlink_feed(
+    env: Env,
+    admin: Address,
+    crop_type: String,
+    feed_address: Address,
+    decimals: u32,
+    description: String,
+) -> Result<(), StabilizationError>
+
+// Get current price from Chainlink feed
+fn get_chainlink_price(
+    env: Env,
+    crop_type: String,
+) -> Result<(i128, u64), StabilizationError>
+
+// Update price from Chainlink feed with validation
+fn update_chainlink_price(
+    env: Env,
+    oracle: Address,
+    crop_type: String,
+    price: i128,
+    timestamp: u64,
+    round_id: u64,
+    decimals: u32,
+) -> Result<(), StabilizationError>
+```
+
+### **Chainlink Data Validation**
+
+- **Staleness Check**: Rejects data older than 1 hour
+- **Round ID Validation**: Ensures sequential price updates
+- **Price Validation**: Confirms positive price values
+- **Decimal Conversion**: Standardizes price format
+- **Authorization**: Only registered feeds can update prices
 
 ## 📦 Key Data Structures
 
@@ -52,6 +102,24 @@ struct Payout {
     market_price: i128,
     threshold_price: i128,
 }
+
+// NEW: Chainlink Integration Structures
+struct ChainlinkPriceFeed {
+    feed_address: Address,
+    decimals: u32,
+    description: String,
+    crop_type: String,
+    registered_time: u64,
+    active: bool,
+}
+
+struct ChainlinkPriceData {
+    price: i128,
+    timestamp: u64,
+    feed_address: Address,
+    round_id: u64,
+    decimals: u32,
+}
 ```
 
 ## 🚀 Setup Guide
@@ -68,17 +136,20 @@ Ensure you have the following installed:
 ### **Installation Steps**
 
 1. **Clone the Repository**
+
    ```bash
    git clone https://github.com/Crypto-Jaguars/Revo-Contracts.git
    cd ContractsRevo/price-stabilization-contract
    ```
 
 2. **Build the Contract**
+
    ```bash
    stellar contract build
    ```
 
 3. **Run the Tests**
+
    ```bash
    cargo test
    ```
@@ -112,12 +183,7 @@ const fundId = await contract.call(
 ```javascript
 const amount = 5000; // $50.00
 
-await contract.call(
-  "contribute_fund",
-  contributorPublicKey,
-  fundId,
-  amount
-);
+await contract.call("contribute_fund", contributorPublicKey, fundId, amount);
 ```
 
 ### **Triggering a Payout**
@@ -133,16 +199,47 @@ const distribution = await contract.call(
 );
 ```
 
+### **Chainlink Integration Examples**
+
+```javascript
+// Register a Chainlink price feed
+await contract.call(
+  "register_chainlink_feed",
+  adminPublicKey,
+  "corn",
+  chainlinkFeedAddress,
+  8, // decimals
+  "Corn Price Feed"
+);
+
+// Get price from Chainlink feed
+const [price, timestamp] = await contract.call("get_chainlink_price", "corn");
+
+// Update price from Chainlink oracle
+await contract.call(
+  "update_chainlink_price",
+  oraclePublicKey,
+  "corn",
+  1050, // price in cents
+  currentTimestamp,
+  12345, // round_id
+  8 // decimals
+);
+```
+
 ## 🔒 Security Considerations
 
 - The contract implements strict access controls to prevent unauthorized fund withdrawals
 - Only registered oracles can update price data
+- **Chainlink feeds require proper authorization and validation**
 - Fund administrators must be authenticated for sensitive operations
 - Payouts are only triggered when prices fall below thresholds
+- **Chainlink data includes staleness checks and round ID validation**
 
 ## 🔄 Integration Points
 
 - **Oracle Integration**: The contract can integrate with external price oracles to fetch real-time market prices
+- **Chainlink Integration**: Decentralized price feeds with high reliability and tamper-resistance
 - **Microlending Contract**: Can be integrated with the microlending contract for emergency loans when payouts are insufficient
 - **Cooperative Management**: Works with the cooperative management contract for governance decisions
 
@@ -151,6 +248,7 @@ const distribution = await contract.call(
 - [Stellar Official Guide](https://developers.stellar.org/docs/)
 - [Soroban Documentation](https://soroban.stellar.org/)
 - [Rust Book](https://doc.rust-lang.org/book/)
+- [Chainlink Documentation](https://docs.chain.link/)
 
 ## 📄 License
 

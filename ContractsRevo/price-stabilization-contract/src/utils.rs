@@ -1,4 +1,4 @@
-use crate::datatype::{DataKey, FarmerCrop, PriceData, StabilizationError, StabilizationFund};
+use crate::datatype::{DataKey, FarmerCrop, PriceData, StabilizationError, StabilizationFund, ChainlinkPriceFeed, ChainlinkPriceData};
 use soroban_sdk::{Address, BytesN, Env, String, Vec};
 
 /// Utility functions for price calculations and oracle interactions
@@ -106,5 +106,80 @@ impl PriceUtils {
         
         // Check if timestamp is within the last hour
         current_time - timestamp <= one_hour
+    }
+
+    /// Get Chainlink price feed for a crop type
+    pub fn get_chainlink_feed(env: &Env, crop_type: &String) -> Result<ChainlinkPriceFeed, StabilizationError> {
+        let feed_key = DataKey::ChainlinkFeed(crop_type.clone());
+        if !env.storage().persistent().has(&feed_key) {
+            return Err(StabilizationError::ChainlinkFeedNotFound);
+        }
+        
+        let feed: ChainlinkPriceFeed = env.storage().persistent().get(&feed_key).unwrap();
+        Ok(feed)
+    }
+
+    /// Get Chainlink price data for a crop type
+    pub fn get_chainlink_price_data(env: &Env, crop_type: &String) -> Result<ChainlinkPriceData, StabilizationError> {
+        let price_key = DataKey::ChainlinkPrice(crop_type.clone());
+        if !env.storage().persistent().has(&price_key) {
+            return Err(StabilizationError::PriceDataNotAvailable);
+        }
+        
+        let price_data: ChainlinkPriceData = env.storage().persistent().get(&price_key).unwrap();
+        Ok(price_data)
+    }
+
+    /// Validate Chainlink price response
+    pub fn validate_chainlink_response(
+        env: &Env,
+        price: i128,
+        timestamp: u64,
+        round_id: u64,
+        staleness_period: u64,
+    ) -> Result<bool, StabilizationError> {
+        // Validate price is positive
+        if price <= 0 {
+            return Err(StabilizationError::InvalidChainlinkResponse);
+        }
+        
+        // Validate timestamp is not in the future
+        let current_time = env.ledger().timestamp();
+        if timestamp > current_time {
+            return Err(StabilizationError::InvalidChainlinkResponse);
+        }
+        
+        // Check if data is stale (older than staleness period)
+        if current_time - timestamp > staleness_period {
+            return Err(StabilizationError::StalePriceData);
+        }
+        
+        // Validate round_id is positive
+        if round_id == 0 {
+            return Err(StabilizationError::InvalidChainlinkResponse);
+        }
+        
+        Ok(true)
+    }
+
+    /// Convert price from Chainlink decimals to standard format
+    pub fn convert_chainlink_price(price: i128, decimals: u32) -> Result<i128, StabilizationError> {
+        // Chainlink prices are typically returned with 8 decimals
+        // Convert to standard format (2 decimals for USD)
+        if decimals > 8 {
+            return Err(StabilizationError::InvalidChainlinkResponse);
+        }
+        
+        let conversion_factor = 10_i128.pow(8 - decimals);
+        let converted_price = price.checked_mul(conversion_factor)
+            .ok_or(StabilizationError::InvalidInput)?;
+        
+        Ok(converted_price)
+    }
+
+    /// Check if Chainlink feed is registered and active
+    pub fn is_chainlink_feed_active(env: &Env, crop_type: &String) -> Result<bool, StabilizationError> {
+        let feed = Self::get_chainlink_feed(env, crop_type)?;
+        Ok(feed.active)
     }
 }

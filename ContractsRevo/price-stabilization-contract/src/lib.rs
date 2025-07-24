@@ -23,4 +23,6 @@ impl PriceStabilizationContract {
         }
         env.storage().persistent().set(&DataKey::Admin, &admin);
     }
+
+
 }

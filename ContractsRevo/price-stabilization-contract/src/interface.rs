@@ -35,7 +35,6 @@ pub trait FundManagement {
     ) -> Result<(), StabilizationError>;
 }
 
-#[allow(dead_code)]
 pub trait PriceMonitoring {
     /// Register a price oracle for a specific crop type
     fn register_price_oracle(
@@ -65,37 +64,65 @@ pub trait PriceMonitoring {
         env: Env,
         fund_id: BytesN<32>,
     ) -> Result<bool, StabilizationError>;
+
+    /// Register a Chainlink price feed for a specific crop type
+    fn register_chainlink_feed(
+        env: Env,
+        admin: Address,
+        crop_type: String,
+        feed_address: Address,
+        decimals: u32,
+        description: String,
+    ) -> Result<(), StabilizationError>;
+
+    /// Get the current price from Chainlink feed
+    fn get_chainlink_price(
+        env: Env,
+        crop_type: String,
+    ) -> Result<(i128, u64), StabilizationError>;
+
+    /// Update price from Chainlink feed with validation
+    fn update_chainlink_price(
+        env: Env,
+        oracle: Address,
+        crop_type: String,
+        price: i128,
+        timestamp: u64,
+        round_id: u64,
+        decimals: u32,
+    ) -> Result<(), StabilizationError>;
 }
 
 #[allow(dead_code)]
-pub trait PayoutDistribution {
+pub trait DistributionManagement {
     /// Distribute funds to farmers when prices fall below thresholds
     fn trigger_payout(
         env: Env,
         admin: Address,
         fund_id: BytesN<32>,
         farmers: Vec<Address>,
-    ) -> Result<Map<Address, i128>, StabilizationError>;
+    ) -> Result<(), StabilizationError>;
 
-    /// Register a farmer to be eligible for payouts
+    /// Register a farmer for the stabilization program
     fn register_farmer(
         env: Env,
+        admin: Address,
+        farmer: Address,
+    ) -> Result<(), StabilizationError>;
+
+    /// Register a farmer's crop production capacity
+    fn register_farmer_crop(
+        env: Env,
+        admin: Address,
         farmer: Address,
         crop_type: String,
         production_capacity: i128,
     ) -> Result<(), StabilizationError>;
 
-    /// Get the history of payouts for a specific farmer
-    fn get_payout_history(
+    /// Get payout history for a farmer
+    fn get_farmer_payouts(
         env: Env,
-        farmer: Address,
         fund_id: BytesN<32>,
+        farmer: Address,
     ) -> Result<Vec<Map<String, i128>>, StabilizationError>;
-
-    /// Calculate the payout amount for a specific farmer
-    fn calculate_payout_amount(
-        env: Env,
-        farmer: Address,
-        fund_id: BytesN<32>,
-    ) -> Result<i128, StabilizationError>;
 }
