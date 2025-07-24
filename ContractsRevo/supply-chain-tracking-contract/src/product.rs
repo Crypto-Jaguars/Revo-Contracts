@@ -27,7 +27,7 @@ pub fn register_product(
         .persistent()
         .has(&DataKey::Product(product_id.clone()))
     {
-        return Err(SupplyChainError::InvalidProductData);
+        return Err(SupplyChainError::ProductAlreadyExists);
     }
 
     // Create product with EMPTY stages vector initially

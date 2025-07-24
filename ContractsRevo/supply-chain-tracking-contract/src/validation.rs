@@ -170,7 +170,7 @@ fn confirm_certificate_status_valid(
 
     let args = vec![&env, farmer_id.into_val(env), cert_id_u32.into_val(env)];
     
-    // Invoke cetificate management contract and validate certificate status
+    // Invoke certificate management contract and validate certificate status
     match env.invoke_contract::<CertStatus>(
         &cert_mgmt,
         &Symbol::new(env, "check_cert_status"),

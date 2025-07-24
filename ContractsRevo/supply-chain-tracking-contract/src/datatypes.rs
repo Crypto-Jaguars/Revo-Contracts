@@ -144,7 +144,7 @@ pub enum SupplyChainError {
     StageNotFound = 6,
     InvalidInput = 7,
     InvalidHash = 8,
-    InvalidProductData = 9,
+    ProductAlreadyExists = 9,
     InvalidStageTransition = 10,
     DuplicateStage = 11,
     QRCodeNotFound = 12,
