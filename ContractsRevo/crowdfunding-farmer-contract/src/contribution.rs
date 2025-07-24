@@ -12,9 +12,9 @@ pub struct Contribution {
 
 pub fn contribute(env: Env, contributor: Address, campaign_id: BytesN<32>, amount: i128) {
     utils::validate_amount(amount);
-    
-    let mut campaign = utils::read_campaign(&env, &campaign_id)
-        .unwrap_or_else(|| panic!("Campaign not found"));
+
+    let mut campaign =
+        utils::read_campaign(&env, &campaign_id).unwrap_or_else(|| panic!("Campaign not found"));
 
     if campaign.status != CampaignStatus::Active {
         panic!("Campaign is not active");
@@ -27,8 +27,8 @@ pub fn contribute(env: Env, contributor: Address, campaign_id: BytesN<32>, amoun
     campaign.total_funded += amount;
     utils::save_campaign(&env, &campaign_id, &campaign);
 
-    let mut contributions = utils::read_contributions(&env, &campaign_id)
-        .unwrap_or_else(|| Vec::new(&env));
+    let mut contributions =
+        utils::read_contributions(&env, &campaign_id).unwrap_or_else(|| Vec::new(&env));
     contributions.push_back(Contribution {
         contributor_id: contributor.clone(),
         campaign_id: campaign_id.clone(),
@@ -40,8 +40,8 @@ pub fn contribute(env: Env, contributor: Address, campaign_id: BytesN<32>, amoun
 }
 
 pub fn refund_contributions(env: Env, campaign_id: BytesN<32>) {
-    let campaign = utils::read_campaign(&env, &campaign_id)
-        .unwrap_or_else(|| panic!("Campaign not found"));
+    let campaign =
+        utils::read_campaign(&env, &campaign_id).unwrap_or_else(|| panic!("Campaign not found"));
 
     if campaign.status != CampaignStatus::Failed {
         panic!("Campaign is not failed");

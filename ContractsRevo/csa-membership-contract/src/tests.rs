@@ -1,5 +1,8 @@
-use soroban_sdk::{testutils::{Address as _, Ledger}, Address, BytesN, Env, String};
 use crate::{CSAMembershipContract, CSAMembershipContractClient, Error, ShareSize};
+use soroban_sdk::{
+    testutils::{Address as _, Ledger},
+    Address, BytesN, Env, String,
+};
 
 fn create_test_env() -> (Env, Address) {
     let env = Env::default();
@@ -14,16 +17,16 @@ fn create_test_env() -> (Env, Address) {
 fn test_enrollment_success() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, "Summer 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
     let start_date = 1735689600u64; // Jan 1, 2025
-    let end_date = 1743465600u64;   // Apr 1, 2025
+    let end_date = 1743465600u64; // Apr 1, 2025
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let result = client.try_enroll_membership(
         &farm_id,
         &season,
@@ -35,10 +38,10 @@ fn test_enrollment_success() {
     );
     assert!(result.is_ok(), "Enrollment failed: {:?}", result);
     let token_id = result.unwrap().unwrap();
-    
+
     let membership = client.get_membership_metadata(&token_id);
     assert!(membership.is_some());
-    
+
     let membership = membership.unwrap();
     assert_eq!(membership.farm_id, farm_id);
     assert_eq!(membership.season, season);
@@ -53,16 +56,16 @@ fn test_enrollment_success() {
 fn test_enrollment_different_share_sizes() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, "Summer 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
     let start_date = 1735689600u64;
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     // Test Small share
     let token_id_small = client.enroll_membership(
         &farm_id,
@@ -73,10 +76,10 @@ fn test_enrollment_different_share_sizes() {
         &end_date,
         &member,
     );
-    
+
     let membership_small = client.get_membership_metadata(&token_id_small).unwrap();
     assert_eq!(membership_small.share_size, ShareSize::Small);
-    
+
     // Test Large share
     let token_id_large = client.enroll_membership(
         &farm_id,
@@ -87,7 +90,7 @@ fn test_enrollment_different_share_sizes() {
         &end_date,
         &member,
     );
-    
+
     let membership_large = client.get_membership_metadata(&token_id_large).unwrap();
     assert_eq!(membership_large.share_size, ShareSize::Large);
 }
@@ -96,18 +99,18 @@ fn test_enrollment_different_share_sizes() {
 fn test_enrollment_invalid_dates() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, "Summer 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     // Test with past start date
     let past_start = 1609459200u64; // Jan 1, 2021 (past)
     let future_end = 1743465600u64; // Apr 1, 2025
-    
+
     let result = client.try_enroll_membership(
         &farm_id,
         &season,
@@ -118,11 +121,11 @@ fn test_enrollment_invalid_dates() {
         &member,
     );
     assert_eq!(result, Err(Ok(Error::InvalidDates)));
-    
+
     // Test with end date before start date
     let start_date = 1743465600u64; // Apr 1, 2025
-    let end_date = 1735689600u64;   // Jan 1, 2025 (before start)
-    
+    let end_date = 1735689600u64; // Jan 1, 2025 (before start)
+
     let result = client.try_enroll_membership(
         &farm_id,
         &season,
@@ -139,16 +142,16 @@ fn test_enrollment_invalid_dates() {
 fn test_enrollment_invalid_farm() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[0; 32]); // Empty farm_id
     let season = String::from_str(&env, "Summer 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
     let start_date = 1735689600u64;
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let result = client.try_enroll_membership(
         &farm_id,
         &season,
@@ -165,16 +168,16 @@ fn test_enrollment_invalid_farm() {
 fn test_enrollment_invalid_season() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, ""); // Empty season
     let pickup_location = String::from_str(&env, "Downtown Market");
     let start_date = 1735689600u64;
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let result = client.try_enroll_membership(
         &farm_id,
         &season,
@@ -191,16 +194,16 @@ fn test_enrollment_invalid_season() {
 fn test_update_pickup_location_success() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, "Summer 2025");
     let initial_location = String::from_str(&env, "Downtown Market");
     let start_date = 1735689600u64;
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let token_id = client.enroll_membership(
         &farm_id,
         &season,
@@ -210,10 +213,10 @@ fn test_update_pickup_location_success() {
         &end_date,
         &member,
     );
-    
+
     let new_location = String::from_str(&env, "Uptown Farmers Market");
     client.update_pickup_location(&token_id, &new_location, &member);
-    
+
     let updated_membership = client.get_membership_metadata(&token_id).unwrap();
     assert_eq!(updated_membership.pickup_location, new_location);
 }
@@ -222,7 +225,7 @@ fn test_update_pickup_location_success() {
 fn test_update_pickup_location_unauthorized() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, "Summer 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
@@ -230,9 +233,9 @@ fn test_update_pickup_location_unauthorized() {
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
     let unauthorized_member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let token_id = client.enroll_membership(
         &farm_id,
         &season,
@@ -242,7 +245,7 @@ fn test_update_pickup_location_unauthorized() {
         &end_date,
         &member,
     );
-    
+
     let new_location = String::from_str(&env, "Uptown Farmers Market");
     let result = client.try_update_pickup_location(&token_id, &new_location, &unauthorized_member);
     assert_eq!(result, Err(Ok(Error::NotAuthorized)));
@@ -252,13 +255,13 @@ fn test_update_pickup_location_unauthorized() {
 fn test_update_pickup_location_not_found() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let token_id = BytesN::from_array(&env, &[99; 32]); // Non-existent token
     let new_location = String::from_str(&env, "Uptown Farmers Market");
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let result = client.try_update_pickup_location(&token_id, &new_location, &member);
     assert_eq!(result, Err(Ok(Error::NotFound)));
 }
@@ -267,16 +270,16 @@ fn test_update_pickup_location_not_found() {
 fn test_cancel_membership_success() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, "Summer 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
     let start_date = 1735689600u64;
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let token_id = client.enroll_membership(
         &farm_id,
         &season,
@@ -286,9 +289,9 @@ fn test_cancel_membership_success() {
         &end_date,
         &member,
     );
-    
+
     client.cancel_membership(&token_id, &member);
-    
+
     let membership = client.get_membership_metadata(&token_id);
     assert!(membership.is_none());
 }
@@ -297,7 +300,7 @@ fn test_cancel_membership_success() {
 fn test_cancel_membership_unauthorized() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let season = String::from_str(&env, "Summer 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
@@ -305,9 +308,9 @@ fn test_cancel_membership_unauthorized() {
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
     let unauthorized_member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let token_id = client.enroll_membership(
         &farm_id,
         &season,
@@ -317,7 +320,7 @@ fn test_cancel_membership_unauthorized() {
         &end_date,
         &member,
     );
-    
+
     let result = client.try_cancel_membership(&token_id, &unauthorized_member);
     assert_eq!(result, Err(Ok(Error::NotAuthorized)));
 }
@@ -326,12 +329,12 @@ fn test_cancel_membership_unauthorized() {
 fn test_cancel_membership_not_found() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let token_id = BytesN::from_array(&env, &[99; 32]); // Non-existent token
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let result = client.try_cancel_membership(&token_id, &member);
     assert_eq!(result, Err(Ok(Error::NotFound)));
 }
@@ -340,23 +343,23 @@ fn test_cancel_membership_not_found() {
 fn test_seasonal_membership_workflow() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[1; 32]);
     let summer_season = String::from_str(&env, "Summer 2025");
     let fall_season = String::from_str(&env, "Fall 2025");
     let pickup_location = String::from_str(&env, "Downtown Market");
     let member = Address::generate(&env);
-    
+
     // Summer season dates
     let summer_start = 1735689600u64; // Jan 1, 2025
-    let summer_end = 1743465600u64;   // Apr 1, 2025
-    
+    let summer_end = 1743465600u64; // Apr 1, 2025
+
     // Fall season dates
-    let fall_start = 1751328000u64;   // Jul 1, 2025
-    let fall_end = 1759104000u64;     // Oct 1, 2025
-    
+    let fall_start = 1751328000u64; // Jul 1, 2025
+    let fall_end = 1759104000u64; // Oct 1, 2025
+
     env.mock_all_auths();
-    
+
     // Enroll in summer season
     let summer_token = client.enroll_membership(
         &farm_id,
@@ -367,26 +370,26 @@ fn test_seasonal_membership_workflow() {
         &summer_end,
         &member,
     );
-    
+
     // Verify summer membership exists
     let summer_membership = client.get_membership_metadata(&summer_token).unwrap();
     assert_eq!(summer_membership.season, summer_season);
     assert_eq!(summer_membership.share_size, ShareSize::Medium);
-    
+
     // Update pickup location for summer season
     let new_location = String::from_str(&env, "Uptown Farmers Market");
     client.update_pickup_location(&summer_token, &new_location, &member);
-    
+
     let updated_summer_membership = client.get_membership_metadata(&summer_token).unwrap();
     assert_eq!(updated_summer_membership.pickup_location, new_location);
-    
+
     // Cancel summer membership
     client.cancel_membership(&summer_token, &member);
-    
+
     // Verify summer is cancelled
     let summer_after_cancel = client.get_membership_metadata(&summer_token);
     assert!(summer_after_cancel.is_none());
-    
+
     // Now enroll in fall season (separate test since token IDs are not unique)
     let fall_token = client.enroll_membership(
         &farm_id,
@@ -397,7 +400,7 @@ fn test_seasonal_membership_workflow() {
         &fall_end,
         &member,
     );
-    
+
     // Verify fall membership exists
     let fall_membership = client.get_membership_metadata(&fall_token).unwrap();
     assert_eq!(fall_membership.season, fall_season);
@@ -408,16 +411,16 @@ fn test_seasonal_membership_workflow() {
 fn test_membership_metadata_accuracy() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id = BytesN::from_array(&env, &[42; 32]);
     let season = String::from_str(&env, "Winter 2025");
     let pickup_location = String::from_str(&env, "Central Plaza");
     let start_date = 1767225600u64; // Jan 1, 2026
-    let end_date = 1774915200u64;   // Apr 1, 2026
+    let end_date = 1774915200u64; // Apr 1, 2026
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     let token_id = client.enroll_membership(
         &farm_id,
         &season,
@@ -427,9 +430,9 @@ fn test_membership_metadata_accuracy() {
         &end_date,
         &member,
     );
-    
+
     let membership = client.get_membership_metadata(&token_id).unwrap();
-    
+
     // Verify all metadata fields are accurate
     assert_eq!(membership.farm_id, farm_id);
     assert_eq!(membership.season, season);
@@ -444,7 +447,7 @@ fn test_membership_metadata_accuracy() {
 fn test_multiple_farms_same_member() {
     let (env, contract_id) = create_test_env();
     let client = CSAMembershipContractClient::new(&env, &contract_id);
-    
+
     let farm_id1 = BytesN::from_array(&env, &[1; 32]);
     let farm_id2 = BytesN::from_array(&env, &[2; 32]);
     let season = String::from_str(&env, "Spring 2025");
@@ -453,9 +456,9 @@ fn test_multiple_farms_same_member() {
     let start_date = 1735689600u64;
     let end_date = 1743465600u64;
     let member = Address::generate(&env);
-    
+
     env.mock_all_auths();
-    
+
     // Test enrollment with first farm
     let token1 = client.enroll_membership(
         &farm_id1,
@@ -466,17 +469,17 @@ fn test_multiple_farms_same_member() {
         &end_date,
         &member,
     );
-    
+
     // Verify first farm membership
     let membership1 = client.get_membership_metadata(&token1).unwrap();
     assert_eq!(membership1.farm_id, farm_id1);
     assert_eq!(membership1.share_size, ShareSize::Small);
     assert_eq!(membership1.pickup_location, pickup_location1);
     assert_eq!(membership1.member, member);
-    
+
     // Cancel first membership to test second farm separately
     client.cancel_membership(&token1, &member);
-    
+
     // Test enrollment with second farm
     let token2 = client.enroll_membership(
         &farm_id2,
@@ -487,7 +490,7 @@ fn test_multiple_farms_same_member() {
         &end_date,
         &member,
     );
-    
+
     // Verify second farm membership
     let membership2 = client.get_membership_metadata(&token2).unwrap();
     assert_eq!(membership2.farm_id, farm_id2);

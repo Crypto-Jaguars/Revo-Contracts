@@ -1,6 +1,9 @@
 use crate::datatype::{CooperativeError, DataKey};
 use crate::interface::ProfitDistribution;
-use crate::{CooperativeManagementContract, CooperativeManagementContractArgs, CooperativeManagementContractClient};
+use crate::{
+    CooperativeManagementContract, CooperativeManagementContractArgs,
+    CooperativeManagementContractClient,
+};
 use soroban_sdk::{contractimpl, Address, Env, Map, Vec};
 
 #[contractimpl]

@@ -11,8 +11,8 @@ pub struct Reward {
 
 pub fn distribute_rewards(env: Env, campaign_id: BytesN<32>) {
     // Get campaign
-    let campaign = utils::read_campaign(&env, &campaign_id)
-        .unwrap_or_else(|| panic!("Campaign not found"));
+    let campaign =
+        utils::read_campaign(&env, &campaign_id).unwrap_or_else(|| panic!("Campaign not found"));
 
     // Only allow distribution for successful campaigns
     if campaign.status != CampaignStatus::Successful {
@@ -28,7 +28,7 @@ pub fn distribute_rewards(env: Env, campaign_id: BytesN<32>) {
     // Distribute rewards proportionally to contributions
     for contribution in contributions.iter() {
         let reward_amount = (contribution.amount * total_rewards) / campaign.total_funded;
-        
+
         if reward_amount > 0 {
             utils::transfer_tokens(
                 &env,
