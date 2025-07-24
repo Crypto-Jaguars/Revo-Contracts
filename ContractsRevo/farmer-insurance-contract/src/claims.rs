@@ -1,5 +1,5 @@
 use soroban_sdk::{Env, BytesN, contracttype, symbol_short};
-use crate::utils::{DataKey, generate_claim_id};
+use crate::utils::{DataKey, generate_claim_id, ContractError};
 use crate::insurance::InsurancePolicy;
 
 #[contracttype]
@@ -16,7 +16,7 @@ pub fn sub_claim(
     policy_id: BytesN<32>,
     event_hash: BytesN<32>,
     payout_amount: i128,
-) -> BytesN<32> {
+) -> Result<BytesN<32>, ContractError> {
     let policy = env
         .storage()
         .instance()
@@ -29,7 +29,7 @@ pub fn sub_claim(
         panic!("Policy is not active");
     }
 
-    let claim_id = generate_claim_id(&env);
+    let claim_id = generate_claim_id(&env)?;
 
     let claim = Claim {
         claim_id: claim_id.clone(),
@@ -45,5 +45,5 @@ pub fn sub_claim(
     env.events()
         .publish((symbol_short!("CLAIM"), claim_id.clone()), claim);
 
-    claim_id
+    Ok(claim_id)
 }
