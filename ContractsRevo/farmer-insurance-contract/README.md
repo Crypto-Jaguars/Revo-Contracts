@@ -115,7 +115,7 @@ to compile the contract to `.wasm`.
 
 ## 🧩 Versioning
 
-Developed with **Soroban SDK 22.0.7**.
+Developed with **Soroban SDK 22.0.0**.
 Ensure you’re using this version or adjust the code for compatibility.
 
 ---
