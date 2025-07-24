@@ -19,6 +19,7 @@ pub enum StabilizationError {
     StalePriceData = 14,
     InvalidChainlinkResponse = 15,
     ChainlinkFeedNotRegistered = 16,
+    ChainlinkFeedAlreadyRegistered = 17,
 }
 
 #[derive(Debug)]

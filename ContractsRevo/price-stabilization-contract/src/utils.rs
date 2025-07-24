@@ -37,8 +37,10 @@ impl PriceUtils {
         // Get the current market price
         let current_price = Self::get_market_price(env, &fund.crop_type)?;
         
-        // Calculate the difference (will be positive if threshold is higher than market price)
-        let difference = fund.price_threshold - current_price;
+        // Calculate the difference with overflow protection
+        let difference = fund.price_threshold
+            .checked_sub(current_price)
+            .ok_or(StabilizationError::InvalidInput)?;
         
         if difference <= 0 {
             // Price is at or above threshold, no payout needed
@@ -171,7 +173,8 @@ impl PriceUtils {
         }
         
         let conversion_factor = 10_i128.pow(8 - decimals);
-        let converted_price = price.checked_mul(conversion_factor)
+        let converted_price = price
+            .checked_mul(conversion_factor)
             .ok_or(StabilizationError::InvalidInput)?;
         
         Ok(converted_price)

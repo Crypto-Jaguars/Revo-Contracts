@@ -18,7 +18,7 @@ This contract helps protect farmers from market price fluctuations while ensurin
 ### **2. Price Monitoring**
 
 - Integrate with off-chain oracles to fetch real-time market prices
-- Chainlink Oracle Integration** - Decentralized price feeds with high reliability
+- Chainlink Oracle Integration\*\* - Decentralized price feeds with high reliability
 - Define and update price thresholds for triggering distributions
 - Monitor price movements and identify when thresholds are crossed
 - Maintain historical price data for analysis
@@ -78,6 +78,14 @@ fn update_chainlink_price(
 - **Price Validation**: Confirms positive price values
 - **Decimal Conversion**: Standardizes price format
 - **Authorization**: Only registered feeds can update prices
+- **Duplicate Prevention**: Prevents registering multiple feeds for the same crop type
+
+### **Overflow Protection**
+
+- **Price Difference Calculation**: Uses `checked_sub()` to prevent overflow
+- **Payout Amount Calculation**: Uses `checked_mul()` for safe multiplication
+- **Price Conversion**: Protected decimal conversion with overflow checks
+- **Production Capacity**: Safe arithmetic for farmer payout calculations
 
 ## 📦 Key Data Structures
 
@@ -235,6 +243,8 @@ await contract.call(
 - Fund administrators must be authenticated for sensitive operations
 - Payouts are only triggered when prices fall below thresholds
 - **Chainlink data includes staleness checks and round ID validation**
+- **Overflow protection** prevents integer overflow in price calculations
+- **Checked arithmetic** ensures safe mathematical operations
 
 ## 🔄 Integration Points
 

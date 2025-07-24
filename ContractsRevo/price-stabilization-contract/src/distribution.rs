@@ -47,8 +47,10 @@ impl DistributionManagement for PriceStabilizationContract {
             return Err(StabilizationError::ThresholdNotReached);
         }
         
-        // Calculate the price difference
-        let price_difference = fund.price_threshold - price_data.price;
+        // Calculate the price difference with overflow protection
+        let price_difference = fund.price_threshold
+            .checked_sub(price_data.price)
+            .ok_or(StabilizationError::InvalidInput)?;
         
         // Calculate total production capacity of all farmers
         let mut total_capacity: i128 = 0;

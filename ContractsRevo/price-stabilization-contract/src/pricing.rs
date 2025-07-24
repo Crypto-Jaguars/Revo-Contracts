@@ -153,7 +153,7 @@ impl PriceMonitoring for PriceStabilizationContract {
         // Check if feed is already registered
         let feed_key = DataKey::ChainlinkFeed(crop_type.clone());
         if env.storage().persistent().has(&feed_key) {
-            return Err(StabilizationError::FundAlreadyExists);
+            return Err(StabilizationError::ChainlinkFeedAlreadyRegistered);
         }
         
         // Create Chainlink price feed
