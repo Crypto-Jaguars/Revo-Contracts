@@ -1,6 +1,8 @@
 use soroban_sdk::{contracterror, contracttype, Address, BytesN, String, Symbol, Vec};
 
 pub const CERTIFICATE_MANAGEMENT_CONTRACT_KEY: &str = "cert_mgmt_contract";
+pub const MAX_PRODUCTS_PER_FARMER: u32 = 1000;
+pub const MAX_PRODUCTS_PER_TYPE: u32 = 5000;
 
 /// Storage keys for different data types
 #[contracttype]
@@ -151,6 +153,7 @@ pub enum SupplyChainError {
     InvalidStageTier = 15,
     DuplicateStageTier = 16,
     InvalidTierProgression = 17,
+    ProductLimitExceeded = 18,
 }
 
 // Certificate datatypes
@@ -198,17 +201,17 @@ pub enum CertStatus {
 #[contracterror]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CertificationError {
-    NotFound = 15,
-    AlreadyExpired = 16,
-    NotExpired = 17,
+    NotFound = 19,
+    AlreadyExpired = 20,
+    NotExpired = 21,
 }
 
 #[contracterror]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VerifyError {
-    NotFound = 18,
-    HashMismatch = 19,
-    Expired = 20,
-    Revoked = 21,
-    ExpirationDue = 22,
+    NotFound = 22,
+    HashMismatch = 23,
+    Expired = 24,
+    Revoked = 25,
+    ExpirationDue = 26,
 }

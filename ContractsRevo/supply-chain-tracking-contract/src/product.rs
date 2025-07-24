@@ -1,4 +1,4 @@
-use crate::datatypes::{CertificateId, DataKey, Product, ProductRegistration, SupplyChainError};
+use crate::datatypes::{CertificateId, DataKey, Product, ProductRegistration, SupplyChainError, MAX_PRODUCTS_PER_FARMER, MAX_PRODUCTS_PER_TYPE};
 use crate::utils;
 use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
 
@@ -132,6 +132,11 @@ fn update_farmer_products(
         .get(&key)
         .unwrap_or_else(|| Vec::new(env));
 
+    // Check if adding this product would exceed the maximum limit
+    if products.len() >= MAX_PRODUCTS_PER_FARMER {
+        return Err(SupplyChainError::ProductLimitExceeded);
+    }
+
     products.push_back(product_id.clone());
     env.storage().persistent().set(&key, &products);
 
@@ -156,8 +161,18 @@ fn update_product_type_index(
         .get(&key)
         .unwrap_or_else(|| Vec::new(env));
 
+    // Check if adding this product would exceed the maximum limit
+    if products.len() >= MAX_PRODUCTS_PER_TYPE {
+        return Err(SupplyChainError::ProductLimitExceeded);
+    }
+
     products.push_back(product_id.clone());
     env.storage().persistent().set(&key, &products);
+
+    env.events().publish(
+        (Symbol::new(env, "product_type_index_updated"),),
+        (product_type.clone(), product_id.clone()),
+    );
 
     Ok(())
 }

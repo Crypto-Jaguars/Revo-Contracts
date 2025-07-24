@@ -2207,8 +2207,6 @@ impl MockCertificateManagement {
         let stored_hash = data
             .get((owner.clone(), cert_id))
             .ok_or(VerifyError::NotFound)?;
-        log!(&env, "herere", stored_hash);
-        log!(&env, "herere", submitted_hash);
 
         if stored_hash != submitted_hash {
             return Err(VerifyError::HashMismatch);

@@ -112,11 +112,6 @@ fn validate_certificate_hash(
     certificate_id_bytes: &BytesN<32>,
     verification_hash: &BytesN<32>,
 ) -> Result<bool, SupplyChainError> {
-    // Verify certificate exists first
-    if !verify_certificate_exists(env, farmer_id, certificate_id_bytes)? {
-        return Err(SupplyChainError::CertificateNotFound);
-    }
-
     let cert_mgmt: Address = match env
         .storage()
         .instance()
@@ -160,12 +155,6 @@ fn confirm_certificate_status_valid(
     farmer_id: &Address,
     cert_id_bytes: &BytesN<32>,
 ) -> Result<bool, SupplyChainError> {
-    // Verify certificate exists
-    let _cert_exists = match verify_certificate_exists(env, farmer_id, cert_id_bytes) {
-        Ok(_) => true,
-        Err(_) => return Err(SupplyChainError::CertificateNotFound),
-    };
-
     // Check certification status by interacting with certification management contract
     let cert_mgmt: Address = match env
         .storage()
@@ -180,12 +169,18 @@ fn confirm_certificate_status_valid(
     let cert_id_u32 = utils::convert_bytes_to_u32(env, cert_id_bytes);
 
     let args = vec![&env, farmer_id.into_val(env), cert_id_u32.into_val(env)];
-    let cert_status = env.invoke_contract(&cert_mgmt, &Symbol::new(env, "check_cert_status"), args);
-
-    match cert_status {
-        CertStatus::Valid => Ok(true),
-        CertStatus::Expired => Err(SupplyChainError::CertificateInvalid),
-        CertStatus::Revoked => Err(SupplyChainError::CertificateInvalid),
+    
+    // Invoke cetificate management contract and validate certificate status
+    match env.invoke_contract::<CertStatus>(
+        &cert_mgmt,
+        &Symbol::new(env, "check_cert_status"),
+        args,
+    ) {
+        cert_status => match cert_status {
+            CertStatus::Valid => Ok(true),
+            CertStatus::Expired => Err(SupplyChainError::CertificateInvalid),
+            CertStatus::Revoked => Err(SupplyChainError::CertificateInvalid),
+        },
     }
 }
 

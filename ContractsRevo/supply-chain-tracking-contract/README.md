@@ -36,7 +36,7 @@ struct Product {
     product_id: BytesN<32>,        // Unique product identifier
     farmer_id: Address,            // Producer address
     stages: Vec<Stage>,            // All stages embedded in product
-    certificate_id: Option<BytesN<32>>, // Linked certification
+    certificate_id: CertificateId, // Linked certification (custom enum type)
 }
 ```
 
