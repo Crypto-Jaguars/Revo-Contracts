@@ -157,3 +157,33 @@ fn test_sub_claim_fails_if_policy_not_active() {
         claims::sub_claim(env.clone(), policy_id.clone(), event_hash.clone(), 300).unwrap()
     });
 }
+
+#[test]
+#[should_panic(expected = "Premium must be positive")]
+fn test_create_pol_fails_with_zero_premium() {
+    let env = Env::default();
+    let farmer = Address::generate(&env);
+
+    env.mock_all_auths();
+
+    let contract_id = env.register(FarmerInsuranceContract, ());
+
+    env.as_contract(&contract_id, || {
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), 0).unwrap()
+    });
+}
+
+#[test]
+#[should_panic(expected = "Premium must be positive")]
+fn test_create_pol_fails_with_negative_premium() {
+    let env = Env::default();
+    let farmer = Address::generate(&env);
+
+    env.mock_all_auths();
+
+    let contract_id = env.register(FarmerInsuranceContract, ());
+
+    env.as_contract(&contract_id, || {
+        insurance::create_pol(env.clone(), farmer.clone(), symbol_short!("drought"), -100).unwrap()
+    });
+}
