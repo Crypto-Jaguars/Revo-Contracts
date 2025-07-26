@@ -8,20 +8,18 @@ extern crate std; // Needed for vec! macro in tests sometimes
 // use crate::product_listing::ProductDetails;
 // Import necessary types from the main lib
 use crate::CertificationStatus;
-use crate::DisputeStatus;
-use crate::ResolutionOutcome;
 use crate::DataKey;
+use crate::DisputeStatus;
 use crate::QualityStandard;
+use crate::ResolutionOutcome;
 use crate::{AdminError, AgricQualityContract, AgricQualityContractClient, AgricQualityError};
 use soroban_sdk::{
     log,
-    Bytes,
-    BytesN,
     testutils::{
         storage::{Instance, Persistent},
         Address as _, Events as _, Ledger as _,
     },
-    vec, Address, Env, IntoVal, String, Symbol, TryFromVal,
+    vec, Address, Bytes, BytesN, Env, IntoVal, String, Symbol, TryFromVal,
 };
 
 // mod test_utils; // Module for helper functions
@@ -256,12 +254,12 @@ fn test_record_inspection() {
     assert!(result == inspector, "authority not added.");
 
     // Register a product batch first
-    let metadata = vec![&env, String::from_str(&env, "batch"), String::from_str(&env, "B")];
-    let cert_id = client.submit_for_certification(
-        &farmer1,
-        &QualityStandard::GlobalGAP,
-        &metadata,
-    );
+    let metadata = vec![
+        &env,
+        String::from_str(&env, "batch"),
+        String::from_str(&env, "B"),
+    ];
+    let cert_id = client.submit_for_certification(&farmer1, &QualityStandard::GlobalGAP, &metadata);
     log!(&env, "CertID {}", cert_id);
 
     // Record an inspection
@@ -271,30 +269,24 @@ fn test_record_inspection() {
 
     log!(&env, "Insp 1");
 
-
-    // Simulate adding inspector to authorized list (This logic might be in the contract)
-    // storage::Instance::new(&env).set(&DataKey::Inspectors, &vec![&env, inspector.clone()]);
-
     client.record_inspection(&inspector, &cert_id, &metrics, &findings, &recommendations);
-    // assert!(result.is_ok());
 }
 
 // Test process certification
 #[test]
 fn test_process_certification() {
-    
     let (env, _, client, admin, farmer1, inspector, issuer) = setup_test();
 
     client.add_authority(&admin, &issuer); // Make sure issuer is added as an authority
     client.add_inspector(&admin, &inspector); // Make sure inspector is added as an inspector
 
     // 2. Submit for Certification
-    let metadata = vec![&env, String::from_str(&env, "batch"), String::from_str(&env, "B")];
-    let cert_id = client.submit_for_certification(
-        &farmer1,
-        &QualityStandard::GlobalGAP,
-        &metadata,
-    );
+    let metadata = vec![
+        &env,
+        String::from_str(&env, "batch"),
+        String::from_str(&env, "B"),
+    ];
+    let cert_id = client.submit_for_certification(&farmer1, &QualityStandard::GlobalGAP, &metadata);
 
     // 3. Record an Inspection for that certification
     let metrics = vec![&env, (Symbol::short("moisture"), 92_u32)];
@@ -311,7 +303,6 @@ fn test_process_certification() {
 // Test dispute filing
 #[test]
 fn test_file_dispute() {
-
     let (env, admin, client, authority, farmer1, inspector, _) = setup_test();
 
     // Add farmer1 as an authority since process_certification requires an issuer which is an authority
@@ -321,28 +312,24 @@ fn test_file_dispute() {
 
     // Register a product batch for certification
     let conditions = vec![&env, String::from_str(&env, "organic_soil_used")];
-    let cert_id = client.submit_for_certification(
-        &farmer1,
-        &QualityStandard::Organic,
-        &conditions,
-    );
+    let cert_id = client.submit_for_certification(&farmer1, &QualityStandard::Organic, &conditions);
 
-    let metrics = vec![&env, (Symbol::new(&env, "score_a"), 90), (Symbol::new(&env, "score_b"), 85)];
-    let findings = vec![&env, String::from_str(&env, "Soil sample good"), String::from_str(&env, "Pesticide test negative")];
+    let metrics = vec![
+        &env,
+        (Symbol::new(&env, "score_a"), 90),
+        (Symbol::new(&env, "score_b"), 85),
+    ];
+    let findings = vec![
+        &env,
+        String::from_str(&env, "Soil sample good"),
+        String::from_str(&env, "Pesticide test negative"),
+    ];
     let recommendations = vec![&env, String::from_str(&env, "Continue monitoring")];
 
-
-    client.record_inspection(
-        &inspector,
-        &cert_id,
-        &metrics,
-        &findings,
-        &recommendations,
-    );
+    client.record_inspection(&inspector, &cert_id, &metrics, &findings, &recommendations);
 
     // Process the certification to make it valid
     client.process_certification(&inspector, &cert_id, &true, &1000);
-
 
     // File a dispute with valid evidence
     let description = String::from_str(&env, "The organic produce contained pesticides.");
@@ -361,14 +348,11 @@ fn test_file_dispute() {
     assert_eq!(stored_dispute.evidence.len(), 2);
     assert_eq!(stored_dispute.status, DisputeStatus::Filed);
     assert_eq!(stored_dispute.resolution, ResolutionOutcome::Pending);
-
-
 }
 
 #[test]
 #[should_panic]
 fn test_file_dispute_bad() {
-
     let (env, admin, client, authority, farmer1, inspector, _) = setup_test();
 
     // Add farmer1 as an authority since process_certification requires an issuer which is an authority
@@ -378,24 +362,21 @@ fn test_file_dispute_bad() {
 
     // Register a product batch for certification
     let conditions = vec![&env, String::from_str(&env, "organic_soil_used")];
-    let cert_id = client.submit_for_certification(
-        &farmer1,
-        &QualityStandard::Organic,
-        &conditions,
-    );
+    let cert_id = client.submit_for_certification(&farmer1, &QualityStandard::Organic, &conditions);
 
-    let metrics = vec![&env, (Symbol::new(&env, "score_a"), 90), (Symbol::new(&env, "score_b"), 85)];
-    let findings = vec![&env, String::from_str(&env, "Soil sample good"), String::from_str(&env, "Pesticide test negative")];
+    let metrics = vec![
+        &env,
+        (Symbol::new(&env, "score_a"), 90),
+        (Symbol::new(&env, "score_b"), 85),
+    ];
+    let findings = vec![
+        &env,
+        String::from_str(&env, "Soil sample good"),
+        String::from_str(&env, "Pesticide test negative"),
+    ];
     let recommendations = vec![&env, String::from_str(&env, "Continue monitoring")];
 
-
-    client.record_inspection(
-        &inspector,
-        &cert_id,
-        &metrics,
-        &findings,
-        &recommendations,
-    );
+    client.record_inspection(&inspector, &cert_id, &metrics, &findings, &recommendations);
 
     // Process the certification to make it valid
     client.process_certification(&inspector, &cert_id, &true, &1000);
@@ -407,9 +388,8 @@ fn test_file_dispute_bad() {
     let evidence = vec![&env, evidence_hash_1.into(), evidence_hash_2.into()];
     let empty_evidence = vec![&env];
     client.file_dispute(&farmer1, &cert_id, &description, &empty_evidence);
-    
+
     // Test filing a dispute with an invalid certification ID (should fail)
     let invalid_cert_id = BytesN::from_array(&env, &[0; 32]);
     client.file_dispute(&farmer1, &invalid_cert_id, &description, &evidence);
-   
 }

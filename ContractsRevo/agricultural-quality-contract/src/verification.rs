@@ -27,11 +27,8 @@ fn verify_inspector(env: &Env, inspector: &Address) -> Result<(), AgricQualityEr
         .get(&DataKey::Inspectors)
         .unwrap_or_else(|| vec![env]);
 
-
     if !inspectors.contains(inspector) {
-
         return Err(AgricQualityError::Unauthorized);
-        
     }
     inspector.require_auth();
 
@@ -188,9 +185,7 @@ pub fn process_certification(
         .storage()
         .persistent()
         .get(&DataKey::Certification(certification_id.clone()))
-        .ok_or_else(|| {
-            AgricQualityError::NotFound
-        })?;
+        .ok_or_else(|| AgricQualityError::NotFound)?;
 
     if certification.status != CertificationStatus::Pending {
         return Err(AgricQualityError::InvalidStatus);
@@ -200,9 +195,7 @@ pub fn process_certification(
         .storage()
         .persistent()
         .get(&DataKey::Inspection(certification_id.clone()))
-        .ok_or_else(|| {
-            AgricQualityError::NotFound
-        })?;
+        .ok_or_else(|| AgricQualityError::NotFound)?;
 
     // Update certification status and details
     certification.status = if approved {

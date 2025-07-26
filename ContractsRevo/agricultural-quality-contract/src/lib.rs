@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{log, contract, contractimpl, Address, BytesN, Env, String, Symbol, Val, Vec};
+use soroban_sdk::{contract, contractimpl, log, Address, BytesN, Env, String, Symbol, Val, Vec};
 
 mod datatypes;
 mod dispute_handling;
@@ -82,7 +82,7 @@ impl AgricQualityContract {
             .get(&DataKey::Inspectors)
             .ok_or(AdminError::NotFound)?;
 
-            inspectors.push_back(inspector.clone());
+        inspectors.push_back(inspector.clone());
         // env.storage().instance().set(&DataKey::Authorities, &admin);
 
         env.storage()
@@ -152,7 +152,6 @@ impl VerificationOps for AgricQualityContract {
         findings: Vec<String>,
         recommendations: Vec<String>,
     ) -> Result<(), AgricQualityError> {
-
         verification::record_inspection(
             &env,
             &inspector,
