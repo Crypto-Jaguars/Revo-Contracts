@@ -51,6 +51,7 @@ fn get_user_points(env: &Env, program_id: BytesN<32>, user_address: Address) -> 
 #[test]
 fn test_award_points_after_transaction() {
     let (env, contract_address, program_id) = setup_test();
+    // env.logs().add("address", &[contract_address.to_val()]);
     let user = create_user(&env);
     let rewards = create_rewards(&env);
     env.as_contract(&contract_address, || {

@@ -1,11 +1,12 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{contract, contractimpl, log, Address, BytesN, Env, String, Symbol, Val, Vec};
 
 mod datatypes;
 mod dispute_handling;
 mod interface;
 mod quality_metrics;
 mod resolution;
+mod test;
 mod verification;
 
 use datatypes::*;
@@ -23,6 +24,12 @@ impl AgricQualityContract {
 
         admin.require_auth();
         env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage()
+            .instance()
+            .set(&DataKey::Authorities, &Vec::<Address>::new(&env));
+        env.storage()
+            .instance()
+            .set(&DataKey::Inspectors, &Vec::<Address>::new(&env));
 
         env.events().publish(
             (Symbol::new(&env, "contract_initialized"), admin.clone()),
@@ -37,6 +44,50 @@ impl AgricQualityContract {
             .instance()
             .get(&DataKey::Admin)
             .ok_or(AdminError::UnauthorizedAccess)
+    }
+
+    pub fn add_authority(
+        env: Env,
+        admin: Address,
+        authority: Address,
+    ) -> Result<Address, AdminError> {
+        admin.require_auth();
+
+        let mut authorities: Vec<Address> = env
+            .storage()
+            .instance()
+            .get(&DataKey::Authorities)
+            .unwrap_or_else(|| Vec::new(&env));
+
+        authorities.push_back(authority.clone());
+
+        env.storage()
+            .instance()
+            .set(&DataKey::Authorities, &authorities);
+
+        Ok(authority)
+    }
+
+    pub fn add_inspector(
+        env: Env,
+        admin: Address,
+        inspector: Address,
+    ) -> Result<Address, AdminError> {
+        admin.require_auth();
+
+        let mut inspectors: Vec<Address> = env
+            .storage()
+            .instance()
+            .get(&DataKey::Inspectors)
+            .unwrap_or_else(|| Vec::new(&env));
+
+        inspectors.push_back(inspector.clone());
+
+        env.storage()
+            .instance()
+            .set(&DataKey::Inspectors, &inspectors);
+
+        Ok(inspector)
     }
 }
 

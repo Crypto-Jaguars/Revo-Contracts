@@ -143,7 +143,7 @@ pub fn register_metric(
 
     // Check if metric already exists
     let key = DataKey::Metric(standard.clone(), name.clone());
-    if env.storage().instance().has(&key) {
+    if env.storage().persistent().has(&key) {
         return Err(AgricQualityError::AlreadyExists);
     }
 
@@ -158,17 +158,17 @@ pub fn register_metric(
     };
 
     // Store metric
-    env.storage().instance().set(&key, &metric);
+    env.storage().persistent().set(&key, &metric);
 
     // Update standard metrics list
-    let mut metrics = env
+    let mut metrics: Vec<Symbol> = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::StandardMetrics(standard.clone()))
-        .unwrap_or_else(|| vec![env]);
+        .unwrap_or_else(|| Vec::new(&env));
     metrics.push_back(name.clone());
     env.storage()
-        .instance()
+        .persistent()
         .set(&DataKey::StandardMetrics(standard), &metrics);
 
     // Emit event
@@ -196,7 +196,7 @@ pub fn update_metric(
     let key = DataKey::Metric(standard.clone(), name.clone());
     let mut metric: QualityMetric = env
         .storage()
-        .instance()
+        .persistent()
         .get(&key)
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -211,7 +211,7 @@ pub fn update_metric(
     metric.version += 1;
 
     // Store updated metric
-    env.storage().instance().set(&key, &metric);
+    env.storage().persistent().set(&key, &metric);
 
     // Emit event
     env.events().publish(
@@ -228,15 +228,15 @@ pub fn get_standard_metrics(
 ) -> Result<Vec<QualityMetric>, AgricQualityError> {
     let metric_names = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::StandardMetrics(standard.clone()))
-        .unwrap_or_else(|| vec![env]);
+        .unwrap_or_else(|| Vec::new(&env));
 
     let mut metrics = vec![env];
     for name in metric_names.iter() {
         if let Some(metric) = env
             .storage()
-            .instance()
+            .persistent()
             .get(&DataKey::Metric(standard.clone(), name))
         {
             metrics.push_back(metric);
@@ -266,7 +266,7 @@ pub fn check_compliance(
     // Get certification data
     let certification: CertificationData = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -338,14 +338,14 @@ fn calculate_metric_score(
     // Get certification data
     let certification: CertificationData = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
     // Get the latest inspection report
     let inspection: Option<InspectionReport> = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Inspection(certification_id.clone()));
 
     let base_score = if let Some(report) = inspection {

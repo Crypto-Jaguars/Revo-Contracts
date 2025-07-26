@@ -31,6 +31,7 @@ fn verify_inspector(env: &Env, inspector: &Address) -> Result<(), AgricQualityEr
         return Err(AgricQualityError::Unauthorized);
     }
     inspector.require_auth();
+
     Ok(())
 }
 
@@ -62,6 +63,11 @@ pub fn submit_for_certification(
     let certification_id =
         generate_certification_id(env, holder, &standard, env.ledger().timestamp());
 
+    let meta_data_len = conditions.len();
+    if meta_data_len < 1 || meta_data_len > 8 {
+        return Err(AgricQualityError::InvalidInput);
+    }
+
     // Check if certification already exists
     if env
         .storage()
@@ -71,8 +77,6 @@ pub fn submit_for_certification(
         return Err(AgricQualityError::AlreadyExists);
     }
 
-    let empty_string: &str = "0";
-
     // Create certification data
     let certification = CertificationData {
         holder: holder.clone(),
@@ -80,7 +84,10 @@ pub fn submit_for_certification(
         status: CertificationStatus::Pending,
         issue_date: env.ledger().timestamp(),
         expiry_date: 0,
-        issuer: Address::from_str(&env, &empty_string),
+        issuer: Address::from_str(
+            &env,
+            "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        ),
         audit_score: 0,
         conditions,
     };
@@ -119,11 +126,12 @@ pub fn record_inspection(
     recommendations: Vec<String>,
 ) -> Result<(), AgricQualityError> {
     // Verify inspector authorization
+
     verify_inspector(env, inspector)?;
 
     let certification: CertificationData = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -151,7 +159,7 @@ pub fn record_inspection(
 
     // Store inspection report
     env.storage()
-        .instance()
+        .persistent()
         .set(&DataKey::Inspection(certification_id.clone()), &report);
 
     // Emit event
@@ -173,24 +181,21 @@ pub fn process_certification(
     // Verify issuer authorization
     verify_issuer(env, issuer)?;
 
-    // Get certification data
     let mut certification: CertificationData = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Certification(certification_id.clone()))
-        .ok_or(AgricQualityError::NotFound)?;
+        .ok_or_else(|| AgricQualityError::NotFound)?;
 
-    // Ensure certification is pending
     if certification.status != CertificationStatus::Pending {
         return Err(AgricQualityError::InvalidStatus);
     }
 
-    // Get inspection report
     let inspection: InspectionReport = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Inspection(certification_id.clone()))
-        .ok_or(AgricQualityError::NotFound)?;
+        .ok_or_else(|| AgricQualityError::NotFound)?;
 
     // Update certification status and details
     certification.status = if approved {
@@ -206,7 +211,7 @@ pub fn process_certification(
     }
 
     // Store updated certification
-    env.storage().instance().set(
+    env.storage().persistent().set(
         &DataKey::Certification(certification_id.clone()),
         &certification,
     );
@@ -214,11 +219,11 @@ pub fn process_certification(
     // Update issuer's certifications list
     let mut issuer_certs: Vec<BytesN<32>> = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::IssuerCertifications(issuer.clone()))
         .unwrap_or_else(|| vec![env]);
     issuer_certs.push_back(certification_id.clone());
-    env.storage().instance().set(
+    env.storage().persistent().set(
         &DataKey::IssuerCertifications(issuer.clone()),
         &issuer_certs,
     );
@@ -238,7 +243,7 @@ pub fn get_certification_history(
 ) -> Result<Vec<CertificationData>, AgricQualityError> {
     let cert_ids: Vec<BytesN<32>> = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::HolderCertifications(holder.clone()))
         .unwrap_or_else(|| vec![env]);
 
@@ -246,7 +251,7 @@ pub fn get_certification_history(
     for id in cert_ids.iter() {
         if let Some(cert) = env
             .storage()
-            .instance()
+            .persistent()
             .get(&DataKey::Certification(id.clone()))
         {
             certifications.push_back(cert);

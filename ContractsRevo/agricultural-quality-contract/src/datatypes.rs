@@ -106,6 +106,7 @@ pub struct InspectionReport {
 pub struct DisputeData {
     pub id: BytesN<32>,
     pub certification: BytesN<32>,
+    pub description: String,
     pub complainant: Address,
     pub respondent: Address,
     pub timestamp: u64,
@@ -175,4 +176,5 @@ pub enum AgricQualityError {
 pub enum AdminError {
     AlreadyInitialized = 1,
     UnauthorizedAccess = 2,
+    NotFound = 3,
 }

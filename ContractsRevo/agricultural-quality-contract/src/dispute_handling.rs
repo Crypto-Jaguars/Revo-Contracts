@@ -65,7 +65,7 @@ pub fn file_dispute(
     // Get certification data
     let certification: CertificationData = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -77,6 +77,7 @@ pub fn file_dispute(
     let dispute = DisputeData {
         id: dispute_id.clone(),
         certification: certification_id.clone(),
+        description: description.clone(),
         complainant: complainant.clone(),
         respondent: certification.holder.clone(),
         timestamp: env.ledger().timestamp(),
@@ -89,19 +90,19 @@ pub fn file_dispute(
 
     // Store dispute data
     env.storage()
-        .instance()
+        .persistent()
         .set(&DataKey::Dispute(dispute_id.clone()), &dispute);
 
     // Update disputes by holder
     let mut holder_disputes: Vec<BytesN<32>> = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::DisputesByHolder(
             certification.holder.clone().into(),
         ))
         .unwrap_or_else(|| vec![env]);
     holder_disputes.push_back(dispute_id.clone());
-    env.storage().instance().set(
+    env.storage().persistent().set(
         &DataKey::DisputesByHolder(certification.holder),
         &holder_disputes,
     );
@@ -109,11 +110,11 @@ pub fn file_dispute(
     // Update disputes by standard
     let mut standard_disputes: Vec<BytesN<32>> = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::DisputesByStandard(certification.standard.clone()))
         .unwrap_or_else(|| vec![env]);
     standard_disputes.push_back(dispute_id.clone());
-    env.storage().instance().set(
+    env.storage().persistent().set(
         &DataKey::DisputesByStandard(certification.standard),
         &standard_disputes,
     );
@@ -141,7 +142,7 @@ pub fn submit_evidence(
     // Get dispute data
     let mut dispute: DisputeData = env
         .storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Dispute(dispute_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
@@ -172,13 +173,13 @@ pub fn submit_evidence(
 
     // Store evidence
     env.storage()
-        .instance()
+        .persistent()
         .set(&DataKey::Evidence(evidence_hash.clone().into()), &evidence);
 
     // Update dispute evidence list
     dispute.evidence.push_back(evidence_hash.clone().into());
     env.storage()
-        .instance()
+        .persistent()
         .set(&DataKey::Dispute(dispute_id.clone()), &dispute);
 
     // Emit event
@@ -251,7 +252,7 @@ pub fn get_dispute_details(
     dispute_id: &BytesN<32>,
 ) -> Result<DisputeData, AgricQualityError> {
     env.storage()
-        .instance()
+        .persistent()
         .get(&DataKey::Dispute(dispute_id.clone()))
         .ok_or(AgricQualityError::NotFound)
 }
