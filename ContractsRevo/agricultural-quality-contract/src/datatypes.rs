@@ -175,4 +175,5 @@ pub enum AgricQualityError {
 pub enum AdminError {
     AlreadyInitialized = 1,
     UnauthorizedAccess = 2,
+    NotFound = 3,
 }

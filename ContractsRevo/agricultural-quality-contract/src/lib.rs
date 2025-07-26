@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Val, Vec};
 
 mod datatypes;
 mod dispute_handling;
@@ -24,6 +24,7 @@ impl AgricQualityContract {
 
         admin.require_auth();
         env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage().instance().set(&DataKey::Authorities, &Vec::<Address>::new(&env));
 
         env.events().publish(
             (Symbol::new(&env, "contract_initialized"), admin.clone()),
@@ -38,6 +39,27 @@ impl AgricQualityContract {
             .instance()
             .get(&DataKey::Admin)
             .ok_or(AdminError::UnauthorizedAccess)
+    }
+
+    pub fn add_authority(env: Env, admin: Address, authority: Address) -> Result<Address, AdminError> {
+        
+        admin.require_auth();
+
+        let mut authorities: Vec<Address> = env.storage()
+            .instance()
+            .get(&DataKey::Authorities)
+            .ok_or(AdminError::NotFound)?;
+
+        
+        
+        authorities.push_back(authority.clone());
+        // env.storage().instance().set(&DataKey::Authorities, &admin);
+
+        env.storage()
+            .instance()
+            .set(&DataKey::Authorities, &authorities);
+
+        Ok((authority))
     }
 }
 
@@ -89,6 +111,7 @@ impl VerificationOps for AgricQualityContract {
         standard: QualityStandard,
         conditions: Vec<String>,
     ) -> Result<BytesN<32>, AgricQualityError> {
+        // Ok(BytesN::from_array(&env, &[4,3,5,4,5,6,7,8,4,3,5,4,5,6,7,8,4,3,5,4,5,6,7,8,4,3,5,4,5,6,7,8]))
         verification::submit_for_certification(&env, &holder, standard, conditions)
     }
 

@@ -62,6 +62,11 @@ pub fn submit_for_certification(
     let certification_id =
         generate_certification_id(env, holder, &standard, env.ledger().timestamp());
 
+    let meta_data_len = conditions.len();
+    if meta_data_len < 2 || meta_data_len > 8 {
+        return Err(AgricQualityError::InvalidInput);
+    }
+
     // Check if certification already exists
     if env
         .storage()

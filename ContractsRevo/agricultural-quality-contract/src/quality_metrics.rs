@@ -161,11 +161,11 @@ pub fn register_metric(
     env.storage().instance().set(&key, &metric);
 
     // Update standard metrics list
-    let mut metrics = env
+    let mut metrics: Vec<Symbol> = env
         .storage()
         .instance()
         .get(&DataKey::StandardMetrics(standard.clone()))
-        .unwrap_or_else(|| vec![env]);
+        .unwrap_or_else(|| Vec::new(&env));
     metrics.push_back(name.clone());
     env.storage()
         .instance()
