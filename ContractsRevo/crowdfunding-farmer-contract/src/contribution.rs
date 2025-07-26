@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, BytesN, Env, Vec};
+use soroban_sdk::{contracttype, token, Address, BytesN, Env, Vec};
 
 use crate::{utils, CampaignStatus};
 
@@ -24,6 +24,13 @@ pub fn contribute(env: Env, contributor: Address, campaign_id: BytesN<32>, amoun
         panic!("Campaign deadline has passed");
     }
 
+    // Require auth from contributor
+    contributor.require_auth();
+
+    // Transfer tokens from contributor to contract
+    let token_client = token::Client::new(&env, &campaign.reward_token);
+    token_client.transfer(&contributor, &env.current_contract_address(), &amount);
+
     campaign.total_funded += amount;
     utils::save_campaign(&env, &campaign_id, &campaign);
 
@@ -35,8 +42,6 @@ pub fn contribute(env: Env, contributor: Address, campaign_id: BytesN<32>, amoun
         amount,
     });
     utils::save_contributions(&env, &campaign_id, &contributions);
-
-    utils::transfer_tokens(&env, &contributor, &env.current_contract_address(), amount);
 }
 
 pub fn refund_contributions(env: Env, campaign_id: BytesN<32>) {
@@ -50,12 +55,15 @@ pub fn refund_contributions(env: Env, campaign_id: BytesN<32>) {
     let contributions = utils::read_contributions(&env, &campaign_id)
         .unwrap_or_else(|| panic!("No contributions found"));
 
+    let token_client = token::Client::new(&env, &campaign.reward_token);
+    
     for contribution in contributions.iter() {
-        utils::transfer_tokens(
-            &env,
+        // Require auth from contract (since it's initiating the refund)
+        env.current_contract_address().require_auth();
+        token_client.transfer(
             &env.current_contract_address(),
             &contribution.contributor_id,
-            contribution.amount,
+            &contribution.amount,
         );
     }
 

@@ -30,7 +30,7 @@ pub fn validate_deadline(current_time: u64, deadline: u64) {
     }
 }
 
-pub fn transfer_tokens(env: &Env, from: &Address, to: &Address, amount: i128) {
-    let client = token::Client::new(env, &env.current_contract_address());
+pub fn transfer_tokens(env: &Env, token_address: &Address, from: &Address, to: &Address, amount: i128) {
+    let client = token::Client::new(env, token_address);
     client.transfer(from, to, &amount);
 }

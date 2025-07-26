@@ -1,12 +1,18 @@
-.PHONY: build test clean
+.PHONY: default all test build fmt clean
+
+default: build
+
+all: test
+
+test: build
+	cargo test
 
 build:
-	cargo build --target wasm32-unknown-unknown --release
-	cp target/wasm32-unknown-unknown/release/crowdfunding_farmer_contract.wasm .
+	stellar contract build
+	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
-test:
-	cargo test -- --nocapture
+fmt:
+	cargo fmt --all
 
 clean:
 	cargo clean
-	rm -f crowdfunding_farmer_contract.wasm
