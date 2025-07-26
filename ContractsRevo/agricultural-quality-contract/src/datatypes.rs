@@ -106,6 +106,7 @@ pub struct InspectionReport {
 pub struct DisputeData {
     pub id: BytesN<32>,
     pub certification: BytesN<32>,
+    pub description: String,
     pub complainant: Address,
     pub respondent: Address,
     pub timestamp: u64,
