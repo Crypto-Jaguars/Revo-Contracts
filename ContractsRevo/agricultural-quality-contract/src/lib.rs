@@ -57,16 +57,15 @@ impl AgricQualityContract {
             .storage()
             .instance()
             .get(&DataKey::Authorities)
-            .ok_or(AdminError::NotFound)?;
+            .unwrap_or_else(|| Vec::new(&env));
 
         authorities.push_back(authority.clone());
-        // env.storage().instance().set(&DataKey::Authorities, &admin);
 
         env.storage()
             .instance()
             .set(&DataKey::Authorities, &authorities);
 
-        Ok((authority))
+        Ok(authority)
     }
 
     pub fn add_inspector(
@@ -80,10 +79,9 @@ impl AgricQualityContract {
             .storage()
             .instance()
             .get(&DataKey::Inspectors)
-            .ok_or(AdminError::NotFound)?;
+            .unwrap_or_else(|| Vec::new(&env));
 
         inspectors.push_back(inspector.clone());
-        // env.storage().instance().set(&DataKey::Authorities, &admin);
 
         env.storage()
             .instance()

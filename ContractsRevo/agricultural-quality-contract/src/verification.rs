@@ -1,5 +1,5 @@
 use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{log, vec, Address, Bytes, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{vec, Address, Bytes, BytesN, Env, String, Symbol, Vec};
 
 use crate::datatypes::*;
 

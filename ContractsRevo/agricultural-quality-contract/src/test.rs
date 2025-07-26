@@ -1,14 +1,11 @@
 #![cfg(test)]
 
-extern crate std;
-
 use crate::CertificationStatus;
 use crate::DisputeStatus;
 use crate::QualityStandard;
 use crate::ResolutionOutcome;
 use crate::{AgricQualityContract, AgricQualityContractClient};
 use soroban_sdk::{
-    log,
     testutils::{Address as _, Events as _},
     vec, Address, Bytes, BytesN, Env, String, Symbol, TryFromVal,
 };
@@ -60,7 +57,7 @@ fn test_initialize_contract() {
     assert_eq!(client.get_admin(), admin.clone());
 
     // Attempt to initialize again (should fail)
-    let result = client.initialize(&admin);
+    client.initialize(&admin);
 }
 
 // Test register product batch and event
@@ -103,7 +100,6 @@ fn test_register_product_batch_and_event() {
 
     // Check certification data exists
     let history = client.get_certification_history(&farmer1);
-    std::println!("Certification history: {:?}", history);
 
     assert_eq!(history.len(), 1);
     let cert = &history.get(0).unwrap();
@@ -125,7 +121,7 @@ fn test_duplicate_registration_rejected() {
     ];
 
     // First registration
-    client.submit_for_certification(&farmer1, &QualityStandard::GlobalGAP, &metadata.clone());
+    client.submit_for_certification(&farmer1, &QualityStandard::GlobalGAP, &metadata);
 
     // Duplicate registration attempt (should fail)
     client.submit_for_certification(&farmer1, &QualityStandard::GlobalGAP, &metadata);
@@ -146,9 +142,8 @@ fn test_incomplete_metadata_rejected() {
 fn test_register_and_get_metric() {
     let (env, _, client, admin, _, _, authority) = setup_test();
 
-    // client.add_authority(&admin, &authority);
     let result = client.add_authority(&admin, &authority);
-    assert!(result == authority, "authority not added.");
+    assert_eq!(result, authority, "Failed to add authority");
 
     // Register a metric
     let metric_name = Symbol::new(&env, "moisture");
@@ -175,7 +170,7 @@ fn test_update_metric() {
     let (env, _, client, admin, _, _, authority) = setup_test();
 
     let result = client.add_authority(&admin, &authority);
-    assert!(result == authority, "authority not added.");
+    assert_eq!(result, authority, "Failed to add authority");
 
     // Register a metric first
     let metric_name = Symbol::new(&env, "moisture");
@@ -238,7 +233,7 @@ fn test_record_inspection() {
     let (env, _, client, admin, farmer1, inspector, _) = setup_test();
 
     let result = client.add_inspector(&admin, &inspector);
-    assert!(result == inspector, "authority not added.");
+    assert_eq!(result, inspector, "Failed to add inspector");
 
     // Register a product batch first
     let metadata = vec![
@@ -247,14 +242,11 @@ fn test_record_inspection() {
         String::from_str(&env, "B"),
     ];
     let cert_id = client.submit_for_certification(&farmer1, &QualityStandard::GlobalGAP, &metadata);
-    log!(&env, "CertID {}", cert_id);
 
     // Record an inspection
     let metrics = vec![&env, (Symbol::short("moisture"), 92_u32)];
     let findings = vec![&env, String::from_str(&env, "Good moisture level")];
     let recommendations = vec![&env, String::from_str(&env, "None needed")];
-
-    log!(&env, "Insp 1");
 
     client.record_inspection(&inspector, &cert_id, &metrics, &findings, &recommendations);
 }
@@ -370,12 +362,13 @@ fn test_file_dispute_bad() {
 
     // Test filing a dispute with no evidence (should fail)
     let description = String::from_str(&env, "The organic produce contained pesticides.");
+    let empty_evidence = vec![&env];
+
+    client.file_dispute(&farmer1, &cert_id, &description, &empty_evidence);
+
     let evidence_hash_1 = env.crypto().sha256(&Bytes::from_array(&env, &[1; 32]));
     let evidence_hash_2 = env.crypto().sha256(&Bytes::from_array(&env, &[2; 32]));
     let evidence = vec![&env, evidence_hash_1.into(), evidence_hash_2.into()];
-    let empty_evidence = vec![&env];
-    client.file_dispute(&farmer1, &cert_id, &description, &empty_evidence);
-
     // Test filing a dispute with an invalid certification ID (should fail)
     let invalid_cert_id = BytesN::from_array(&env, &[0; 32]);
     client.file_dispute(&farmer1, &invalid_cert_id, &description, &evidence);

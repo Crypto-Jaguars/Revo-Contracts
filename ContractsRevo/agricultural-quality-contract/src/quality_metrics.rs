@@ -230,7 +230,7 @@ pub fn get_standard_metrics(
         .storage()
         .persistent()
         .get(&DataKey::StandardMetrics(standard.clone()))
-        .unwrap_or_else(|| vec![env]);
+        .unwrap_or_else(|| Vec::new(&env));
 
     let mut metrics = vec![env];
     for name in metric_names.iter() {
