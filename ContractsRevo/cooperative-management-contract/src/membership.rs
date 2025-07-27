@@ -1,11 +1,19 @@
 use crate::datatype::{CooperativeError, DataKey, Member};
 use crate::interface::Membership;
-use crate::{CooperativeManagementContract, CooperativeManagementContractArgs, CooperativeManagementContractClient};
+use crate::{
+    CooperativeManagementContract, CooperativeManagementContractArgs,
+    CooperativeManagementContractClient,
+};
 use soroban_sdk::{contractimpl, Address, Env, String};
 
 #[contractimpl]
 impl Membership for CooperativeManagementContract {
-    fn register_member(env: Env, address: Address, name: String, role: String) -> Result<(), CooperativeError> {
+    fn register_member(
+        env: Env,
+        address: Address,
+        name: String,
+        role: String,
+    ) -> Result<(), CooperativeError> {
         let key = DataKey::Member(address.clone());
 
         // Check if the member is already registered
