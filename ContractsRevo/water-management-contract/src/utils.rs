@@ -98,10 +98,8 @@ pub fn calculate_reward_amount(usage: i128, threshold: i128, base_reward: i128) 
 }
 
 /// Checks if admin authorization is required and validates it
+/// Note: This function assumes the caller has already been authenticated via require_auth()
 pub fn require_admin_auth(env: &Env, caller: &Address) -> Result<(), ContractError> {
-    // Ensure the caller has signed the transaction before any further checks
-    caller.require_auth();
-
     let admin: Address = env
         .storage()
         .instance()

@@ -118,6 +118,7 @@ impl WaterManagementContract {
         weekly_limit: i128,
         monthly_limit: i128,
     ) -> Result<(), ContractError> {
+        admin.require_auth();
         incentives::set_threshold(
             &env,
             admin,

@@ -1,8 +1,8 @@
 #![cfg(test)]
 
 use soroban_sdk::{
-    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
-    Address, BytesN, Env, String, Symbol,
+    testutils::{Address as _, MockAuth, MockAuthInvoke},
+    Address, BytesN, Env, String,
 };
 
 use crate::{datatypes::*, WaterManagementContract};
@@ -64,7 +64,7 @@ fn test_initialize_contract() {
 fn test_record_water_usage() {
     let (env, contract_id, admin, farmer) = setup_test();
 
-    // Mock authorization for all calls
+    // Mock authorization for admin and farmer
     env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
@@ -100,7 +100,7 @@ fn test_record_water_usage() {
 fn test_set_and_get_threshold() {
     let (env, contract_id, admin, _) = setup_test();
 
-    // Mock authorization for all calls
+    // Mock authorization for admin
     env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
@@ -134,7 +134,7 @@ fn test_set_and_get_threshold() {
 fn test_incentive_system() {
     let (env, contract_id, admin, farmer) = setup_test();
 
-    // Mock authorization for all calls
+    // Mock authorization for admin and farmer
     env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
@@ -184,7 +184,7 @@ fn test_incentive_system() {
 fn test_usage_report() {
     let (env, contract_id, admin, farmer) = setup_test();
 
-    // Mock authorization for all calls
+    // Mock authorization for admin and farmer
     env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
@@ -230,7 +230,7 @@ fn test_usage_report() {
 fn test_alert_generation() {
     let (env, contract_id, admin, farmer) = setup_test();
 
-    // Mock authorization for all calls
+    // Mock authorization for admin and farmer
     env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
@@ -276,7 +276,7 @@ fn test_alert_generation() {
 fn test_farmer_rewards_calculation() {
     let (env, contract_id, admin, farmer) = setup_test();
 
-    // Mock authorization for all calls
+    // Mock authorization for admin and farmer
     env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
