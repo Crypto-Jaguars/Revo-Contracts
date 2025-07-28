@@ -56,10 +56,11 @@ pub fn refund_contributions(env: Env, campaign_id: BytesN<32>) {
         .unwrap_or_else(|| panic!("No contributions found"));
 
     let token_client = token::Client::new(&env, &campaign.reward_token);
-    
+
+    // Require auth from contract (since it's initiating the refund)
+    env.current_contract_address().require_auth();
+
     for contribution in contributions.iter() {
-        // Require auth from contract (since it's initiating the refund)
-        env.current_contract_address().require_auth();
         token_client.transfer(
             &env.current_contract_address(),
             &contribution.contributor_id,
