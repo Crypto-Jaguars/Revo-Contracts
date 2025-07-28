@@ -7,6 +7,13 @@ use soroban_sdk::{
 
 use crate::{datatypes::*, WaterManagementContract};
 
+// Test constants
+const DAILY_LIMIT: i128 = 5000;
+const WEEKLY_LIMIT: i128 = 35000;
+const MONTHLY_LIMIT: i128 = 150000;
+const EFFICIENT_USAGE_VOLUME: i128 = 2000;
+const BASE_REWARD: i128 = 100;
+
 // Helper function to set up test environment
 fn setup_test() -> (Env, Address, Address, Address) {
     let env = Env::default();
@@ -92,18 +99,15 @@ fn test_set_and_get_threshold() {
         let _ = WaterManagementContract::initialize(env.clone(), admin.clone());
 
         let parcel_id = create_parcel_id(&env, 1);
-        let daily_limit = 5000i128;
-        let weekly_limit = 35000i128;
-        let monthly_limit = 150000i128;
 
         // Set threshold
         let result = WaterManagementContract::set_threshold(
             env.clone(),
             admin.clone(),
             parcel_id.clone(),
-            daily_limit,
-            weekly_limit,
-            monthly_limit,
+            DAILY_LIMIT,
+            WEEKLY_LIMIT,
+            MONTHLY_LIMIT,
         );
         assert!(result.is_ok());
 
@@ -111,9 +115,9 @@ fn test_set_and_get_threshold() {
         let threshold = WaterManagementContract::get_threshold(env.clone(), parcel_id.clone());
         assert!(threshold.is_ok());
         let threshold_data = threshold.unwrap();
-        assert_eq!(threshold_data.daily_limit, daily_limit);
-        assert_eq!(threshold_data.weekly_limit, weekly_limit);
-        assert_eq!(threshold_data.monthly_limit, monthly_limit);
+        assert_eq!(threshold_data.daily_limit, DAILY_LIMIT);
+        assert_eq!(threshold_data.weekly_limit, WEEKLY_LIMIT);
+        assert_eq!(threshold_data.monthly_limit, MONTHLY_LIMIT);
     });
 }
 
@@ -128,17 +132,16 @@ fn test_incentive_system() {
         let usage_id = create_usage_id(&env, 1);
         let parcel_id = create_parcel_id(&env, 1);
         let data_hash = create_data_hash(&env, 1);
-        let volume = 2000i128; // Efficient usage
-        let daily_limit = 5000i128;
+        let volume = EFFICIENT_USAGE_VOLUME; // Efficient usage
 
         // Set threshold first
         let _ = WaterManagementContract::set_threshold(
             env.clone(),
             admin.clone(),
             parcel_id.clone(),
-            daily_limit,
-            35000i128,
-            150000i128,
+            DAILY_LIMIT,
+            WEEKLY_LIMIT,
+            MONTHLY_LIMIT,
         );
 
         // Record efficient usage
@@ -152,11 +155,10 @@ fn test_incentive_system() {
         );
 
         // Issue incentive
-        let base_reward = 100i128;
         let result = WaterManagementContract::issue_incentive(
             env.clone(),
             usage_id.clone(),
-            base_reward,
+            BASE_REWARD,
         );
         assert!(result.is_ok());
 
@@ -284,8 +286,7 @@ fn test_farmer_rewards_calculation() {
         let mut total_expected_rewards = 0i128;
         for i in 1..=2 {
             let usage_id = create_usage_id(&env, i);
-            let volume = 2000i128; // Efficient usage
-            let base_reward = 100i128;
+            let volume = EFFICIENT_USAGE_VOLUME; // Efficient usage
 
             let _ = WaterManagementContract::record_usage(
                 env.clone(),
@@ -299,7 +300,7 @@ fn test_farmer_rewards_calculation() {
             let _ = WaterManagementContract::issue_incentive(
                 env.clone(),
                 usage_id.clone(),
-                base_reward,
+                BASE_REWARD,
             );
 
             // Get actual reward amount

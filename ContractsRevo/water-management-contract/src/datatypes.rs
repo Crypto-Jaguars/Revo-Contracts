@@ -70,5 +70,6 @@ pub enum DataKey {
     FarmerUsages(Address),
     ParcelUsages(BytesN<32>),
     FarmerIncentives(Address),
+    FarmerAlerts(Address), // Index of alert IDs for a farmer
     Admin,
 }

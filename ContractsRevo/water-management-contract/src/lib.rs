@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Vec};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Vec};
 
 mod alerts;
 mod datatypes;
@@ -24,10 +24,16 @@ impl WaterManagementContract {
         if env.storage().instance().has(&DataKey::Admin) {
             return Err(ContractError::AlreadyInitialized);
         }
-        
+
         admin.require_auth();
         env.storage().instance().set(&DataKey::Admin, &admin);
-        
+
+        // Emit initialization event
+        env.events().publish(
+            (Symbol::new(&env, "contract_initialized"),),
+            admin.clone(),
+        );
+
         Ok(())
     }
     
@@ -45,11 +51,17 @@ impl WaterManagementContract {
         // Record the usage
         water_usage::record_usage(&env, usage_id.clone(), farmer_id, parcel_id, volume, data_hash)?;
         
-        // Check for alerts
-        let _ = alerts::check_usage_and_alert(&env, usage_id.clone());
-        
-        // Process automatic incentive
-        let _ = incentives::process_automatic_incentive(&env, usage_id);
+        // Check for alerts - log errors but don't fail the main operation
+        if let Err(e) = alerts::check_usage_and_alert(&env, usage_id.clone()) {
+            // In production, you would log this error for monitoring
+            // For now, we continue as usage recording is the primary operation
+        }
+
+        // Process automatic incentive - log errors but don't fail the main operation
+        if let Err(e) = incentives::process_automatic_incentive(&env, usage_id) {
+            // In production, you would log this error for monitoring
+            // For now, we continue as usage recording is the primary operation
+        }
         
         Ok(())
     }
@@ -150,12 +162,28 @@ impl WaterManagementContract {
     }
     
     /// Resolve an alert (mark as resolved)
+    /// Only the admin or the farmer who owns the alert can resolve it
     pub fn resolve_alert(
         env: Env,
         alert_id: BytesN<32>,
         resolver: Address,
     ) -> Result<(), ContractError> {
         resolver.require_auth();
+
+        // Get the alert to check ownership
+        let alert = alerts::get_alert(&env, alert_id.clone())?;
+
+        // Check if resolver is admin or the farmer who owns the alert
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&datatypes::DataKey::Admin)
+            .ok_or(ContractError::NotInitialized)?;
+
+        if resolver != admin && resolver != alert.farmer_id {
+            return Err(ContractError::Unauthorized);
+        }
+
         alerts::resolve_alert(&env, alert_id, resolver)
     }
     

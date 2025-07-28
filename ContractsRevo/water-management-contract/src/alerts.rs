@@ -38,13 +38,24 @@ pub fn generate_alert(
     
     // Store the alert
     env.storage().persistent().set(&DataKey::Alert(alert_id.clone()), &alert);
-    
+
+    // Update farmer alerts index
+    let farmer_alerts_key = DataKey::FarmerAlerts(farmer_id.clone());
+    let mut farmer_alerts: Vec<BytesN<32>> = env
+        .storage()
+        .persistent()
+        .get(&farmer_alerts_key)
+        .unwrap_or_else(|| Vec::new(env));
+
+    farmer_alerts.push_back(alert_id.clone());
+    env.storage().persistent().set(&farmer_alerts_key, &farmer_alerts);
+
     // Emit alert generated event
     env.events().publish(
         (Symbol::new(env, "alert_generated"), farmer_id.clone()),
         (alert_id.clone(), parcel_id.clone(), message),
     );
-    
+
     Ok(())
 }
 
@@ -81,15 +92,21 @@ pub fn check_usage_and_alert(
     if daily_report.total_usage > threshold.daily_limit {
         let alert_id = generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "daily_exceeded");
         let message = String::from_str(env, "Daily water limit exceeded");
-        
-        let _ = generate_alert(
+
+        match generate_alert(
             env,
             alert_id,
             usage.farmer_id.clone(),
             usage.parcel_id.clone(),
             AlertType::ThresholdExceeded,
             message,
-        );
+        ) {
+            Ok(()) => {},
+            Err(ContractError::AlertAlreadyExists) => {
+                // Expected - alert already exists for this period
+            },
+            Err(e) => return Err(e),
+        }
     }
     
     // Check weekly usage
@@ -107,30 +124,42 @@ pub fn check_usage_and_alert(
     if weekly_report.total_usage > threshold.weekly_limit {
         let alert_id = generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "weekly_exceeded");
         let message = String::from_str(env, "Weekly water limit exceeded");
-        
-        let _ = generate_alert(
+
+        match generate_alert(
             env,
             alert_id,
             usage.farmer_id.clone(),
             usage.parcel_id.clone(),
             AlertType::ThresholdExceeded,
             message,
-        );
+        ) {
+            Ok(()) => {},
+            Err(ContractError::AlertAlreadyExists) => {
+                // Expected - alert already exists for this period
+            },
+            Err(e) => return Err(e),
+        }
     }
     
     // Check for excessive single usage (more than 50% of daily limit in one record)
     if usage.volume > threshold.daily_limit / 2 {
         let alert_id = generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "excessive_single");
         let message = String::from_str(env, "Excessive single usage detected");
-        
-        let _ = generate_alert(
+
+        match generate_alert(
             env,
             alert_id,
             usage.farmer_id.clone(),
             usage.parcel_id.clone(),
             AlertType::ExcessiveUsage,
             message,
-        );
+        ) {
+            Ok(()) => {},
+            Err(ContractError::AlertAlreadyExists) => {
+                // Expected - alert already exists for this period
+            },
+            Err(e) => return Err(e),
+        }
     }
     
     Ok(())
@@ -175,53 +204,42 @@ pub fn get_alert(env: &Env, alert_id: BytesN<32>) -> Result<Alert, ContractError
         .ok_or(ContractError::AlertNotFound)
 }
 
-/// Gets all unresolved alerts for a farmer
+/// Gets all alerts for a farmer
 pub fn get_farmer_alerts(env: &Env, farmer_id: Address, include_resolved: bool) -> Vec<Alert> {
-    // This is a simplified implementation - in a real system, you'd want to maintain
-    // an index of alerts per farmer for efficiency
-    let mut alerts = Vec::new(env);
-    
-    // Note: This is not efficient for large datasets. In production, you'd maintain
-    // separate indices for farmer alerts
-    // For now, we'll return an empty vector and rely on events for alert tracking
-    
-    alerts
+    let farmer_alerts_key = DataKey::FarmerAlerts(farmer_id.clone());
+    let alert_ids: Vec<BytesN<32>> = env
+        .storage()
+        .persistent()
+        .get(&farmer_alerts_key)
+        .unwrap_or_else(|| Vec::new(env));
+
+    let mut result = Vec::new(env);
+
+    for alert_id in alert_ids.iter() {
+        if let Ok(alert) = get_alert(env, alert_id.clone()) {
+            // Filter based on resolved status
+            if include_resolved || !alert.resolved {
+                result.push_back(alert);
+            }
+        }
+    }
+
+    result
 }
 
 /// Generates a deterministic alert ID based on farmer, parcel, and alert type
 fn generate_alert_id(env: &Env, farmer_id: &Address, parcel_id: &BytesN<32>, alert_suffix: &str) -> BytesN<32> {
-    // Create a simple hash-like ID by combining inputs
-    // In production, you'd use a proper hash function
-    let mut id_bytes = [0u8; 32];
-    
-    // Use timestamp and inputs to create unique ID
+    use soroban_sdk::Bytes;
+
     let timestamp = env.ledger().timestamp();
-    let timestamp_bytes = timestamp.to_be_bytes();
-    
-    // Copy timestamp bytes
-    id_bytes[0..8].copy_from_slice(&timestamp_bytes);
-    
-    // Add some bytes from farmer_id and parcel_id
-    let farmer_bytes = farmer_id.to_string().as_bytes();
-    let parcel_bytes = parcel_id.to_array();
-    
-    // Mix in some bytes (simplified approach)
-    for i in 0..8 {
-        if i < farmer_bytes.len() {
-            id_bytes[8 + i] = farmer_bytes[i];
-        }
-        if i < parcel_bytes.len() {
-            id_bytes[16 + i] = parcel_bytes[i];
-        }
-    }
-    
-    // Add suffix influence
-    let suffix_bytes = alert_suffix.as_bytes();
-    for i in 0..8 {
-        if i < suffix_bytes.len() {
-            id_bytes[24 + i] = suffix_bytes[i];
-        }
-    }
-    
-    BytesN::from_array(env, &id_bytes)
+    let mut data = Bytes::new(env);
+
+    // Combine all inputs into a single byte vector
+    data.extend_from_slice(&timestamp.to_be_bytes());
+    data.extend_from_slice(&farmer_id.to_string().as_bytes());
+    data.extend_from_slice(&parcel_id.to_array());
+    data.extend_from_slice(alert_suffix.as_bytes());
+
+    // Generate proper hash using Soroban's cryptographic functions
+    env.crypto().sha256(&data)
 }

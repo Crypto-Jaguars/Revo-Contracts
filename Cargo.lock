@@ -1600,6 +1600,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "water-management-contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "windows-core"
 version = "0.61.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -54,14 +54,19 @@ pub fn validate_data_hash(env: &Env, hash: &BytesN<32>) -> Result<(), ContractEr
 
 /// Calculates efficiency score based on usage vs threshold
 pub fn calculate_efficiency_score(usage: i128, threshold: i128) -> u32 {
-    if threshold <= 0 {
+    if threshold <= 0 || usage <= 0 {
         return 0;
     }
-    
-    let efficiency_ratio = (threshold as f64) / (usage as f64);
-    let score = (efficiency_ratio * 100.0).min(100.0).max(0.0) as u32;
-    
-    // Bonus points for being significantly under threshold
+
+    // Calculate efficiency score using integer arithmetic to avoid floating-point issues
+    // Score = (threshold * 100) / usage, clamped between 0 and 100
+    let score = if usage > 0 {
+        ((threshold * 100) / usage).min(100).max(0) as u32
+    } else {
+        100 // Perfect score if no usage
+    };
+
+    // Bonus points for being significantly under threshold (using 50% or less)
     if usage <= threshold / 2 {
         (score + 10).min(100)
     } else {
@@ -94,17 +99,19 @@ pub fn calculate_reward_amount(usage: i128, threshold: i128, base_reward: i128) 
 
 /// Checks if admin authorization is required and validates it
 pub fn require_admin_auth(env: &Env, caller: &Address) -> Result<(), ContractError> {
+    // Ensure the caller has signed the transaction before any further checks
+    caller.require_auth();
+
     let admin: Address = env
         .storage()
         .instance()
         .get(&DataKey::Admin)
         .ok_or(ContractError::NotInitialized)?;
-    
+
     if *caller != admin {
         return Err(ContractError::Unauthorized);
     }
-    
-    caller.require_auth();
+
     Ok(())
 }
 
