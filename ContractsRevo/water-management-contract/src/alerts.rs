@@ -1,5 +1,5 @@
+use crate::{datatypes::*, error::ContractError, incentives, utils, water_usage};
 use soroban_sdk::{Address, BytesN, Env, String, Symbol, Vec};
-use crate::{datatypes::*, error::ContractError, utils, water_usage, incentives};
 
 /// Generates alert for excessive water consumption
 pub fn generate_alert(
@@ -13,18 +13,22 @@ pub fn generate_alert(
     // Validate inputs
     utils::validate_identifier(env, &alert_id)?;
     utils::validate_identifier(env, &parcel_id)?;
-    
+
     if message.is_empty() {
         return Err(ContractError::InvalidInput);
     }
-    
+
     // Check if alert already exists
-    if env.storage().persistent().has(&DataKey::Alert(alert_id.clone())) {
+    if env
+        .storage()
+        .persistent()
+        .has(&DataKey::Alert(alert_id.clone()))
+    {
         return Err(ContractError::AlertAlreadyExists);
     }
-    
+
     let timestamp = env.ledger().timestamp();
-    
+
     // Create alert record
     let alert = Alert {
         alert_id: alert_id.clone(),
@@ -35,9 +39,11 @@ pub fn generate_alert(
         timestamp,
         resolved: false,
     };
-    
+
     // Store the alert
-    env.storage().persistent().set(&DataKey::Alert(alert_id.clone()), &alert);
+    env.storage()
+        .persistent()
+        .set(&DataKey::Alert(alert_id.clone()), &alert);
 
     // Update farmer alerts index
     let farmer_alerts_key = DataKey::FarmerAlerts(farmer_id.clone());
@@ -48,7 +54,9 @@ pub fn generate_alert(
         .unwrap_or_else(|| Vec::new(env));
 
     farmer_alerts.push_back(alert_id.clone());
-    env.storage().persistent().set(&farmer_alerts_key, &farmer_alerts);
+    env.storage()
+        .persistent()
+        .set(&farmer_alerts_key, &farmer_alerts);
 
     // Emit alert generated event
     env.events().publish(
@@ -60,27 +68,24 @@ pub fn generate_alert(
 }
 
 /// Checks water usage against thresholds and generates alerts if needed
-pub fn check_usage_and_alert(
-    env: &Env,
-    usage_id: BytesN<32>,
-) -> Result<(), ContractError> {
+pub fn check_usage_and_alert(env: &Env, usage_id: BytesN<32>) -> Result<(), ContractError> {
     // Get the water usage record
     let usage = water_usage::get_usage(env, usage_id.clone())?;
-    
+
     // Get threshold for the parcel
     let threshold_result = incentives::get_threshold(env, usage.parcel_id.clone());
     if threshold_result.is_err() {
         // No threshold set - cannot check for alerts
         return Ok(());
     }
-    
+
     let threshold = threshold_result.unwrap();
-    let current_time = env.ledger().timestamp();
-    
+    let _current_time = env.ledger().timestamp();
+
     // Check daily usage
     let day_start = utils::get_day_start(usage.timestamp);
     let day_end = day_start + 86400; // 24 hours
-    
+
     let daily_report = water_usage::get_usage_report(
         env,
         usage.farmer_id.clone(),
@@ -88,7 +93,7 @@ pub fn check_usage_and_alert(
         day_start,
         day_end,
     )?;
-    
+
     if daily_report.total_usage > threshold.daily_limit {
         let alert_id = generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "daily_exceeded");
         let message = String::from_str(env, "Daily water limit exceeded");
@@ -101,18 +106,18 @@ pub fn check_usage_and_alert(
             AlertType::ThresholdExceeded,
             message,
         ) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(ContractError::AlertAlreadyExists) => {
                 // Expected - alert already exists for this period
-            },
+            }
             Err(e) => return Err(e),
         }
     }
-    
+
     // Check weekly usage
     let week_start = utils::get_week_start(usage.timestamp);
     let week_end = week_start + 604800; // 7 days
-    
+
     let weekly_report = water_usage::get_usage_report(
         env,
         usage.farmer_id.clone(),
@@ -120,9 +125,10 @@ pub fn check_usage_and_alert(
         week_start,
         week_end,
     )?;
-    
+
     if weekly_report.total_usage > threshold.weekly_limit {
-        let alert_id = generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "weekly_exceeded");
+        let alert_id =
+            generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "weekly_exceeded");
         let message = String::from_str(env, "Weekly water limit exceeded");
 
         match generate_alert(
@@ -133,17 +139,18 @@ pub fn check_usage_and_alert(
             AlertType::ThresholdExceeded,
             message,
         ) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(ContractError::AlertAlreadyExists) => {
                 // Expected - alert already exists for this period
-            },
+            }
             Err(e) => return Err(e),
         }
     }
-    
+
     // Check for excessive single usage (more than 50% of daily limit in one record)
     if usage.volume > threshold.daily_limit / 2 {
-        let alert_id = generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "excessive_single");
+        let alert_id =
+            generate_alert_id(env, &usage.farmer_id, &usage.parcel_id, "excessive_single");
         let message = String::from_str(env, "Excessive single usage detected");
 
         match generate_alert(
@@ -154,14 +161,14 @@ pub fn check_usage_and_alert(
             AlertType::ExcessiveUsage,
             message,
         ) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(ContractError::AlertAlreadyExists) => {
                 // Expected - alert already exists for this period
-            },
+            }
             Err(e) => return Err(e),
         }
     }
-    
+
     Ok(())
 }
 
@@ -177,22 +184,24 @@ pub fn resolve_alert(
         .persistent()
         .get(&DataKey::Alert(alert_id.clone()))
         .ok_or(ContractError::AlertNotFound)?;
-    
+
     // Check if already resolved
     if alert.resolved {
         return Ok(());
     }
-    
+
     // Mark as resolved
     alert.resolved = true;
-    env.storage().persistent().set(&DataKey::Alert(alert_id.clone()), &alert);
-    
+    env.storage()
+        .persistent()
+        .set(&DataKey::Alert(alert_id.clone()), &alert);
+
     // Emit alert resolved event
     env.events().publish(
         (Symbol::new(env, "alert_resolved"), resolver),
         (alert_id, alert.farmer_id.clone()),
     );
-    
+
     Ok(())
 }
 
@@ -228,18 +237,34 @@ pub fn get_farmer_alerts(env: &Env, farmer_id: Address, include_resolved: bool) 
 }
 
 /// Generates a deterministic alert ID based on farmer, parcel, and alert type
-fn generate_alert_id(env: &Env, farmer_id: &Address, parcel_id: &BytesN<32>, alert_suffix: &str) -> BytesN<32> {
-    use soroban_sdk::Bytes;
+fn generate_alert_id(
+    env: &Env,
+    _farmer_id: &Address,
+    parcel_id: &BytesN<32>,
+    alert_suffix: &str,
+) -> BytesN<32> {
+    // Create a simple deterministic ID by combining inputs
+    // Use a simplified approach that works with Soroban SDK
+    let mut id_bytes = [0u8; 32];
 
+    // Use timestamp and inputs to create unique ID
     let timestamp = env.ledger().timestamp();
-    let mut data = Bytes::new(env);
+    let timestamp_bytes = timestamp.to_be_bytes();
 
-    // Combine all inputs into a single byte vector
-    data.extend_from_slice(&timestamp.to_be_bytes());
-    data.extend_from_slice(&farmer_id.to_string().as_bytes());
-    data.extend_from_slice(&parcel_id.to_array());
-    data.extend_from_slice(alert_suffix.as_bytes());
+    // Copy timestamp bytes
+    id_bytes[0..8].copy_from_slice(&timestamp_bytes);
 
-    // Generate proper hash using Soroban's cryptographic functions
-    env.crypto().sha256(&data)
+    // Add some bytes from parcel_id (which is already BytesN<32>)
+    let parcel_bytes = parcel_id.to_array();
+    id_bytes[8..(16 + 8)].copy_from_slice(&parcel_bytes[..16]);
+
+    // Add suffix influence
+    let suffix_bytes = alert_suffix.as_bytes();
+    for i in 0..8 {
+        if i < suffix_bytes.len() {
+            id_bytes[24 + i] = suffix_bytes[i];
+        }
+    }
+
+    BytesN::from_array(env, &id_bytes)
 }

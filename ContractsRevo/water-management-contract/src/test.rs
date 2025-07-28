@@ -1,8 +1,8 @@
 #![cfg(test)]
 
 use soroban_sdk::{
-    testutils::{Address as _, Ledger},
-    Address, BytesN, Env, String,
+    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
+    Address, BytesN, Env, String, Symbol,
 };
 
 use crate::{datatypes::*, WaterManagementContract};
@@ -47,6 +47,9 @@ fn create_data_hash(env: &Env, suffix: u8) -> BytesN<32> {
 fn test_initialize_contract() {
     let (env, contract_id, admin, _) = setup_test();
 
+    // Mock authorization for admin
+    env.mock_all_auths();
+
     env.as_contract(&contract_id, || {
         let result = WaterManagementContract::initialize(env.clone(), admin.clone());
         assert!(result.is_ok());
@@ -60,6 +63,9 @@ fn test_initialize_contract() {
 #[test]
 fn test_record_water_usage() {
     let (env, contract_id, admin, farmer) = setup_test();
+
+    // Mock authorization for all calls
+    env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
         // Initialize contract
@@ -94,6 +100,9 @@ fn test_record_water_usage() {
 fn test_set_and_get_threshold() {
     let (env, contract_id, admin, _) = setup_test();
 
+    // Mock authorization for all calls
+    env.mock_all_auths();
+
     env.as_contract(&contract_id, || {
         // Initialize contract
         let _ = WaterManagementContract::initialize(env.clone(), admin.clone());
@@ -125,6 +134,9 @@ fn test_set_and_get_threshold() {
 fn test_incentive_system() {
     let (env, contract_id, admin, farmer) = setup_test();
 
+    // Mock authorization for all calls
+    env.mock_all_auths();
+
     env.as_contract(&contract_id, || {
         // Initialize contract
         let _ = WaterManagementContract::initialize(env.clone(), admin.clone());
@@ -155,11 +167,8 @@ fn test_incentive_system() {
         );
 
         // Issue incentive
-        let result = WaterManagementContract::issue_incentive(
-            env.clone(),
-            usage_id.clone(),
-            BASE_REWARD,
-        );
+        let result =
+            WaterManagementContract::issue_incentive(env.clone(), usage_id.clone(), BASE_REWARD);
         assert!(result.is_ok());
 
         // Verify incentive was created
@@ -174,6 +183,9 @@ fn test_incentive_system() {
 #[test]
 fn test_usage_report() {
     let (env, contract_id, admin, farmer) = setup_test();
+
+    // Mock authorization for all calls
+    env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
         // Initialize contract
@@ -218,6 +230,9 @@ fn test_usage_report() {
 fn test_alert_generation() {
     let (env, contract_id, admin, farmer) = setup_test();
 
+    // Mock authorization for all calls
+    env.mock_all_auths();
+
     env.as_contract(&contract_id, || {
         // Initialize contract
         let _ = WaterManagementContract::initialize(env.clone(), admin.clone());
@@ -246,11 +261,8 @@ fn test_alert_generation() {
         assert!(!alert_data.resolved);
 
         // Resolve alert
-        let resolve_result = WaterManagementContract::resolve_alert(
-            env.clone(),
-            alert_id.clone(),
-            farmer.clone(),
-        );
+        let resolve_result =
+            WaterManagementContract::resolve_alert(env.clone(), alert_id.clone(), farmer.clone());
         assert!(resolve_result.is_ok());
 
         // Verify alert is resolved
@@ -263,6 +275,9 @@ fn test_alert_generation() {
 #[test]
 fn test_farmer_rewards_calculation() {
     let (env, contract_id, admin, farmer) = setup_test();
+
+    // Mock authorization for all calls
+    env.mock_all_auths();
 
     env.as_contract(&contract_id, || {
         // Initialize contract

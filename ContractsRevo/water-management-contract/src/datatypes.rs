@@ -24,8 +24,8 @@ pub struct Incentive {
 #[contracttype]
 pub struct WaterThreshold {
     pub parcel_id: BytesN<32>,
-    pub daily_limit: i128, // Daily water limit in liters
-    pub weekly_limit: i128, // Weekly water limit in liters
+    pub daily_limit: i128,   // Daily water limit in liters
+    pub weekly_limit: i128,  // Weekly water limit in liters
     pub monthly_limit: i128, // Monthly water limit in liters
 }
 
@@ -54,7 +54,8 @@ pub enum AlertType {
 #[contracttype]
 pub struct UsageReport {
     pub farmer_id: Address,
-    pub parcel_id: Option<BytesN<32>>, // None for farmer-wide report
+    pub parcel_id: BytesN<32>, // Use zero bytes for farmer-wide report
+    pub is_farmer_wide: bool,  // true if this is a farmer-wide report
     pub total_usage: i128,
     pub period_start: u64,
     pub period_end: u64,

@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, BytesN, Env, Symbol, Vec};
 use crate::{datatypes::*, error::ContractError, utils, water_usage};
+use soroban_sdk::{Address, BytesN, Env, Symbol, Vec};
 
 /// Issues incentive rewards for efficient water usage
 pub fn issue_incentive(
@@ -9,34 +9,35 @@ pub fn issue_incentive(
 ) -> Result<(), ContractError> {
     // Get the water usage record
     let usage = water_usage::get_usage(env, usage_id.clone())?;
-    
+
     // Check if incentive already exists for this usage
     let incentive_key = DataKey::Incentive(usage_id.clone());
     if env.storage().persistent().has(&incentive_key) {
         return Err(ContractError::IncentiveAlreadyExists);
     }
-    
+
     // Get threshold for the parcel
     let threshold = env
         .storage()
         .persistent()
         .get::<DataKey, WaterThreshold>(&DataKey::Threshold(usage.parcel_id.clone()))
         .ok_or(ContractError::ThresholdNotFound)?;
-    
+
     // Check if usage qualifies for incentive
     if !utils::qualifies_for_incentive(usage.volume, threshold.daily_limit) {
         return Err(ContractError::InsufficientEfficiency);
     }
-    
+
     // Calculate reward amount based on efficiency
-    let reward_amount = utils::calculate_reward_amount(usage.volume, threshold.daily_limit, base_reward);
-    
+    let reward_amount =
+        utils::calculate_reward_amount(usage.volume, threshold.daily_limit, base_reward);
+
     if reward_amount <= 0 {
         return Err(ContractError::InvalidRewardAmount);
     }
-    
+
     let timestamp = env.ledger().timestamp();
-    
+
     // Create incentive record
     let incentive = Incentive {
         farmer_id: usage.farmer_id.clone(),
@@ -44,10 +45,10 @@ pub fn issue_incentive(
         timestamp,
         usage_id: usage_id.clone(),
     };
-    
+
     // Store the incentive
     env.storage().persistent().set(&incentive_key, &incentive);
-    
+
     // Update farmer's incentives list
     let farmer_incentives_key = DataKey::FarmerIncentives(usage.farmer_id.clone());
     let mut farmer_incentives: Vec<BytesN<32>> = env
@@ -55,22 +56,30 @@ pub fn issue_incentive(
         .persistent()
         .get(&farmer_incentives_key)
         .unwrap_or_else(|| Vec::new(env));
-    
+
     farmer_incentives.push_back(usage_id.clone());
-    env.storage().persistent().set(&farmer_incentives_key, &farmer_incentives);
-    
+    env.storage()
+        .persistent()
+        .set(&farmer_incentives_key, &farmer_incentives);
+
     // Emit incentive issued event
     env.events().publish(
-        (Symbol::new(env, "incentive_issued"), usage.farmer_id.clone()),
+        (
+            Symbol::new(env, "incentive_issued"),
+            usage.farmer_id.clone(),
+        ),
         (usage_id.clone(), reward_amount, timestamp),
     );
-    
+
     // Emit loyalty token reward event for integration
     env.events().publish(
-        (Symbol::new(env, "loyalty_reward_earned"), usage.farmer_id.clone()),
+        (
+            Symbol::new(env, "loyalty_reward_earned"),
+            usage.farmer_id.clone(),
+        ),
         (usage.parcel_id.clone(), reward_amount),
     );
-    
+
     Ok(())
 }
 
@@ -89,14 +98,18 @@ pub fn get_farmer_incentives(env: &Env, farmer_id: Address) -> Vec<Incentive> {
         .persistent()
         .get(&DataKey::FarmerIncentives(farmer_id))
         .unwrap_or_else(|| Vec::new(env));
-    
+
     let mut incentives = Vec::new(env);
     for usage_id in incentive_usage_ids.iter() {
-        if let Some(incentive) = env.storage().persistent().get::<DataKey, Incentive>(&DataKey::Incentive(usage_id.clone())) {
+        if let Some(incentive) = env
+            .storage()
+            .persistent()
+            .get::<DataKey, Incentive>(&DataKey::Incentive(usage_id.clone()))
+        {
             incentives.push_back(incentive);
         }
     }
-    
+
     incentives
 }
 
@@ -110,27 +123,24 @@ pub fn calculate_farmer_rewards(
     if period_start >= period_end {
         return Err(ContractError::InvalidTimestamp);
     }
-    
+
     let incentives = get_farmer_incentives(env, farmer_id);
     let mut total_rewards = 0i128;
-    
+
     for incentive in incentives.iter() {
         if incentive.timestamp >= period_start && incentive.timestamp <= period_end {
             total_rewards += incentive.reward_amount;
         }
     }
-    
+
     Ok(total_rewards)
 }
 
 /// Processes automatic incentive for a water usage record
-pub fn process_automatic_incentive(
-    env: &Env,
-    usage_id: BytesN<32>,
-) -> Result<(), ContractError> {
+pub fn process_automatic_incentive(env: &Env, usage_id: BytesN<32>) -> Result<(), ContractError> {
     // Default base reward amount (can be made configurable)
     const DEFAULT_BASE_REWARD: i128 = 100;
-    
+
     // Try to issue incentive - will fail if not qualified or already exists
     match issue_incentive(env, usage_id.clone(), DEFAULT_BASE_REWARD) {
         Ok(()) => {
@@ -164,35 +174,37 @@ pub fn set_threshold(
 ) -> Result<(), ContractError> {
     // Require admin authorization
     utils::require_admin_auth(env, &admin)?;
-    
+
     // Validate inputs
     utils::validate_identifier(env, &parcel_id)?;
-    
+
     if daily_limit <= 0 || weekly_limit <= 0 || monthly_limit <= 0 {
         return Err(ContractError::InvalidThreshold);
     }
-    
+
     // Ensure logical consistency (weekly >= daily * 7, monthly >= weekly * 4)
     if weekly_limit < daily_limit * 7 || monthly_limit < weekly_limit * 4 {
         return Err(ContractError::InvalidThreshold);
     }
-    
+
     let threshold = WaterThreshold {
         parcel_id: parcel_id.clone(),
         daily_limit,
         weekly_limit,
         monthly_limit,
     };
-    
+
     // Store the threshold
-    env.storage().persistent().set(&DataKey::Threshold(parcel_id.clone()), &threshold);
-    
+    env.storage()
+        .persistent()
+        .set(&DataKey::Threshold(parcel_id.clone()), &threshold);
+
     // Emit threshold set event
     env.events().publish(
         (Symbol::new(env, "threshold_set"), admin),
         (parcel_id, daily_limit, weekly_limit, monthly_limit),
     );
-    
+
     Ok(())
 }
 
