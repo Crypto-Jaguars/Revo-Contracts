@@ -1,209 +1,200 @@
-use soroban_sdk::{Env, String, Vec, BytesN, symbol_short, Map};
-use crate::{YieldPrediction, Crop, utils};
+use crate::types::{Crop, CropYieldError, DataKey, DataSource, YieldPrediction};
+use crate::utils;
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Vec};
 
-const PREDICTIONS: symbol_short!("PRED") = symbol_short!("PRED");
-const CROPS: symbol_short!("CROPS") = symbol_short!("CROPS");
+#[contract]
+pub struct CropYieldPredictionContract;
 
-/// Generate a yield prediction based on oracle data
-pub fn generate_prediction(
-    env: &Env,
-    crop_id: BytesN<32>,
-    region: String,
-    weather_data: Vec<i128>,
-    soil_data: Vec<i128>,
-) -> BytesN<32> {
-    // Validate input data
-    utils::validate_weather_data(&weather_data);
-    utils::validate_soil_data(&soil_data);
-
-    // Get crop information
-    let crop = get_crop(env, &crop_id)
-        .expect("Crop not registered");
-
-    // Calculate prediction using historical data and current conditions
-    let predicted_yield = calculate_yield_prediction(&crop, &weather_data, &soil_data);
-
-    // Generate prediction ID
-    let prediction_id = utils::generate_prediction_id(env, &crop_id, &region);
-
-    // Create off-chain data hash
-    let off_chain_data = create_off_chain_data(&weather_data, &soil_data);
-    let data_hash = utils::hash_data(&off_chain_data);
-
-    // Create prediction
-    let prediction = YieldPrediction {
-        prediction_id: prediction_id.clone(),
-        crop_id,
-        region: region.clone(),
-        predicted_yield,
-        data_hash,
-        timestamp: env.ledger().timestamp(),
-    };
-
-    // Store prediction
-    let mut predictions: Map<BytesN<32>, YieldPrediction> = env
-        .storage()
-        .persistent()
-        .get(&PREDICTIONS)
-        .unwrap_or(Map::new(env));
-    
-    predictions.set(prediction_id.clone(), prediction);
-    env.storage().persistent().set(&PREDICTIONS, &predictions);
-
-    // Store off-chain data (IPFS hash would be returned here)
-    store_off_chain_data(&off_chain_data);
-
-    // Emit event
-    env.events().publish(
-        (symbol_short!("predict"), crop_id),
-        (prediction_id.clone(), predicted_yield, region)
-    );
-
-    prediction_id
-}
-
-/// Register a crop with historical yield data
-pub fn register_crop(
-    env: &Env,
-    crop_id: BytesN<32>,
-    name: String,
-    historical_yields: Vec<i128>,
-) {
-    utils::validate_historical_yields(&historical_yields);
-
-    let crop = Crop {
-        crop_id: crop_id.clone(),
-        name: name.clone(),
-        historical_yields,
-    };
-
-    let mut crops: Map<BytesN<32>, Crop> = env
-        .storage()
-        .persistent()
-        .get(&CROPS)
-        .unwrap_or(Map::new(env));
-    
-    crops.set(crop_id.clone(), crop);
-    env.storage().persistent().set(&CROPS, &crops);
-
-    // Emit event
-    env.events().publish(
-        (symbol_short!("crop_reg"), crop_id),
-        name
-    );
-}
-
-/// Get a specific yield prediction
-pub fn get_prediction(env: &Env, prediction_id: BytesN<32>) -> Option<YieldPrediction> {
-    let predictions: Map<BytesN<32>, YieldPrediction> = env
-        .storage()
-        .persistent()
-        .get(&PREDICTIONS)
-        .unwrap_or(Map::new(env));
-    
-    predictions.get(prediction_id)
-}
-
-/// Get crop information
-pub fn get_crop(env: &Env, crop_id: &BytesN<32>) -> Option<Crop> {
-    let crops: Map<BytesN<32>, Crop> = env
-        .storage()
-        .persistent()
-        .get(&CROPS)
-        .unwrap_or(Map::new(env));
-    
-    crops.get(crop_id.clone())
-}
-
-// Private helper functions
-
-fn calculate_yield_prediction(
-    crop: &Crop,
-    weather_data: &Vec<i128>,
-    soil_data: &Vec<i128>,
-) -> i128 {
-    // Calculate historical average
-    let historical_avg = if crop.historical_yields.len() > 0 {
-        crop.historical_yields.iter().sum::<i128>() / crop.historical_yields.len() as i128
-    } else {
-        0
-    };
-
-    // Weather impact factor (simplified model)
-    let weather_factor = calculate_weather_impact(weather_data);
-    
-    // Soil impact factor (simplified model)
-    let soil_factor = calculate_soil_impact(soil_data);
-
-    // Combined prediction (baseline + adjustments)
-    let predicted_yield = historical_avg + (historical_avg * weather_factor / 100) + (historical_avg * soil_factor / 100);
-    
-    // Ensure non-negative yield
-    if predicted_yield < 0 { 0 } else { predicted_yield }
-}
-
-fn calculate_weather_impact(weather_data: &Vec<i128>) -> i128 {
-    // Simplified weather impact calculation
-    // weather_data: [temperature, humidity, rainfall, sunshine_hours]
-    if weather_data.len() < 4 {
-        return 0;
+#[contractimpl]
+impl CropYieldPredictionContract {
+    /// Initialize the contract with admin
+    pub fn initialize(env: Env, admin: Address) -> Result<(), CropYieldError> {
+        env.storage().instance().set(&DataKey::ADMIN, &admin);
+        Ok(())
     }
 
-    let temperature = weather_data.get(0).unwrap_or(0);
-    let humidity = weather_data.get(1).unwrap_or(0);
-    let rainfall = weather_data.get(2).unwrap_or(0);
-    let sunshine = weather_data.get(3).unwrap_or(0);
+    /// Register a new crop with historical yield data
+    pub fn register_crop(
+        env: Env,
+        crop_id: BytesN<32>,
+        name: String,
+        historical_yields: Vec<i128>,
+    ) -> Result<BytesN<32>, CropYieldError> {
+        let admin: Address = match env.storage().instance().get(&DataKey::ADMIN) {
+            Some(admin) => admin,
+            None => return Err(CropYieldError::ContractNotInitialized),
+        };
+        admin.require_auth();
 
-    // Optimal ranges (simplified)
-    let temp_impact = if temperature >= 18 && temperature <= 25 { 10 } else { -5 };
-    let humidity_impact = if humidity >= 60 && humidity <= 80 { 5 } else { -3 };
-    let rain_impact = if rainfall >= 500 && rainfall <= 1000 { 15 } else { -10 };
-    let sun_impact = if sunshine >= 6 && sunshine <= 8 { 8 } else { -5 };
+        if name.len() == 0 || historical_yields.is_empty() {
+            return Err(CropYieldError::InvalidInput);
+        }
 
-    temp_impact + humidity_impact + rain_impact + sun_impact
-}
+        let crop = Crop {
+            crop_id: crop_id.clone(),
+            name,
+            historical_yields,
+        };
 
-fn calculate_soil_impact(soil_data: &Vec<i128>) -> i128 {
-    // Simplified soil impact calculation
-    // soil_data: [ph_level, nitrogen, phosphorus, potassium, organic_matter]
-    if soil_data.len() < 5 {
-        return 0;
+        env.storage().persistent().set(&crop_id, &crop);
+
+        // Store crop ID in crops list
+        let mut crops: Vec<BytesN<32>> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::CROPS)
+            .unwrap_or(Vec::new(&env));
+        crops.push_back(crop_id.clone());
+        env.storage().persistent().set(&DataKey::CROPS, &crops);
+
+        Ok(crop_id)
     }
 
-    let ph = soil_data.get(0).unwrap_or(0);
-    let nitrogen = soil_data.get(1).unwrap_or(0);
-    let phosphorus = soil_data.get(2).unwrap_or(0);
-    let potassium = soil_data.get(3).unwrap_or(0);
-    let organic_matter = soil_data.get(4).unwrap_or(0);
+    /// Generate a yield prediction based on oracle data
+    pub fn generate_prediction(
+        env: Env,
+        crop_id: BytesN<32>,
+        region: String,
+        data_source: DataSource,
+    ) -> Result<BytesN<32>, CropYieldError> {
+        if region.len() == 0 {
+            return Err(CropYieldError::InvalidInput);
+        }
 
-    // Optimal ranges (simplified, values scaled by 10)
-    let ph_impact = if ph >= 60 && ph <= 75 { 8 } else { -4 };
-    let n_impact = if nitrogen >= 20 && nitrogen <= 40 { 12 } else { -6 };
-    let p_impact = if phosphorus >= 15 && phosphorus <= 30 { 8 } else { -4 };
-    let k_impact = if potassium >= 100 && potassium <= 200 { 10 } else { -5 };
-    let om_impact = if organic_matter >= 25 && organic_matter <= 50 { 15 } else { -8 };
+        let crop: Crop = match env.storage().persistent().get(&crop_id) {
+            Some(crop) => crop,
+            None => return Err(CropYieldError::CropNotFound),
+        };
 
-    ph_impact + n_impact + p_impact + k_impact + om_impact
-}
+        let prediction_id = utils::generate_prediction_id(&env, &crop_id);
+        let data_hash = utils::hash_data_source(&env, &data_source);
+        let predicted_yield = utils::calculate_yield_prediction(&crop, &data_source);
 
-fn create_off_chain_data(weather_data: &Vec<i128>, soil_data: &Vec<i128>) -> Vec<i128> {
-    let mut combined_data = Vec::new(&env);
-    
-    // Add weather data
-    for i in 0..weather_data.len() {
-        combined_data.push_back(weather_data.get(i).unwrap_or(0));
+        let prediction = YieldPrediction {
+            prediction_id: prediction_id.clone(),
+            crop_id,
+            region,
+            predicted_yield,
+            data_hash,
+            timestamp: env.ledger().timestamp(),
+        };
+
+        env.storage().persistent().set(&prediction_id, &prediction);
+
+        let mut predictions: Vec<BytesN<32>> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PREDICTIONS)
+            .unwrap_or(Vec::new(&env));
+        predictions.push_back(prediction_id.clone());
+        env.storage()
+            .persistent()
+            .set(&DataKey::PREDICTIONS, &predictions);
+
+        Ok(prediction_id)
     }
-    
-    // Add soil data
-    for i in 0..soil_data.len() {
-        combined_data.push_back(soil_data.get(i).unwrap_or(0));
-    }
-    
-    combined_data
-}
 
-fn store_off_chain_data(data: &Vec<i128>) {
-    // In production, this would integrate with IPFS
-    // For now, we'll just log the data size
-    // The hash is what gets stored on-chain
+    /// Get a specific yield prediction
+    pub fn get_prediction(
+        env: Env,
+        prediction_id: BytesN<32>,
+    ) -> Result<YieldPrediction, CropYieldError> {
+        match env.storage().persistent().get(&prediction_id) {
+            Some(prediction) => Ok(prediction),
+            None => Err(CropYieldError::PredictionNotFound),
+        }
+    }
+
+    /// List all predictions for a specific crop
+    pub fn list_predictions_by_crop(
+        env: Env,
+        crop_id: BytesN<32>,
+    ) -> Result<Vec<YieldPrediction>, CropYieldError> {
+        let predictions_ids: Vec<BytesN<32>> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PREDICTIONS)
+            .unwrap_or(Vec::new(&env));
+
+        let mut crop_predictions = Vec::new(&env);
+
+        for pred_id in predictions_ids.iter() {
+            if let Ok(prediction) = Self::get_prediction(env.clone(), pred_id) {
+                if prediction.crop_id == crop_id {
+                    crop_predictions.push_back(prediction);
+                }
+            }
+        }
+
+        Ok(crop_predictions)
+    }
+
+    /// List all predictions for a specific region
+    pub fn list_predictions_by_region(
+        env: Env,
+        region: String,
+    ) -> Result<Vec<YieldPrediction>, CropYieldError> {
+        if region.len() == 0 {
+            return Err(CropYieldError::InvalidInput);
+        }
+
+        let predictions_ids: Vec<BytesN<32>> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PREDICTIONS)
+            .unwrap_or(Vec::new(&env));
+
+        let mut region_predictions = Vec::new(&env);
+
+        for pred_id in predictions_ids.iter() {
+            if let Ok(prediction) = Self::get_prediction(env.clone(), pred_id) {
+                if prediction.region == region {
+                    region_predictions.push_back(prediction);
+                }
+            }
+        }
+
+        Ok(region_predictions)
+    }
+
+    /// Update data source (admin only)
+    pub fn update_data_source(
+        env: Env,
+        prediction_id: BytesN<32>,
+        new_data_source: DataSource,
+    ) -> Result<BytesN<32>, CropYieldError> {
+        let admin: Address = match env.storage().instance().get(&DataKey::ADMIN) {
+            Some(admin) => admin,
+            None => return Err(CropYieldError::ContractNotInitialized),
+        };
+        admin.require_auth();
+
+        let mut prediction: YieldPrediction = match env.storage().persistent().get(&prediction_id) {
+            Some(prediction) => prediction,
+            None => return Err(CropYieldError::PredictionNotFound),
+        };
+
+        // Update data hash
+        prediction.data_hash = utils::hash_data_source(&env, &new_data_source);
+        prediction.timestamp = env.ledger().timestamp();
+
+        // Recalculate prediction
+        let crop: Crop = match env.storage().persistent().get(&prediction.crop_id) {
+            Some(crop) => crop,
+            None => return Err(CropYieldError::CropNotFound),
+        };
+        prediction.predicted_yield = utils::calculate_yield_prediction(&crop, &new_data_source);
+
+        env.storage().persistent().set(&prediction_id, &prediction);
+
+        Ok(prediction_id)
+    }
+
+    /// Get crop information
+    pub fn get_crop(env: Env, crop_id: BytesN<32>) -> Result<Crop, CropYieldError> {
+        match env.storage().persistent().get(&crop_id) {
+            Some(crop) => Ok(crop),
+            None => Err(CropYieldError::CropNotFound),
+        }
+    }
 }
