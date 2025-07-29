@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, testutils::BytesN as _, Address, BytesN, Env};
+use soroban_sdk::{contracttype, prng, Address, BytesN, Env};
 
 use crate::utils;
 
@@ -32,7 +32,11 @@ pub fn create_campaign(
     utils::validate_amount(goal_amount);
     utils::validate_deadline(env.ledger().timestamp(), deadline);
 
-    let campaign_id = BytesN::random(&env);
+    // Generate random bytes for the campaign ID
+    let prng = env.prng();
+    let mut random_bytes = [0u8; 32];
+    prng.fill(&mut random_bytes);
+    let campaign_id = BytesN::from_array(&env, &random_bytes);
 
     let campaign = Campaign {
         campaign_id: campaign_id.clone(),
