@@ -3,7 +3,12 @@ use soroban_sdk::{Address, Env, Map, String, Vec};
 
 #[allow(dead_code)]
 pub trait Membership {
-    fn register_member(env: Env, member: Address, name: String, role: String) -> Result<(), CooperativeError>;
+    fn register_member(
+        env: Env,
+        member: Address,
+        name: String,
+        role: String,
+    ) -> Result<(), CooperativeError>;
     fn verify_member(env: Env, admin: Address, address: Address) -> Result<(), CooperativeError>;
     fn track_contribution(env: Env, address: Address, amount: u32) -> Result<(), CooperativeError>;
     fn update_reputation(

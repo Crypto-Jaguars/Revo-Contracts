@@ -140,9 +140,10 @@ pub fn complete_rental(env: &Env, equipment_id: BytesN<32>) {
     // Find and update the rental in history
     for i in 0..eq_history.len() {
         let mut history_rental: Rental = eq_history.get(i).unwrap();
-        if history_rental.equipment_id == equipment_id 
+        if history_rental.equipment_id == equipment_id
             && history_rental.renter == rental.renter
-            && history_rental.start_date == rental.start_date {
+            && history_rental.start_date == rental.start_date
+        {
             history_rental.status = RentalStatus::Completed;
             eq_history.set(i, history_rental);
             break;
@@ -177,7 +178,7 @@ pub fn cancel_rental(env: &Env, equipment_id: BytesN<32>) {
         panic!("Only pending rentals can be cancelled");
     }
     rental.status = RentalStatus::Cancelled;
-    
+
     // Update the rental in history with cancelled status
     let mut eq_history = env
         .storage()
@@ -197,7 +198,7 @@ pub fn cancel_rental(env: &Env, equipment_id: BytesN<32>) {
         &(RENTAL_HISTORY_BY_EQUIPMENT, equipment_id.clone()),
         &eq_history,
     );
-    
+
     // Update user history as well
     let mut user_history = env
         .storage()
@@ -213,8 +214,11 @@ pub fn cancel_rental(env: &Env, equipment_id: BytesN<32>) {
             break;
         }
     }
-    env.storage().persistent().set(&(RENTAL_HISTORY_BY_USER, rental.renter.clone()), &user_history);
-    
+    env.storage().persistent().set(
+        &(RENTAL_HISTORY_BY_USER, rental.renter.clone()),
+        &user_history,
+    );
+
     rental_map.set(equipment_id.clone(), rental);
     env.storage().persistent().set(&RENTAL_STORAGE, &rental_map);
 }
