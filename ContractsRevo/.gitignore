@@ -7,3 +7,6 @@ target
 
 # Test snapshots
 test_snapshots
+
+# DS Store
+.DS_Store
