@@ -84,8 +84,8 @@ pub fn update_weighted_rating(env: Env, seller: Address, rating: u32, weight: u3
     );
 }
 
-// calculates the seller's weighted rating
-pub fn calculate_weighted_rating(env: Env, seller: Address) -> f32 {
+// calculates the seller's weighted rating (returns value scaled by 100 to avoid floating point)
+pub fn calculate_weighted_rating(env: Env, seller: Address) -> u32 {
     let key = DataKey::WeightedRating(seller.clone());
     // Fetch existing total weighted rating and total weight or initialize to zero
     let (total_weighted_rating, total_weight): (u32, u32) = match env.storage().instance().get(&key)
@@ -99,15 +99,15 @@ pub fn calculate_weighted_rating(env: Env, seller: Address) -> f32 {
         panic!("No rating available");
     }
 
-    // Compute weighted rating
-    let weighted_rating = (total_weighted_rating / total_weight) as f32;
+    // Compute weighted rating (multiply by 100 to preserve precision without floating point)
+    let weighted_rating = (total_weighted_rating * 100) / total_weight;
 
     env.events().publish(
         (
             Symbol::new(&env, "calculated_weighted_rating"),
             seller.clone(),
         ),
-        weighted_rating as u32,
+        weighted_rating,
     );
 
     weighted_rating

@@ -11,16 +11,17 @@ pub struct ReputationRecord {
 
 // Calculates the reputation score based on the weighted rating
 pub fn reputation_score_calculate(env: Env, seller: Address) -> u32 {
-    // fetch the weighted rating for the seller
-    let x = crate::rating::calculate_weighted_rating(env, seller);
+    // fetch the weighted rating for the seller (scaled by 100)
+    let weighted_rating_scaled = crate::rating::calculate_weighted_rating(env, seller);
 
     // Determine the reputation score based on the rating range
-    match x {
-        x if x <= 1.0 => 1,
-        x if x <= 2.0 => 2,
-        x if x <= 3.0 => 3,
-        x if x <= 4.0 => 4,
-        _ => 5,
+    // Since the rating is scaled by 100, we compare against scaled values
+    match weighted_rating_scaled {
+        x if x <= 100 => 1,  // <= 1.0
+        x if x <= 200 => 2,  // <= 2.0
+        x if x <= 300 => 3,  // <= 3.0
+        x if x <= 400 => 4,  // <= 4.0
+        _ => 5,              // > 4.0
     }
 }
 
