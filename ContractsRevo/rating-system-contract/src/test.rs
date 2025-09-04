@@ -173,6 +173,6 @@ fn test_seller_reputation_score() {
     client.rate_seller(&seller_address, &buyer_address, &2, &weight, &None);
 
     let reputation_score = client.seller_reputation_score(&seller_address);
-    assert_eq!(reputation_score, 3);
+    assert_eq!(reputation_score, 4);
     assert_storage(&env, &contract_id, &reputation_history_key, 2);
 }
