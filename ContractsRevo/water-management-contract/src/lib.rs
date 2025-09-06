@@ -11,6 +11,10 @@ mod water_usage;
 #[cfg(test)]
 mod test;
 
+#[cfg(test)]
+#[path = "tests/mod.rs"]
+mod tests;
+
 pub use datatypes::*;
 pub use error::*;
 

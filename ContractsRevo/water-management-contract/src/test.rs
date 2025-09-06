@@ -7,6 +7,9 @@ use soroban_sdk::{
 
 use crate::{datatypes::*, WaterManagementContract, WaterManagementContractClient};
 
+// Import modular test utilities
+use crate::tests::utils::*;
+
 // Test constants
 const DAILY_LIMIT: i128 = 5000;
 const WEEKLY_LIMIT: i128 = 35000;
@@ -14,39 +17,10 @@ const MONTHLY_LIMIT: i128 = 150000;
 const EFFICIENT_USAGE_VOLUME: i128 = 2000;
 const BASE_REWARD: i128 = 100;
 
-// Helper function to set up test environment
-fn setup_test() -> (Env, WaterManagementContractClient<'static>, Address, Address) {
-    let env = Env::default();
-    let contract_id = env.register(WaterManagementContract, ());
-    let client = WaterManagementContractClient::new(&env, &contract_id);
-    let admin = Address::generate(&env);
-    let farmer = Address::generate(&env);
-
-    (env, client, admin, farmer)
-}
-
-// Helper function to create test IDs
-fn create_usage_id(env: &Env, suffix: u8) -> BytesN<32> {
-    let mut bytes = [0u8; 32];
-    bytes[31] = suffix;
-    BytesN::from_array(env, &bytes)
-}
-
-fn create_parcel_id(env: &Env, suffix: u8) -> BytesN<32> {
-    let mut bytes = [1u8; 32];
-    bytes[31] = suffix;
-    BytesN::from_array(env, &bytes)
-}
-
-fn create_data_hash(env: &Env, suffix: u8) -> BytesN<32> {
-    let mut bytes = [2u8; 32];
-    bytes[31] = suffix;
-    BytesN::from_array(env, &bytes)
-}
-
+/// Basic contract initialization test
 #[test]
 fn test_initialize_contract() {
-    let (env, client, admin, _) = setup_test();
+    let (env, client, admin, _) = setup_test_environment();
 
     env.mock_all_auths();
 
@@ -58,18 +32,19 @@ fn test_initialize_contract() {
     assert!(result2.is_err());
 }
 
+/// Basic water usage recording test
 #[test]
 fn test_record_water_usage() {
-    let (env, client, admin, farmer) = setup_test();
+    let (env, client, admin, farmer) = setup_test_environment();
 
     env.mock_all_auths();
 
     // Initialize contract
     let _ = client.try_initialize(&admin);
 
-    let usage_id = create_usage_id(&env, 1);
-    let parcel_id = create_parcel_id(&env, 1);
-    let data_hash = create_data_hash(&env, 1);
+    let usage_id = create_test_usage_id(&env, 1);
+    let parcel_id = create_test_parcel_id(&env, 1);
+    let data_hash = create_test_data_hash(&env, 1);
     let volume = 1000i128;
 
     // Record usage
@@ -82,16 +57,17 @@ fn test_record_water_usage() {
     assert_eq!(usage_data.volume, volume);
 }
 
+/// Threshold management test
 #[test]
 fn test_set_and_get_threshold() {
-    let (env, client, admin, _) = setup_test();
+    let (env, client, admin, _) = setup_test_environment();
 
     env.mock_all_auths();
 
     // Initialize contract
     let _ = client.try_initialize(&admin);
 
-    let parcel_id = create_parcel_id(&env, 1);
+    let parcel_id = create_test_parcel_id(&env, 1);
 
     // Set threshold
     let result = client.try_set_threshold(&admin, &parcel_id, &DAILY_LIMIT, &WEEKLY_LIMIT, &MONTHLY_LIMIT);
@@ -104,18 +80,19 @@ fn test_set_and_get_threshold() {
     assert_eq!(threshold_data.monthly_limit, MONTHLY_LIMIT);
 }
 
+/// Basic incentive system test
 #[test]
 fn test_incentive_system() {
-    let (env, client, admin, farmer) = setup_test();
+    let (env, client, admin, farmer) = setup_test_environment();
 
     env.mock_all_auths();
 
     // Initialize contract
     let _ = client.try_initialize(&admin);
 
-    let usage_id = create_usage_id(&env, 1);
-    let parcel_id = create_parcel_id(&env, 1);
-    let data_hash = create_data_hash(&env, 1);
+    let usage_id = create_test_usage_id(&env, 1);
+    let parcel_id = create_test_parcel_id(&env, 1);
+    let data_hash = create_test_data_hash(&env, 1);
     let volume = EFFICIENT_USAGE_VOLUME; // Efficient usage
 
     // Set threshold first
@@ -134,21 +111,22 @@ fn test_incentive_system() {
     assert!(incentive_data.reward_amount > 0);
 }
 
+/// Usage report generation test
 #[test]
 fn test_usage_report() {
-    let (env, client, admin, farmer) = setup_test();
+    let (env, client, admin, farmer) = setup_test_environment();
 
     env.mock_all_auths();
 
     // Initialize contract
     let _ = client.try_initialize(&admin);
 
-    let parcel_id = create_parcel_id(&env, 1);
-    let data_hash = create_data_hash(&env, 1);
+    let parcel_id = create_test_parcel_id(&env, 1);
+    let data_hash = create_test_data_hash(&env, 1);
 
     // Record multiple usages
     for i in 1..=3 {
-        let usage_id = create_usage_id(&env, i);
+        let usage_id = create_test_usage_id(&env, i);
         let volume = 1000i128 * i as i128;
 
         let _ = client.try_record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
@@ -169,17 +147,18 @@ fn test_usage_report() {
     assert_eq!(report_data.total_usage, 6000i128); // 1000 + 2000 + 3000
 }
 
+/// Alert generation test
 #[test]
 fn test_alert_generation() {
-    let (env, client, admin, farmer) = setup_test();
+    let (env, client, admin, farmer) = setup_test_environment();
 
     env.mock_all_auths();
 
     // Initialize contract
     let _ = client.try_initialize(&admin);
 
-    let alert_id = create_usage_id(&env, 99); // Reuse function for alert ID
-    let parcel_id = create_parcel_id(&env, 1);
+    let alert_id = create_test_alert_id(&env, 1);
+    let parcel_id = create_test_parcel_id(&env, 1);
     let message = String::from_str(&env, "Test alert message");
 
     // Generate alert
@@ -207,17 +186,18 @@ fn test_alert_generation() {
     assert!(resolved_alert.resolved);
 }
 
+/// Farmer rewards calculation test
 #[test]
 fn test_farmer_rewards_calculation() {
-    let (env, client, admin, farmer) = setup_test();
+    let (env, client, admin, farmer) = setup_test_environment();
 
     env.mock_all_auths();
 
     // Initialize contract
     let _ = client.try_initialize(&admin);
 
-    let parcel_id = create_parcel_id(&env, 1);
-    let data_hash = create_data_hash(&env, 1);
+    let parcel_id = create_test_parcel_id(&env, 1);
+    let data_hash = create_test_data_hash(&env, 1);
     let daily_limit = 5000i128;
 
     // Set threshold
@@ -226,7 +206,7 @@ fn test_farmer_rewards_calculation() {
     // Record efficient usage and issue incentives
     let mut total_expected_rewards = 0i128;
     for i in 1..=2 {
-        let usage_id = create_usage_id(&env, i);
+        let usage_id = create_test_usage_id(&env, i);
         let volume = EFFICIENT_USAGE_VOLUME; // Efficient usage
 
         let _ = client.try_record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
@@ -249,4 +229,101 @@ fn test_farmer_rewards_calculation() {
     );
 
     assert_eq!(rewards, total_expected_rewards);
+}
+
+/// Comprehensive integration test
+#[test]
+fn test_comprehensive_integration() {
+    let (env, client, admin, farmer) = setup_test_environment();
+    env.mock_all_auths();
+
+    // Initialize contract
+    client.initialize(&admin);
+
+    let parcel_id = create_test_parcel_id(&env, 1);
+    let data_hash = create_test_data_hash(&env, 1);
+
+    // Set threshold
+    client.set_threshold(&admin, &parcel_id, &DAILY_LIMIT, &WEEKLY_LIMIT, &MONTHLY_LIMIT);
+
+    // Record efficient usage
+    let usage_id = create_test_usage_id(&env, 1);
+    let volume = EFFICIENT_USAGE_VOLUME;
+    client.record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
+
+    // Issue incentive
+    let _ = client.try_issue_incentive(&usage_id, &BASE_REWARD);
+    // Note: Incentive might be created automatically or manually
+
+    // Generate alert
+    let alert_id = create_test_alert_id(&env, 1);
+    let message = String::from_str(&env, "Integration test alert");
+    client.generate_alert(
+        &alert_id,
+        &farmer,
+        &parcel_id,
+        &AlertType::EfficiencyAlert,
+        &message,
+    );
+
+    // Verify all operations succeeded
+    let usage = client.get_usage(&usage_id);
+    assert_eq!(usage.farmer_id, farmer);
+
+    let incentive = client.get_incentive(&usage_id);
+    assert_eq!(incentive.farmer_id, farmer);
+
+    let alert = client.get_alert(&alert_id);
+    assert_eq!(alert.farmer_id, farmer);
+}
+
+/// Edge case testing
+#[test]
+fn test_edge_cases() {
+    let (env, client, admin, farmer) = setup_test_environment();
+    env.mock_all_auths();
+
+    client.initialize(&admin);
+
+    let parcel_id = create_test_parcel_id(&env, 1);
+    let data_hash = create_test_data_hash(&env, 1);
+
+    // Test minimum volume
+    let usage_id = create_test_usage_id(&env, 1);
+    let result = client.try_record_usage(&usage_id, &farmer, &parcel_id, &1i128, &data_hash);
+    assert!(result.is_ok());
+
+    // Test maximum volume
+    let usage_id2 = create_test_usage_id(&env, 2);
+    let result2 = client.try_record_usage(&usage_id2, &farmer, &parcel_id, &100000i128, &data_hash);
+    assert!(result2.is_ok());
+
+    // Test excessive volume (should fail)
+    let usage_id3 = create_test_usage_id(&env, 3);
+    let result3 = client.try_record_usage(&usage_id3, &farmer, &parcel_id, &150000i128, &data_hash);
+    assert!(result3.is_err());
+}
+
+/// Scalability test
+#[test]
+fn test_scalability() {
+    let (env, client, admin, farmer) = setup_test_environment();
+    env.mock_all_auths();
+
+    client.initialize(&admin);
+
+    let parcel_id = create_test_parcel_id(&env, 1);
+    let data_hash = create_test_data_hash(&env, 1);
+
+    // Record many usage records
+    for i in 1..=100 {
+        let usage_id = create_test_usage_id(&env, i);
+        let volume = 1000i128 + (i as i128 * 10);
+        let result = client.try_record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
+        assert!(result.is_ok());
+    }
+
+    // Verify all records were stored
+    let farmer_usages = client.get_farmer_usages(&farmer);
+    assert_eq!(farmer_usages.len(), 100);
 }
