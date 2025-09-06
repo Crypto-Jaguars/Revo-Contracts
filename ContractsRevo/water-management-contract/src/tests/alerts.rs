@@ -373,16 +373,14 @@ fn test_weekly_threshold_exceeded_alert() {
 
     // Check if weekly threshold exceeded alert was generated
     let alerts = client.get_farmer_alerts(&farmer, &true);
-    let mut weekly_count = 0;
-    for alert in alerts.iter() {
-        // Check if message contains "Weekly" (simplified check)
-        if alert.message.len() > 0 {
-            weekly_count += 1; // Simplified check
-        }
-    }
-    
-    // Note: This test might need adjustment based on the exact implementation
-    // of weekly threshold checking
+    let weekly_count = alerts
+        .iter()
+        .filter(|a| a.alert_type == AlertType::ThresholdExceeded)
+        .count();
+    assert!(
+        weekly_count >= 1,
+        "Expected at least one weekly ThresholdExceeded alert"
+    );
 }
 
 #[test]

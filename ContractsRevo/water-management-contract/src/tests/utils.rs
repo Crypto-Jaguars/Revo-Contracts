@@ -50,9 +50,10 @@ pub fn create_test_alert_id(env: &Env, suffix: u8) -> BytesN<32> {
 }
 
 /// Creates a test address with a specific suffix
-pub fn create_test_address(env: &Env, suffix: u8) -> Address {
-    let mut bytes = [0u8; 32];
-    bytes[31] = suffix;
+pub fn create_test_address(env: &Env, _suffix: u8) -> Address {
+    // Generate a deterministic address for testing
+    // Note: Address::generate is non-deterministic, but for test purposes this is acceptable
+    // In a real implementation, you might want to use a deterministic approach
     Address::generate(env)
 }
 
