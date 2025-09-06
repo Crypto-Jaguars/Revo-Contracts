@@ -19,6 +19,9 @@ pub use validate::*;
 
 #[cfg(test)]
 mod test;
+#[cfg(test)]
+#[path = "tests/mod.rs"]
+mod tests;
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
