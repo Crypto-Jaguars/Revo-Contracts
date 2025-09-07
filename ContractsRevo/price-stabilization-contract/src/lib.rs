@@ -23,6 +23,7 @@ impl PriceStabilizationContract {
         }
         env.storage().persistent().set(&DataKey::Admin, &admin);
     }
-
-
 }
+
+#[cfg(test)]
+mod test_simple;
