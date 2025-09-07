@@ -76,8 +76,13 @@ fn test_fund_contribution() {
     let price_threshold = 10000i128;
     
     let fund_result = client.try_create_fund(&admin, &fund_name, &price_threshold, &crop_type);
-    assert!(fund_result.is_ok());
-    let fund_id = fund_result.unwrap().unwrap();
+    let fund_id = match fund_result {
+        Ok(inner_result) => match inner_result {
+            Ok(id) => id,
+            Err(conv_err) => panic!("fund ID conversion failed: {:?}", conv_err),
+        },
+        Err(contract_err) => panic!("create_fund contract call failed: {:?}", contract_err),
+    };
     
     // Contribute to fund
     let amount = 5000i128;
