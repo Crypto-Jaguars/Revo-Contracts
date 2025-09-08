@@ -188,8 +188,9 @@ fn test_price_data_validation_edge_cases() {
     // Test with maximum i128 value
     let max_price = i128::MAX;
     let timestamp = env.ledger().timestamp();
-    let _result1 = client.try_update_market_price(&oracle, &crop_type, &max_price, &timestamp);
-    // This might be rejected due to validation rules
+    let result1 = client.try_update_market_price(&oracle, &crop_type, &max_price, &timestamp);
+    // Contract may reject extremely high values for safety
+    // Test passes regardless of acceptance/rejection
     
     // Test with future timestamp
     let future_timestamp = env.ledger().timestamp() + 86400; // +1 day
@@ -199,6 +200,7 @@ fn test_price_data_validation_edge_cases() {
     
     // Test with very old timestamp
     let old_timestamp = 1000u64; // Very old timestamp
-    let _result3 = client.try_update_market_price(&oracle, &crop_type, &normal_price, &old_timestamp);
-    // This might be rejected depending on validation rules
+    let result3 = client.try_update_market_price(&oracle, &crop_type, &normal_price, &old_timestamp);
+    // Very old timestamps may be rejected for data freshness
+    // Test passes regardless of acceptance/rejection
 }
