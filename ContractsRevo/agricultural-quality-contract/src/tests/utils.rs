@@ -25,7 +25,6 @@ pub fn setup_test<'a>() -> (
     let authority = Address::generate(&env);
 
     // Register the contract
-    // Use register_contract for contracts, not register() which is for custom types
     let contract_id = env.register(AgricQualityContract, ());
     let client = AgricQualityContractClient::new(&env, &contract_id);
 
@@ -34,7 +33,7 @@ pub fn setup_test<'a>() -> (
 
     (
         env,
-        contract_id, // Return the contract Address (ID)
+        contract_id,
         client,
         admin,
         farmer1,
@@ -89,6 +88,32 @@ pub fn setup_integration_test<'a>() -> (
         inspector,
         authority,
     )
+}
+
+pub fn setup_certification_test(env: &Env, agric_client: &AgricQualityContractClient, farmer: &Address, inspector: &Address, authority: &Address) -> (BytesN<32>, Symbol, u64) {
+    // Authority registers quality metrics
+    let standard = QualityStandard::Organic;
+    let metric_name = symbol_short!("pesticide");
+    let min_score = 85u32;
+    let weight = 50u32;
+    agric_client.register_metric(&authority, &standard, &metric_name, &min_score, &weight);
+
+    // Submit certification
+    let conditions = vec![&env, String::from_str(&env, "Organic farming practices")];
+    let cert_id = agric_client.submit_for_certification(&farmer, &standard, &conditions);
+
+    // Record inspection
+    let metrics = vec![&env, (metric_name.clone(), min_score)];
+    let findings = vec![&env, String::from_str(&env, "Good moisture level")];
+    let recommendations = vec![&env, String::from_str(&env, "None needed")];
+    agric_client.record_inspection(&inspector, &cert_id, &metrics, &findings, &recommendations);
+
+    // Process certification
+    let approved = true;
+    let validity_period = 31536000; // 1 year in seconds
+    agric_client.process_certification(&authority, &cert_id, &approved, &validity_period);
+
+    (cert_id, metric_name, validity_period)
 }
 
 pub fn create_document_hash(env: &Env, content: &str) -> BytesN<32> {

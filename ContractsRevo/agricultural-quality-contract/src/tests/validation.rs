@@ -13,7 +13,7 @@ mod data_validation_tests {
      #[test]
     fn test_certification_integration_verify_doc_hash() {
         let (env, agric_contract_id, agric_client, cert_contract_id, cert_client, admin, farmer, inspector, authority) = setup_integration_test();
-
+        let now = env.ledger().timestamp();
         // Authority registers quality metrics for a standard (e.g., Organic, GlobalGAP) with a name, minimum score, and weight.
         let standard = QualityStandard::Organic;
         let metric_name = symbol_short!("pesticide"); 
@@ -56,12 +56,12 @@ mod data_validation_tests {
         assert_eq!(agric_cert.standard, QualityStandard::Organic, "Standard should match");
         assert_eq!(agric_cert.status, CertificationStatus::Active, "Certification should be active");
         assert_eq!(agric_cert.issuer, authority, "Issuer should match");
-        assert_eq!(agric_cert.expiry_date, 0 + 365 * 24 * 60 * 60, "Expiry date should match");
+        assert_eq!(agric_cert.expiry_date, now + 365 * 24 * 60 * 60, "Expiry date should match");
 
         // Create test data
-        let expiration_date = 0 + 365 * 24 * 60 * 60; // 1 year
+        let expiration_date = now + 365 * 24 * 60 * 60; // 1 year
         let verification_hash = create_document_hash(&env, "Organic certification document");
-        let cert_type = symbol_short!("ORGANIC");
+        let cert_type = symbol_short!("Organic");
 
         let res = cert_client.issue_certification(&authority, &farmer, &cert_type, &expiration_date, &verification_hash);
         let cert_id = 1u32;
@@ -124,7 +124,7 @@ mod data_validation_tests {
 
         let agric_certs = agric_client.get_certification_history(&farmer);
         let agric_cert = agric_certs.get(0).unwrap();
-        assert_eq!(agric_cert.status, CertificationStatus::Revoked, "Certification should be active");
+        assert_eq!(agric_cert.status, CertificationStatus::Revoked, "Certification should be revoked");
 
         let cert_type = symbol_short!("Organic");
         let cert_id_mgr = 1u32;
