@@ -23,6 +23,8 @@ impl PriceStabilizationContract {
         }
         env.storage().persistent().set(&DataKey::Admin, &admin);
     }
-
-
 }
+
+#[cfg(test)]
+#[path = "tests/mod.rs"]
+mod tests;
