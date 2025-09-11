@@ -69,3 +69,21 @@ pub fn update_campaign_status(env: Env, campaign_id: BytesN<32>) {
         utils::save_campaign(&env, &campaign_id, &campaign);
     }
 }
+
+pub fn check_and_update_campaign_status(env: Env, campaign_id: BytesN<32>) {
+    let mut campaign = get_campaign_details(env.clone(), campaign_id.clone());
+    let current_time = env.ledger().timestamp();
+
+    if campaign.status == CampaignStatus::Active {
+        if current_time >= campaign.deadline {
+            campaign.status = if campaign.total_funded >= campaign.goal_amount {
+                CampaignStatus::Successful
+            } else {
+                CampaignStatus::Failed
+            };
+        } else if campaign.total_funded >= campaign.goal_amount {
+            campaign.status = CampaignStatus::Successful;
+        }
+        utils::save_campaign(&env, &campaign_id, &campaign);
+    }
+}

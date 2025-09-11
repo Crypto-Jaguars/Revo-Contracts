@@ -48,4 +48,9 @@ impl CrowdfundingFarmerContract {
 }
 
 #[cfg(test)]
-mod test;
+mod tests {
+    pub mod campaign;
+    pub mod contribution;
+    pub mod rewards;
+    pub mod utils;
+}
