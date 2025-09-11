@@ -95,8 +95,13 @@ fn test_oracle_temperature_variations() {
         prediction_yields.push_back(prediction.predicted_yield);
     }
     
-    // Verify that different temperatures produce different yields
-    assert!(prediction_yields.len() == 4, "Should have 4 different yield predictions");
+    // Verify yields vary across temperatures
+    let first = prediction_yields.get(0).unwrap();
+    let mut any_diff = false;
+    for y in prediction_yields.iter() {
+        if y != first { any_diff = true; break; }
+    }
+    assert!(any_diff, "At least one prediction should differ across temperatures");
 }
 
 /// Test oracle data integration with humidity variations
@@ -130,8 +135,13 @@ fn test_oracle_humidity_variations() {
         prediction_yields.push_back(prediction.predicted_yield);
     }
     
-    // Verify that different humidity levels produce different yields
-    assert!(prediction_yields.len() == 5, "Should have 5 different yield predictions");
+    // Verify yields vary across humidity levels
+    let first = prediction_yields.get(0).unwrap();
+    let mut any_diff = false;
+    for y in prediction_yields.iter() {
+        if y != first { any_diff = true; break; }
+    }
+    assert!(any_diff, "At least one prediction should differ across humidity levels");
 }
 
 /// Test oracle data integration with rainfall variations
@@ -165,8 +175,13 @@ fn test_oracle_rainfall_variations() {
         prediction_yields.push_back(prediction.predicted_yield);
     }
     
-    // Verify that different rainfall amounts produce different yields
-    assert!(prediction_yields.len() == 5, "Should have 5 different yield predictions");
+    // Verify yields vary across rainfall levels
+    let first = prediction_yields.get(0).unwrap();
+    let mut any_diff = false;
+    for y in prediction_yields.iter() {
+        if y != first { any_diff = true; break; }
+    }
+    assert!(any_diff, "At least one prediction should differ across rainfall levels");
 }
 
 /// Test oracle data integration with combined optimal conditions
@@ -324,19 +339,21 @@ fn test_oracle_off_chain_data_hash_consistency() {
     let data_source = create_test_data_source(&env, 1);
     
     // Generate prediction
+    // Freeze timestamp for determinism
+    env.ledger().with_mut(|l| l.timestamp = 1_700_000_000);
     let prediction_id = client.generate_prediction(&crop_id, &region, &data_source);
     let prediction = client.get_prediction(&prediction_id);
     
     // Verify data hash was generated
     assert!(prediction.data_hash.len() > 0, "Data hash should be generated");
-    
-    // Verify hash consistency (same data should produce same hash)
+
+    // Same timestamp + same data => same hash
     let prediction_id2 = client.generate_prediction(&crop_id, &region, &data_source);
     let prediction2 = client.get_prediction(&prediction_id2);
-    
+
     // Note: Due to timestamp differences, hashes might be different
     // But the data hash should be consistent for the same data source
-    assert!(prediction.data_hash.len() == prediction2.data_hash.len(), "Hash lengths should be consistent");
+    assert_eq!(prediction.data_hash, prediction2.data_hash, "Same data should produce the same hash");
 }
 
 /// Test oracle data integration with IPFS simulation

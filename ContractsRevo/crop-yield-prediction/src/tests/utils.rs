@@ -35,6 +35,31 @@ pub fn setup_test_environment() -> (
     (env, client, admin, farmer, oracle)
 }
 
+/// Setup test environment with strict authentication (no mocking)
+/// Returns: (env, client, admin, farmer, oracle)
+pub fn setup_strict_auth_environment() -> (
+    Env,
+    CropYieldPredictionContractClient<'static>,
+    Address,
+    Address,
+    Address,
+) {
+    let env = Env::default();
+    // Do NOT call env.mock_all_auths() for strict auth testing
+
+    let admin = Address::generate(&env);
+    let farmer = Address::generate(&env);
+    let oracle = Address::generate(&env);
+
+    let contract_id = env.register(CropYieldPredictionContract, ());
+    let client = CropYieldPredictionContractClient::new(&env, &contract_id);
+
+    // Initialize contract
+    client.initialize(&admin);
+
+    (env, client, admin, farmer, oracle)
+}
+
 /// Create a test crop ID with deterministic content
 pub fn create_test_crop_id(env: &Env, suffix: u8) -> BytesN<32> {
     let mut bytes = [0u8; 32];
