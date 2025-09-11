@@ -1,6 +1,6 @@
 use soroban_sdk::{contracterror, contracttype, BytesN, String, Vec};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[contracttype]
 pub struct YieldPrediction {
     pub prediction_id: BytesN<32>,
@@ -11,7 +11,7 @@ pub struct YieldPrediction {
     pub timestamp: u64,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[contracttype]
 pub struct Crop {
     pub crop_id: BytesN<32>,
