@@ -3,12 +3,12 @@
 use super::*;
 use soroban_sdk::{
     testutils::{Address as _, Ledger as _},
-    Address, BytesN, Env, IntoVal, String, Symbol,
+    Address, BytesN, Env, IntoVal, String, symbol_short,
 };
 
 // Helper to mint tokens using the token contract's interface
 fn mint_tokens(env: &Env, token: &Address, to: &Address, amount: i128) {
-    env.invoke_contract::<()>(token, &Symbol::short("mint"), (to, &amount).into_val(env));
+    env.invoke_contract::<()>(token, &symbol_short!("mint"), (to, &amount).into_val(env));
 }
 
 // Helper to set up the environment and contract client
@@ -29,7 +29,7 @@ fn setup_test<'a>() -> (
 
     // Deploy a mock token contract and mint tokens
     let token_admin = Address::generate(&env);
-    let token_address = env.register_stellar_asset_contract(token_admin.clone());
+    let token_address = env.register_stellar_asset_contract_v2(token_admin.clone()).address();
     mint_tokens(&env, &token_address, &borrower, 100_000);
     mint_tokens(&env, &token_address, &lender1, 100_000);
     mint_tokens(&env, &token_address, &lender2, 100_000);
@@ -599,7 +599,7 @@ fn test_funding_with_insufficient_balance() {
     let lender_with_insufficient_balance = Address::generate(&env);
     mint_tokens(
         &env,
-        &env.register_stellar_asset_contract(Address::generate(&env)),
+        &env.register_stellar_asset_contract_v2(Address::generate(&env)).address(),
         &lender_with_insufficient_balance,
         500,
     ); // Low balance
@@ -694,7 +694,7 @@ fn test_repayment_with_insufficient_balance() {
     client.fund_loan(&lender1, &loan_id, &1000);
 
     // Reduce borrower's balance to insufficient amount
-    let token_id = env.register_stellar_asset_contract(Address::generate(&env));
+    let token_id = env.register_stellar_asset_contract_v2(Address::generate(&env)).address();
     let borrower_with_insufficient_balance = Address::generate(&env);
     mint_tokens(&env, &token_id, &borrower_with_insufficient_balance, 10); // Very low balance
 
@@ -1276,7 +1276,7 @@ fn test_tokenized_repayment_integration() {
 
     // Create a commodity token contract
     let commodity_token_admin = Address::generate(&env);
-    let commodity_token_id = env.register_stellar_asset_contract(commodity_token_admin.clone());
+    let commodity_token_id = env.register_stellar_asset_contract_v2(commodity_token_admin.clone()).address();
 
     // Mint commodity tokens to borrower for repayment
     mint_tokens(&env, &commodity_token_id, &borrower, 2000);
@@ -1367,7 +1367,7 @@ fn test_multiple_concurrent_loans() {
     // Create multiple borrowers for concurrent loans
     let borrower2 = Address::generate(&env);
     let borrower3 = Address::generate(&env);
-    let token_id = env.register_stellar_asset_contract(Address::generate(&env));
+    let token_id = env.register_stellar_asset_contract_v2(Address::generate(&env)).address();
 
     // Mint tokens for all borrowers
     mint_tokens(&env, &token_id, &borrower2, 50_000);
