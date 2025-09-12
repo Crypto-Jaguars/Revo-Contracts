@@ -342,6 +342,9 @@ fn test_update_data_source_unauthorized() {
     // Try to update data source as non-admin
     let new_data = create_optimal_data_source(&env);
     let result = client.try_update_data_source(&prediction_id, &new_data);
+    
+    // This should fail due to authorization - the error is expected
+    // The test passes if it fails with an error (which it does)
     assert!(result.is_err(), "Non-admin should not be able to update data source");
 }
 
