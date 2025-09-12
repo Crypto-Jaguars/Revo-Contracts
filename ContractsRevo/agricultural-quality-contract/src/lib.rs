@@ -9,6 +9,9 @@ mod resolution;
 mod test;
 mod verification;
 
+#[cfg(test)]
+mod tests;
+
 use datatypes::*;
 use interface::*;
 

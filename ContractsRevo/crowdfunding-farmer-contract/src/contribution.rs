@@ -1,6 +1,6 @@
 use soroban_sdk::{contracttype, token, Address, BytesN, Env, Vec};
 
-use crate::{utils, CampaignStatus};
+use crate::{campaign, utils, CampaignStatus};
 
 #[contracttype]
 #[derive(Clone)]
@@ -33,6 +33,9 @@ pub fn contribute(env: Env, contributor: Address, campaign_id: BytesN<32>, amoun
 
     campaign.total_funded += amount;
     utils::save_campaign(&env, &campaign_id, &campaign);
+
+    // Check and update campaign status after contribution
+    campaign::check_and_update_campaign_status(env.clone(), campaign_id.clone());
 
     let mut contributions =
         utils::read_contributions(&env, &campaign_id).unwrap_or_else(|| Vec::new(&env));

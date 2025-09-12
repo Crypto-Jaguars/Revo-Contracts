@@ -9,6 +9,9 @@ mod history;
 mod rating;
 mod reputation;
 mod test;
+#[cfg(test)]
+#[path = "tests/mod.rs"]
+mod tests;
 
 #[contract]
 pub struct RatingSystemContract;
