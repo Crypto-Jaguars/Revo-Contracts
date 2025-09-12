@@ -13,6 +13,7 @@ dependencies = [
 name = "agricultural-quality-contract"
 version = "0.0.0"
 dependencies = [
+ "certificate-management-contract",
  "soroban-sdk",
 ]
 

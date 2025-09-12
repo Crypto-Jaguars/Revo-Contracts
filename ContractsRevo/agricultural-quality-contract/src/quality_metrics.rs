@@ -1,5 +1,5 @@
 use crate::datatypes::*;
-use soroban_sdk::{vec, Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{log, vec, symbol_short, Address, BytesN, Env, String, Symbol, Vec};
 
 // Helper function to verify authority
 fn verify_authority(env: &Env, authority: &Address) -> Result<(), AgricQualityError> {
@@ -31,99 +31,99 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
             70,
             vec![
                 &Env::default(),
-                Symbol::short("food_safety"),
-                Symbol::short("traceability"),
-                Symbol::short("environmental"),
-                Symbol::short("worker_safety"),
+                symbol_short!("food_safe"), //food_safety
+                symbol_short!("traceabil"), // traceability
+                symbol_short!("environm"), // environmental
+                symbol_short!("worker_sa"), // worker_safety
             ],
         ),
         QualityStandard::Organic => (
             85,
             vec![
                 &Env::default(),
-                Symbol::short("pesticide_free"),
-                Symbol::short("soil_health"),
-                Symbol::short("biodiversity"),
-                Symbol::short("gmo_free"),
+                symbol_short!("pes_free"), // pesticide_free
+                symbol_short!("s_health"),   // soil_health
+                symbol_short!("bio_div"),  //biodiversity 
+                symbol_short!("gmo_free"),  // gmo_free
             ],
         ),
         QualityStandard::Fairtrade => (
             75,
             vec![
                 &Env::default(),
-                Symbol::short("fair_price"),
-                Symbol::short("working_conditions"),
-                Symbol::short("community_development"),
-                Symbol::short("environmental_protection"),
+                symbol_short!("fairprice"), // fair_price
+                symbol_short!("work_cond"), // working_conditions
+                symbol_short!("com_dev"), // community_development
+                symbol_short!("env_prot"), // environmental_protection
             ],
         ),
         QualityStandard::UTZ => (
             80,
             vec![
                 &Env::default(),
-                Symbol::short("farming_practices"),
-                Symbol::short("social_conditions"),
-                Symbol::short("environmental_management"),
-                Symbol::short("farm_management"),
+                symbol_short!("farm_prac"), // farming_practices
+                symbol_short!("soc_cond"), // social_conditions
+                symbol_short!("env_man"), // environmental_management
+                symbol_short!("farm_man"), // farm_management
             ],
         ),
         QualityStandard::NonGMO => (
             95,
             vec![
                 &Env::default(),
-                Symbol::short("gmo_testing"),
-                Symbol::short("segregation"),
-                Symbol::short("traceability"),
-                Symbol::short("risk_management"),
+                symbol_short!("gmo_test"), // gmo_testing
+                symbol_short!("segregat"), //segregation
+                symbol_short!("traceab"), // traceability
+                symbol_short!("risk_man"), //risk_management
             ],
         ),
         QualityStandard::PDO | QualityStandard::PGI => (
             90,
             vec![
                 &Env::default(),
-                Symbol::short("origin_verification"),
-                Symbol::short("traditional_methods"),
-                Symbol::short("quality_characteristics"),
-                Symbol::short("local_ingredients"),
+                symbol_short!("orig_ver"), // origin_verification
+                symbol_short!("trad_meth"), //traditional_methods
+                symbol_short!("qual_char"), // quality_characteristics
+                symbol_short!("local_ing"), //local_ingredients
             ],
         ),
         QualityStandard::Kosher => (
             100,
             vec![
                 &Env::default(),
-                Symbol::short("ingredients_verification"),
-                Symbol::short("process_compliance"),
-                Symbol::short("equipment_standards"),
-                Symbol::short("supervision"),
+                symbol_short!("ingr_ver"), // ingredients_verification
+                symbol_short!("process_c"), // process_compliance
+                symbol_short!("equip_st"), //equipment_standards
+                symbol_short!("supervis"), //supervision
             ],
         ),
         QualityStandard::GOTS => (
             85,
             vec![
                 &Env::default(),
-                Symbol::short("organic_fiber"),
-                Symbol::short("processing"),
-                Symbol::short("social_criteria"),
-                Symbol::short("chemical_inputs"),
+                symbol_short!("org_fiber"), // organic_fiber
+                symbol_short!("process"), //processing
+                symbol_short!("soc_cri"), // social_criteria
+                symbol_short!("che_inp"), // chemical_inputs
             ],
         ),
         QualityStandard::Demeter => (
             90,
             vec![
                 &Env::default(),
-                Symbol::short("biodynamic_practices"),
-                Symbol::short("biodiversity"),
-                Symbol::short("soil_fertility"),
-                Symbol::short("animal_welfare"),
+                symbol_short!("biodynami"), //biodynamic_practices
+                symbol_short!("biodiver"), // biodiversity
+                symbol_short!("soil_fert"), // soil_fertility
+                symbol_short!("an_wel"), // animal_welfare
             ],
         ),
         QualityStandard::Custom(_) => (
             75,
             vec![
                 &Env::default(),
-                Symbol::short("custom_requirement_1"),
-                Symbol::short("custom_requirement_2"),
-                Symbol::short("custom_requirement_3"),
+                symbol_short!("custom_1"), // custom_requirement_1
+                symbol_short!("custom_2"), // custom_requirement_2
+                symbol_short!("custom_3"), //custom_requirement_3
             ],
         ),
     }
@@ -262,7 +262,6 @@ pub fn check_compliance(
         return Err(AgricQualityError::Unauthorized);
     }
     inspector.require_auth();
-
     // Get certification data
     let certification: CertificationData = env
         .storage()
@@ -270,7 +269,7 @@ pub fn check_compliance(
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
-    // Get standard requirements
+        // Get standard requirements
     let (min_overall_score, required_metrics) = get_standard_requirements(&certification.standard);
 
     // Get metrics for the standard

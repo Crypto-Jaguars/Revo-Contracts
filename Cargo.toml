@@ -6,6 +6,8 @@ members = [
 ]
 [workspace.dependencies]
 soroban-sdk = "22.0.7"
+certificate-management-contract = { path = "ContractsRevo/certificate-management-contract/"}
+
 [profile.release]
 opt-level = "z"
 overflow-checks = true

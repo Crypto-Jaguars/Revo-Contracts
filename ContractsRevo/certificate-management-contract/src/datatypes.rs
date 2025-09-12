@@ -22,7 +22,7 @@ pub struct Certification {
     pub issuer: Address,   // Certifying authority
     pub issued_date: u64,
     pub expiration_date: u64,
-    verification_hash: BytesN<32>, // Hash of certification documents
+    pub verification_hash: BytesN<32>, // Hash of certification documents
     pub status: CertStatus,
 }
 

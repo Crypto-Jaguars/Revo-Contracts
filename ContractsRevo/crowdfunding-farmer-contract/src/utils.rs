@@ -1,4 +1,4 @@
-use soroban_sdk::{token, Address, BytesN, Env, Vec};
+use soroban_sdk::{symbol_short, token, Address, BytesN, Env, Vec};
 
 use crate::{campaign::Campaign, contribution::Contribution};
 
@@ -11,11 +11,17 @@ pub fn read_campaign(env: &Env, campaign_id: &BytesN<32>) -> Option<Campaign> {
 }
 
 pub fn save_contributions(env: &Env, campaign_id: &BytesN<32>, contributions: &Vec<Contribution>) {
-    env.storage().persistent().set(campaign_id, contributions);
+    let contributions_key = symbol_short!("contribs");
+    env.storage()
+        .persistent()
+        .set(&(contributions_key, campaign_id), contributions);
 }
 
 pub fn read_contributions(env: &Env, campaign_id: &BytesN<32>) -> Option<Vec<Contribution>> {
-    env.storage().persistent().get(campaign_id)
+    let contributions_key = symbol_short!("contribs");
+    env.storage()
+        .persistent()
+        .get(&(contributions_key, campaign_id))
 }
 
 pub fn validate_amount(amount: i128) {
@@ -30,7 +36,13 @@ pub fn validate_deadline(current_time: u64, deadline: u64) {
     }
 }
 
-pub fn transfer_tokens(env: &Env, token_address: &Address, from: &Address, to: &Address, amount: i128) {
+pub fn transfer_tokens(
+    env: &Env,
+    token_address: &Address,
+    from: &Address,
+    to: &Address,
+    amount: i128,
+) {
     let client = token::Client::new(env, token_address);
     client.transfer(from, to, &amount);
 }
