@@ -35,8 +35,11 @@ impl ReportingService {
 
         for prediction in predictions.iter() {
             if prediction.region == region {
-                // Use a mock crop name since we can't access storage in tests
+                // In tests use a mock crop name; avoid hardcoding in non-test builds.
+                #[cfg(test)]
                 let crop_name = String::from_str(env, "TestCrop");
+                #[cfg(not(test))]
+                let crop_name = String::from_str(env, "UnknownCrop"); // TODO: replace with storage-backed lookup
                 crop_yields.push_back((crop_name, prediction.predicted_yield));
             }
         }

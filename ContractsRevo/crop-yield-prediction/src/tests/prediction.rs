@@ -57,7 +57,7 @@ fn test_register_crop_duplicate() {
     let result1 = client.try_register_crop(&crop_id, &name, &historical_yields);
     assert!(result1.is_ok(), "First crop registration should succeed");
 
-    // Second registration with same ID should overwrite (contract behavior)
+    // Second registration with same ID should succeed (overwrites existing)
     let result2 = client.try_register_crop(&crop_id, &name, &historical_yields);
     assert!(result2.is_ok(), "Duplicate crop registration should succeed (overwrites)");
 }
