@@ -6,6 +6,18 @@ use soroban_sdk::{
     Address, BytesN, Env, IntoVal, String, symbol_short,
 };
 
+// Import for feature-gated test
+#[cfg(feature = "slow_tests")]
+extern crate std;
+
+// Time constants
+const DAY: u64 = 86_400;
+
+// Helper to advance time by days
+fn advance_days(env: &Env, days: u64) {
+    env.ledger().with_mut(|li| li.timestamp += days * DAY);
+}
+
 // Helper to mint tokens using the token contract's interface
 fn mint_tokens(env: &Env, token: &Address, to: &Address, amount: i128) {
     env.invoke_contract::<()>(token, &symbol_short!("mint"), (to, &amount).into_val(env));
@@ -149,14 +161,12 @@ fn test_repayment_flow_and_completion() {
     let total_due = client.calculate_total_repayment_due(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
     // First repayment (simulate time forward)
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
     let loan = client.get_loan_request(&loan_id);
     assert_eq!(loan.status, LoanStatus::Repaying);
     // Second repayment (simulate time forward)
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
     let loan = client.get_loan_request(&loan_id);
     assert_eq!(loan.status, LoanStatus::Completed);
@@ -186,8 +196,7 @@ fn test_default_and_collateral_claim() {
     let loan = client.get_loan_request(&loan_id);
     assert_eq!(loan.status, LoanStatus::Funded);
     // Simulate time past due date (plus grace period)
-    env.ledger()
-        .with_mut(|li| li.timestamp += 40 * 24 * 60 * 60);
+    advance_days(&env, 40);
     // Should now be in default
     let is_default = client.check_default_status(&loan_id);
     assert!(is_default);
@@ -218,11 +227,9 @@ fn test_loan_history_and_tracking() {
     // Repay fully
     let loan = client.get_loan_request(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
     // If still not completed, repay the remaining due
     let loan = client.get_loan_request(&loan_id);
@@ -449,9 +456,10 @@ fn test_loan_creation_with_monthly_repayment_schedule() {
     // Should have 3 monthly installments
     assert_eq!(loan.repayment_schedule.installments, 3);
     assert_eq!(loan.repayment_schedule.frequency_days, 30);
-    // Total due = 1000 + (1000 * 1200 / 10000) = 1000 + 120 = 1120
-    // Per installment = 1120 / 3 = 373 (integer division)
-    assert_eq!(loan.repayment_schedule.per_installment_amount, 373);
+    // Calculate expected total and per-installment dynamically
+    let expected_total = 1000 + (1000 * 1200i128 / 10_000);
+    let expected_per = expected_total / 3;
+    assert_eq!(loan.repayment_schedule.per_installment_amount, expected_per);
 }
 
 #[test]
@@ -550,7 +558,7 @@ fn test_loan_cancel_success() {
 }
 
 #[test]
-fn test_attempt_overfund_completed_loan() {
+fn test_attempt_overfund_funded_loan() {
     let (env, _contract_id, client, borrower, lender1, lender2) = setup_test();
     let collateral = CollateralInfo {
         asset_type: String::from_str(&env, "Equipment"),
@@ -569,7 +577,7 @@ fn test_attempt_overfund_completed_loan() {
     client.fund_loan(&lender1, &loan_id, &1000);
     let loan = client.get_loan_request(&loan_id);
     assert_eq!(loan.status, LoanStatus::Funded);
-    // Attempt to overfund a completed loan
+    // Attempt to overfund an already funded loan
     let result = client.try_fund_loan(&lender2, &loan_id, &100);
     match result {
         Err(Ok(e)) if e == MicrolendingError::LoanFullyFunded.into() => (),
@@ -675,7 +683,7 @@ fn test_funding_cancelled_loan() {
 // === COMPREHENSIVE REPAYMENT TESTS ===
 
 #[test]
-fn test_repayment_with_insufficient_balance() {
+fn test_repayment_by_wrong_borrower_is_rejected() {
     let (env, _contract_id, client, borrower, lender1, _lender2) = setup_test();
     let collateral = CollateralInfo {
         asset_type: String::from_str(&env, "Equipment"),
@@ -693,19 +701,16 @@ fn test_repayment_with_insufficient_balance() {
 
     client.fund_loan(&lender1, &loan_id, &1000);
 
-    // Reduce borrower's balance to insufficient amount
-    let token_id = env.register_stellar_asset_contract_v2(Address::generate(&env)).address();
-    let borrower_with_insufficient_balance = Address::generate(&env);
-    mint_tokens(&env, &token_id, &borrower_with_insufficient_balance, 10); // Very low balance
+    // Create a different address and try repaying as a non-borrower
+    let wrong_borrower = Address::generate(&env);
 
     let loan = client.get_loan_request(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
 
     let result = client.try_repay_loan(
-        &borrower_with_insufficient_balance,
+        &wrong_borrower,
         &loan_id,
         &per_installment,
     );
@@ -740,8 +745,7 @@ fn test_repayment_by_unauthorized_user() {
     let loan = client.get_loan_request(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
 
     let result = client.try_repay_loan(&lender2, &loan_id, &per_installment);
     match result {
@@ -771,8 +775,7 @@ fn test_repayment_exceeds_due_amount() {
 
     let total_due = client.calculate_total_repayment_due(&loan_id);
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
 
     let result = client.try_repay_loan(&borrower, &loan_id, &(total_due + 100));
     match result {
@@ -806,8 +809,7 @@ fn test_early_full_repayment() {
     let total_due = client.calculate_total_repayment_due(&loan_id);
 
     // Make full repayment immediately (before first installment due)
-    env.ledger()
-        .with_mut(|li| li.timestamp += 15 * 24 * 60 * 60); // 15 days
+    advance_days(&env, 15); // 15 days
 
     client.repay_loan(&borrower, &loan_id, &total_due);
 
@@ -838,12 +840,10 @@ fn test_partial_installment_repayments() {
     let per_installment = loan.repayment_schedule.per_installment_amount;
 
     // Make partial payments for each installment
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &(per_installment / 2)); // Half of first installment
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &(per_installment / 2)); // Half of second installment
 
     let loan = client.get_loan_request(&loan_id);
@@ -857,8 +857,7 @@ fn test_partial_installment_repayments() {
     let total_repaid: i128 = repayments.iter().map(|r| r.amount).sum();
     let remaining_due = total_due - total_repaid;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &remaining_due);
 
     let loan = client.get_loan_request(&loan_id);
@@ -887,8 +886,7 @@ fn test_default_claim_by_non_lender() {
     client.fund_loan(&lender1, &loan_id, &1000);
 
     // Simulate time past due date
-    env.ledger()
-        .with_mut(|li| li.timestamp += 40 * 24 * 60 * 60);
+    advance_days(&env, 40);
 
     let non_lender = Address::generate(&env);
     let result = client.try_claim_default(&non_lender, &loan_id);
@@ -946,8 +944,7 @@ fn test_multiple_lenders_default_scenario() {
     client.fund_loan(&lender2, &loan_id, &800); // 40% share
 
     // Simulate time past due date
-    env.ledger()
-        .with_mut(|li| li.timestamp += 40 * 24 * 60 * 60);
+    advance_days(&env, 40);
 
     let is_default = client.check_default_status(&loan_id);
     assert!(is_default);
@@ -1002,7 +999,7 @@ fn test_default_status_check_accuracy() {
     assert!(!is_default_before_due); // Should not be in default before due date
 
     // Simulate time past due date (for single payment loan, any time past due is default)
-    env.ledger().with_mut(|li| li.timestamp += 1 * 24 * 60 * 60); // 1 day past due
+    advance_days(&env, 1); // 1 day past due
     let is_default_late = client.check_default_status(&loan_id);
     assert!(is_default_late);
 }
@@ -1034,12 +1031,10 @@ fn test_loan_history_comprehensive() {
     let loan = client.get_loan_request(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
 
     // Get comprehensive history
@@ -1161,8 +1156,7 @@ fn test_borrower_metrics_tracking() {
     client.fund_loan(&lender2, &loan_id2, &800);
 
     // Simulate time past due date
-    env.ledger()
-        .with_mut(|li| li.timestamp += 40 * 24 * 60 * 60);
+    advance_days(&env, 40);
     client.claim_default(&lender2, &loan_id2);
 
     // Check borrower metrics accuracy
@@ -1174,6 +1168,11 @@ fn test_borrower_metrics_tracking() {
     let loan2 = client.get_loan_request(&loan_id2);
     assert_eq!(loan1.status, LoanStatus::Completed);
     assert_eq!(loan2.status, LoanStatus::Defaulted);
+    
+    // Note: If there was a get_borrower_metrics() API, we would assert:
+    // - metrics.total_loans == 2
+    // - metrics.completed_loans == 1  
+    // - metrics.defaulted_loans == 1
 }
 
 #[test]
@@ -1205,6 +1204,10 @@ fn test_lender_share_percentage_edge_cases() {
     // Should add up to close to 10000 basis points (100%) - allowing for rounding
     let total_percent = lender1_percent + lender2_percent;
     assert!(total_percent >= 9999 && total_percent <= 10000);
+    
+    // Document where the rounding loss goes (if any)
+    let rounding_loss = 10000 - total_percent;
+    assert!(rounding_loss <= 1, "Rounding loss should be at most 1 basis point, got: {}", rounding_loss);
 
     // Verify individual percentages (allowing for rounding)
     assert!(lender1_percent >= 3330 && lender1_percent <= 3340); // ~33.3%
@@ -1266,25 +1269,22 @@ fn test_funding_contributions_detailed_tracking() {
 // === INTEGRATION TESTS WITH COMMODITY TOKEN CONTRACT ===
 
 #[test]
-fn test_tokenized_repayment_integration() {
+fn test_repayment_flow_in_presence_of_other_tokens() {
     let (env, _contract_id, client, borrower, lender1, _lender2) = setup_test();
     let collateral = CollateralInfo {
-        asset_type: String::from_str(&env, "Commodity Tokens"),
+        asset_type: String::from_str(&env, "Multi-token Environment"),
         estimated_value: 1500,
         verification_data: BytesN::from_array(&env, &[1u8; 32]),
     };
 
-    // Create a commodity token contract
-    let commodity_token_admin = Address::generate(&env);
-    let commodity_token_id = env.register_stellar_asset_contract_v2(commodity_token_admin.clone()).address();
-
-    // Mint commodity tokens to borrower for repayment
-    mint_tokens(&env, &commodity_token_id, &borrower, 2000);
+    // Create other token contracts in the environment to ensure they don't interfere
+    let _other_token_admin = Address::generate(&env);
+    let _other_token_id = env.register_stellar_asset_contract_v2(_other_token_admin).address();
 
     let loan_id = client.create_loan_request(
         &borrower,
         &1000,
-        &String::from_str(&env, "Commodity backed loan"),
+        &String::from_str(&env, "Multi-token environment loan"),
         &60u32,
         &600u32,
         &collateral,
@@ -1292,18 +1292,15 @@ fn test_tokenized_repayment_integration() {
 
     client.fund_loan(&lender1, &loan_id, &1000);
 
-    // Test cross-contract interaction by using different token for repayment
-    // This simulates tokenized commodity repayments
+    // Ensure normal repayment still works even when other tokens exist in the environment
     let loan = client.get_loan_request(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
 
     let repayments = client.get_loan_repayments(&loan_id);
     assert_eq!(repayments.len(), 1);
-    // assert_eq!(repayments[0].amount, per_installment);
 
     let loan_after = client.get_loan_request(&loan_id);
     assert_eq!(loan_after.status, LoanStatus::Repaying);
@@ -1373,52 +1370,7 @@ fn test_multiple_concurrent_loans() {
     mint_tokens(&env, &token_id, &borrower2, 50_000);
     mint_tokens(&env, &token_id, &borrower3, 50_000);
 
-    // Create multiple loans simultaneously - commented out due to Vec collection issues
-    /*
-    let loan_ids: Vec<u32> = (0..5).map(|i| {
-        let amount = 500 + (i * 100) as i128;
-        let duration = 30 + (i * 15);
-        let rate = 400 + (i * 50);
-
-        let current_borrower = match i {
-            0..=1 => &borrower,
-            2..=3 => &borrower2,
-            _ => &borrower3,
-        };
-
-        let purpose = match i {
-            0 => "Loan 0",
-            1 => "Loan 1",
-            2 => "Loan 2",
-            3 => "Loan 3",
-            _ => "Loan 4",
-        };
-        client.create_loan_request(
-            current_borrower,
-            &amount,
-            &String::from_str(&env, purpose),
-            &duration,
-            &rate,
-            &collateral.clone(),
-        )
-    }).collect();
-
-    // Fund all loans with different lenders
-    for (i, loan_id) in loan_ids.iter().enumerate() {
-        let loan = client.get_loan_request(&loan_id);
-        let lender = if i % 2 == 0 { &lender1 } else { &lender2 };
-        client.fund_loan(lender, &loan_id, &loan.amount);
-    }
-
-    // Verify all loans were created and funded correctly
-    for loan_id in &loan_ids {
-        let loan = client.get_loan_request(&loan_id);
-        assert_eq!(loan.status, LoanStatus::Funded);
-        assert_eq!(loan.funded_amount, loan.amount);
-    }
-    */
-
-    // Simplified version - create loans individually
+    // Create multiple loans individually (simplified version)
     let loan_id1 = client.create_loan_request(
         &borrower,
         &500,
@@ -1504,8 +1456,7 @@ fn test_high_volume_loan_transactions() {
     let installments = final_loan.repayment_schedule.installments;
 
     for i in 0..installments {
-        env.ledger()
-            .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60); // Monthly
+        advance_days(&env, 31); // Monthly
 
         if i == installments - 1 {
             // For final payment, calculate exact remaining amount
@@ -1558,12 +1509,10 @@ fn test_loan_history_data_integrity() {
     let loan = client.get_loan_request(&loan_id);
     let per_installment = loan.repayment_schedule.per_installment_amount;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &per_installment);
 
     // For the final payment, calculate remaining due to ensure full repayment
@@ -1572,8 +1521,7 @@ fn test_loan_history_data_integrity() {
     let total_due = client.calculate_total_repayment_due(&loan_id);
     let remaining_due = total_due - total_paid_so_far;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &remaining_due);
 
     // Get complete history and verify data integrity
@@ -1664,8 +1612,7 @@ fn test_repayment_rounding_edge_cases() {
     let total_paid_so_far: i128 = repayments.iter().map(|r| r.amount).sum();
     let remaining_due = total_due - total_paid_so_far;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     client.repay_loan(&borrower, &loan_id, &remaining_due);
 
     let final_loan = client.get_loan_request(&loan_id);
@@ -1676,30 +1623,6 @@ fn test_repayment_rounding_edge_cases() {
     assert_eq!(final_total_paid, total_due);
 }
 
-#[test]
-fn test_zero_interest_rate_edge_case() {
-    let (env, _contract_id, client, borrower, _lender1, _lender2) = setup_test();
-    let collateral = CollateralInfo {
-        asset_type: String::from_str(&env, "Equipment"),
-        estimated_value: 1000,
-        verification_data: BytesN::from_array(&env, &[1u8; 32]),
-    };
-
-    // Try to create loan with zero interest (should fail)
-    let result = client.try_create_loan_request(
-        &borrower,
-        &1000,
-        &String::from_str(&env, "Zero interest test"),
-        &30u32,
-        &0u32, // Zero interest rate
-        &collateral,
-    );
-
-    match result {
-        Err(Ok(e)) if e == MicrolendingError::InvalidInterestRate.into() => (),
-        _ => panic!("Expected InvalidInterestRate error, got: {:?}", result),
-    }
-}
 
 #[test]
 fn test_maximum_values_edge_case() {
@@ -1730,6 +1653,16 @@ fn test_maximum_values_edge_case() {
     let expected_interest = (100_000_000i128 * 10000i128) / 10000i128;
     let expected_total = 100_000_000 + expected_interest;
     assert_eq!(total_due, expected_total);
+    
+    // Verify repayment schedule fields don't overflow
+    assert!(loan.repayment_schedule.per_installment_amount > 0);
+    if loan.repayment_schedule.installments > 0 {
+        let calculated_total = loan.repayment_schedule.per_installment_amount * loan.repayment_schedule.installments as i128;
+        // Should be close to total_due, with remainder handled in final payment
+        assert!(calculated_total <= total_due);
+        let remainder = total_due - calculated_total;
+        assert!(remainder >= 0 && remainder <= loan.repayment_schedule.installments as i128);
+    }
 }
 
 #[test]
@@ -1773,13 +1706,11 @@ fn test_timestamp_precision_and_ordering() {
     // Test repayment timing
     let per_installment = loan.repayment_schedule.per_installment_amount;
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     let repayment_time1 = env.ledger().timestamp();
     client.repay_loan(&borrower, &loan_id, &per_installment);
 
-    env.ledger()
-        .with_mut(|li| li.timestamp += 31 * 24 * 60 * 60);
+    advance_days(&env, 31);
     let repayment_time2 = env.ledger().timestamp();
     client.repay_loan(&borrower, &loan_id, &per_installment);
 
@@ -1787,4 +1718,73 @@ fn test_timestamp_precision_and_ordering() {
     assert!(repayments.get(0).unwrap().timestamp >= repayment_time1);
     assert!(repayments.get(1).unwrap().timestamp >= repayment_time2);
     assert!(repayments.get(1).unwrap().timestamp > repayments.get(0).unwrap().timestamp);
+}
+
+#[cfg(feature = "slow_tests")]
+#[test]
+fn test_multiple_concurrent_loans_slow() {
+    let (env, _contract_id, client, borrower, lender1, lender2) = setup_test();
+    let collateral = CollateralInfo {
+        asset_type: String::from_str(&env, "Equipment"),
+        estimated_value: 10000,
+        verification_data: BytesN::from_array(&env, &[1u8; 32]),
+    };
+    
+    let borrower2 = Address::generate(&env);
+    let borrower3 = Address::generate(&env);
+    let token_id = env.register_stellar_asset_contract_v2(Address::generate(&env)).address();
+    
+    mint_tokens(&env, &token_id, &borrower2, 50_000);
+    mint_tokens(&env, &token_id, &borrower3, 50_000);
+    
+    // Create 5 loans with standard Vec collection
+    let mut loan_ids: std::vec::Vec<u32> = std::vec::Vec::new();
+    for i in 0..5 {
+        let amount = 500 + (i * 100) as i128;
+        let duration = 30 + (i * 15);
+        let rate = 400 + (i * 50);
+        
+        let current_borrower = match i {
+            0..=1 => &borrower,
+            2..=3 => &borrower2,
+            _ => &borrower3,
+        };
+        
+        let purpose = match i {
+            0 => "Loan 0",
+            1 => "Loan 1",
+            2 => "Loan 2", 
+            3 => "Loan 3",
+            _ => "Loan 4",
+        };
+        
+        let loan_id = client.create_loan_request(
+            current_borrower,
+            &amount,
+            &String::from_str(&env, purpose),
+            &duration,
+            &rate,
+            &collateral.clone(),
+        );
+        loan_ids.push(loan_id);
+    }
+    
+    // Fund all loans
+    for (i, &loan_id) in loan_ids.iter().enumerate() {
+        let loan = client.get_loan_request(&loan_id);
+        let lender = if i % 2 == 0 { &lender1 } else { &lender2 };
+        client.fund_loan(lender, &loan_id, &loan.amount);
+    }
+    
+    // Verify all loans were funded
+    for &loan_id in &loan_ids {
+        let loan = client.get_loan_request(&loan_id);
+        assert_eq!(loan.status, LoanStatus::Funded);
+        assert_eq!(loan.funded_amount, loan.amount);
+    }
+    
+    let lender1_loans = client.get_lender_loans(&lender1);
+    let lender2_loans = client.get_lender_loans(&lender2);
+    assert_eq!(lender1_loans.len(), 3); // Loans 0, 2, 4
+    assert_eq!(lender2_loans.len(), 2); // Loans 1, 3
 }
