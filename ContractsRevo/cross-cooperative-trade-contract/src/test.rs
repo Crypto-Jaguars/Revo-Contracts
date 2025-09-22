@@ -3,6 +3,9 @@
 use super::*;
 use soroban_sdk::{testutils::Address as _, Address, Bytes, Env, String};
 
+// Basic contract initialization tests
+// More comprehensive tests are in the modular test structure
+
 #[test]
 fn test_initialization() {
     let env = Env::default();
@@ -52,6 +55,7 @@ fn test_double_initialization() {
     assert!(result2.is_err());
 }
 
+// Basic trade offer creation test
 #[test]
 fn test_create_trade_offer() {
     let env = Env::default();
