@@ -15,6 +15,8 @@ pub use utils::*;
 
 #[cfg(test)]
 mod test;
+#[cfg(test)]
+mod tests;
 
 // Data structures for trade offers
 #[contracttype]
