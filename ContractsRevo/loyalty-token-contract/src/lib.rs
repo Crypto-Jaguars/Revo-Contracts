@@ -7,7 +7,7 @@ mod redeem;
 mod rewards;
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 #[contracttype]
 pub struct LoyaltyProgram {
