@@ -406,3 +406,88 @@ fn test_multiple_lease_payment_processing() {
         assert_eq!(final_details.payments_made, 3);
     }
 }
+
+// ============ COMMODITY TOKEN INTEGRATION TESTS ============
+
+#[test]
+fn test_commodity_token_integration_placeholder() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = create_test_contract(&env);
+    let client = LandLeasingContractClient::new(&env, &contract_id);
+
+    let (admin, lessor, lessee, _) = create_test_accounts(&env);
+
+    client.initialize(&admin);
+
+    let land_bytes = Bytes::from_slice(&env, b"token_integration");
+    let land_id = env.crypto().sha256(&land_bytes).into();
+    let location = String::from_str(&env, "Token Integration Location");
+    let data_bytes = Bytes::from_slice(&env, b"token_hash");
+    let data_hash = env.crypto().sha256(&data_bytes).into();
+
+    let lease_id = client.create_lease(
+        &lessor,
+        &lessee,
+        &land_id,
+        &location,
+        &100,
+        &12,
+        &1000,
+        &data_hash,
+    );
+
+    // Test foundation exists for commodity token integration
+    let lease_details = client.get_lease_details(&lease_id).unwrap();
+    assert_eq!(lease_details.status, String::from_str(&env, "Active"));
+
+    // Placeholder for commodity token integration testing
+    // In real implementation, would integrate with commodity-token-contract
+    // and test tokenized payments, but for now verify payment system works
+    assert!(client.process_payment(&lease_id, &lessee, &1000));
+
+    let payment_history = client.get_payment_history(&lease_id);
+    assert_eq!(payment_history.len(), 1);
+}
+
+#[test]
+fn test_tokenized_payment_validation() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = create_test_contract(&env);
+    let client = LandLeasingContractClient::new(&env, &contract_id);
+
+    let (admin, lessor, lessee, _) = create_test_accounts(&env);
+
+    client.initialize(&admin);
+
+    let land_bytes = Bytes::from_slice(&env, b"tokenized_payment");
+    let land_id = env.crypto().sha256(&land_bytes).into();
+    let location = String::from_str(&env, "Tokenized Payment Location");
+    let data_bytes = Bytes::from_slice(&env, b"tokenized_hash");
+    let data_hash = env.crypto().sha256(&data_bytes).into();
+
+    let lease_id = client.create_lease(
+        &lessor,
+        &lessee,
+        &land_id,
+        &location,
+        &150,
+        &8,
+        &750,
+        &data_hash,
+    );
+
+    // Test foundation for tokenized payments
+    let lease_details = client.get_lease_details(&lease_id).unwrap();
+    assert_eq!(lease_details.status, String::from_str(&env, "Active"));
+    assert_eq!(lease_details.payment_amount, 750);
+
+    // Make regular payment for now (would be tokenized in real implementation)
+    assert!(client.process_payment(&lease_id, &lessee, &750));
+
+    let payment_history = client.get_payment_history(&lease_id);
+    assert_eq!(payment_history.len(), 1);
+}
