@@ -121,4 +121,5 @@ impl LandLeasingContract {
     }
 }
 
-mod test;
+#[cfg(test)]
+mod tests;
