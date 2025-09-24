@@ -1,6 +1,6 @@
-use soroban_sdk::{Env, BytesN, contracttype, symbol_short};
-use crate::utils::{DataKey, generate_claim_id, ContractError};
 use crate::insurance::InsurancePolicy;
+use crate::utils::{generate_claim_id, ContractError, DataKey};
+use soroban_sdk::{contracttype, symbol_short, BytesN, Env};
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -41,7 +41,7 @@ pub fn sub_claim(
     env.storage()
         .instance()
         .set(&DataKey::Claim(claim_id.clone()), &claim);
-    
+
     env.events()
         .publish((symbol_short!("CLAIM"), claim_id.clone()), claim);
 
