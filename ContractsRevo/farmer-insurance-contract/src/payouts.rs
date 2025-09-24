@@ -1,7 +1,7 @@
-use soroban_sdk::{Env, BytesN, Address, symbol_short};
-use crate::utils::DataKey;
 use crate::claims::Claim;
 use crate::insurance::InsurancePolicy;
+use crate::utils::DataKey;
+use soroban_sdk::{symbol_short, Address, BytesN, Env};
 
 pub fn pay_out(env: Env, claim_id: BytesN<32>, admin: Address) {
     admin.require_auth();
@@ -22,7 +22,9 @@ pub fn pay_out(env: Env, claim_id: BytesN<32>, admin: Address) {
         panic!("Policy is not active or already closed");
     }
 
-    env.storage().instance().remove(&DataKey::Claim(claim_id.clone()));
+    env.storage()
+        .instance()
+        .remove(&DataKey::Claim(claim_id.clone()));
 
     env.events().publish(
         (symbol_short!("PAYOUT"), claim_id, policy.farmer.clone()),

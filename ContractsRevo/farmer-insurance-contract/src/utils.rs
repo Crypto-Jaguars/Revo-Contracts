@@ -1,4 +1,4 @@
-use soroban_sdk::{Env, Bytes, BytesN, contracttype, contracterror};
+use soroban_sdk::{contracterror, contracttype, Bytes, BytesN, Env};
 
 #[contracttype]
 #[derive(Clone)]
@@ -28,9 +28,13 @@ pub fn generate_policy_id(env: &Env) -> Result<BytesN<32>, ContractError> {
         .checked_add(1)
         .ok_or(ContractError::PolicyCountOverflow)?;
 
-    env.storage().persistent().set(&DataKey::PolicyCount, &new_count);
+    env.storage()
+        .persistent()
+        .set(&DataKey::PolicyCount, &new_count);
     // Set TTL for persistent storage (~30 days)
-    env.storage().persistent().extend_ttl(&DataKey::PolicyCount, 17280, 17280);
+    env.storage()
+        .persistent()
+        .extend_ttl(&DataKey::PolicyCount, 17280, 17280);
 
     let timestamp = env.ledger().timestamp();
     let mut buffer = Bytes::new(env);
@@ -51,9 +55,13 @@ pub fn generate_claim_id(env: &Env) -> Result<BytesN<32>, ContractError> {
         .checked_add(1)
         .ok_or(ContractError::ClaimCountOverflow)?;
 
-    env.storage().persistent().set(&DataKey::ClaimCount, &new_count);
+    env.storage()
+        .persistent()
+        .set(&DataKey::ClaimCount, &new_count);
     // Set TTL for persistent storage (~30 days)
-    env.storage().persistent().extend_ttl(&DataKey::ClaimCount, 17280, 17280);
+    env.storage()
+        .persistent()
+        .extend_ttl(&DataKey::ClaimCount, 17280, 17280);
 
     let timestamp = env.ledger().timestamp();
     let mut buffer = Bytes::new(env);
