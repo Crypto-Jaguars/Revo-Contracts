@@ -1,5 +1,5 @@
-use soroban_sdk::{Env, Address, BytesN, Symbol, contracttype, symbol_short};
-use crate::utils::{DataKey, generate_policy_id, ContractError};
+use crate::utils::{generate_policy_id, ContractError, DataKey};
+use soroban_sdk::{contracttype, symbol_short, Address, BytesN, Env, Symbol};
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -11,9 +11,14 @@ pub struct InsurancePolicy {
     pub active: bool,
 }
 
-pub fn create_pol(env: Env, farmer: Address, coverage: Symbol, premium: i128) -> Result<BytesN<32>, ContractError> {
+pub fn create_pol(
+    env: Env,
+    farmer: Address,
+    coverage: Symbol,
+    premium: i128,
+) -> Result<BytesN<32>, ContractError> {
     farmer.require_auth();
-    
+
     if premium <= 0 {
         panic!("Premium must be positive");
     }
@@ -27,8 +32,11 @@ pub fn create_pol(env: Env, farmer: Address, coverage: Symbol, premium: i128) ->
         active: false,
     };
 
-    env.storage().instance().set(&DataKey::Policy(policy_id.clone()), &policy);
-    env.events().publish((symbol_short!("POLICY"), policy_id.clone()), policy.clone());
+    env.storage()
+        .instance()
+        .set(&DataKey::Policy(policy_id.clone()), &policy);
+    env.events()
+        .publish((symbol_short!("POLICY"), policy_id.clone()), policy.clone());
     Ok(policy_id)
 }
 
@@ -46,8 +54,13 @@ pub fn pay_prem(env: Env, policy_id: BytesN<32>) {
     }
 
     policy.active = true;
-    env.storage().instance().set(&DataKey::Policy(policy_id.clone()), &policy);
-    env.events().publish((symbol_short!("PREMIUM"), policy_id.clone()), policy.clone());
+    env.storage()
+        .instance()
+        .set(&DataKey::Policy(policy_id.clone()), &policy);
+    env.events().publish(
+        (symbol_short!("PREMIUM"), policy_id.clone()),
+        policy.clone(),
+    );
 }
 
 pub fn get_policy(env: Env, policy_id: BytesN<32>) -> InsurancePolicy {
