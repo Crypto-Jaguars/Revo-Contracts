@@ -1,13 +1,13 @@
 #![no_std]
 
+mod dispute;
 mod leasing;
 mod payment;
-mod dispute;
 mod utils;
 
+pub use dispute::*;
 pub use leasing::*;
 pub use payment::*;
-pub use dispute::*;
 pub use utils::*;
 
 use soroban_sdk::{contract, contractimpl, Address, Env};
@@ -35,7 +35,15 @@ impl LandLeasingContract {
         data_hash: soroban_sdk::BytesN<32>,
     ) -> soroban_sdk::BytesN<32> {
         leasing::create_lease_agreement(
-            &env, lessor, lessee, land_id, location, size, duration, payment_amount, data_hash,
+            &env,
+            lessor,
+            lessee,
+            land_id,
+            location,
+            size,
+            duration,
+            payment_amount,
+            data_hash,
         )
     }
 
@@ -77,10 +85,7 @@ impl LandLeasingContract {
     }
 
     /// Get land details
-    pub fn get_land_details(
-        env: Env,
-        land_id: soroban_sdk::BytesN<32>,
-    ) -> Option<leasing::Land> {
+    pub fn get_land_details(env: Env, land_id: soroban_sdk::BytesN<32>) -> Option<leasing::Land> {
         leasing::get_land_info(&env, land_id)
     }
 
@@ -113,12 +118,10 @@ impl LandLeasingContract {
     }
 
     /// Get active leases for an address
-    pub fn get_user_leases(
-        env: Env,
-        user: Address,
-    ) -> soroban_sdk::Vec<soroban_sdk::BytesN<32>> {
+    pub fn get_user_leases(env: Env, user: Address) -> soroban_sdk::Vec<soroban_sdk::BytesN<32>> {
         leasing::get_user_active_leases(&env, user)
     }
 }
 
-mod test;
+#[cfg(test)]
+mod tests;
