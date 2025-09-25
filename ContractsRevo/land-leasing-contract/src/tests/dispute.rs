@@ -2,7 +2,7 @@
 
 use super::utils::*;
 use crate::*;
-use soroban_sdk::{String, Bytes, testutils::Address as _};
+use soroban_sdk::{testutils::Address as _, Bytes, Env, String};
 
 #[test]
 fn test_basic_dispute_creation_and_resolution() {
@@ -21,7 +21,9 @@ fn test_basic_dispute_creation_and_resolution() {
     let data_bytes = Bytes::from_slice(&env, b"basic_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     let dispute_reason = String::from_str(&env, "Property damage claim");
     assert!(client.raise_dispute(&lease_id, &lessor, &dispute_reason));
@@ -54,13 +56,20 @@ fn test_dispute_blocks_payments() {
     let data_bytes = Bytes::from_slice(&env, b"payment_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     assert!(client.process_payment(&lease_id, &lessee, &1000));
 
     let dispute_reason = String::from_str(&env, "Quality dispute");
     assert!(client.raise_dispute(&lease_id, &lessor, &dispute_reason));
 
+    // Sanity check precondition
+    assert_eq!(
+        client.get_lease_details(&lease_id).unwrap().payments_made,
+        1
+    );
     // Try to make payment while disputed - this should panic because lease is not active
     client.process_payment(&lease_id, &lessee, &1000);
 }
@@ -83,12 +92,20 @@ fn test_multiple_dispute_attempts_on_same_lease() {
     let data_bytes = Bytes::from_slice(&env, b"multiple_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     let dispute_reason1 = String::from_str(&env, "First dispute");
     assert!(client.raise_dispute(&lease_id, &lessor, &dispute_reason1));
 
+    // Ensure disputed state before second attempt
+    assert_eq!(
+        client.get_lease_details(&lease_id).unwrap().status,
+        String::from_str(&env, "Disputed")
+    );
     // Try to raise another dispute while first is open - this should panic because lease is not active
+
     let dispute_reason2 = String::from_str(&env, "Second dispute");
     client.raise_dispute(&lease_id, &lessee, &dispute_reason2);
 }
@@ -110,7 +127,9 @@ fn test_dispute_after_partial_payments() {
     let data_bytes = Bytes::from_slice(&env, b"partial_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &6, &500, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &6, &500, &data_hash,
+    );
 
     // Make some payments first
     assert!(client.process_payment(&lease_id, &lessee, &500));
@@ -160,7 +179,9 @@ fn test_dispute_resolution_with_termination_outcome() {
     let data_bytes = Bytes::from_slice(&env, b"termination_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     // Make some payments to show this isn't immediate termination
     assert!(client.process_payment(&lease_id, &lessee, &1000));
@@ -201,7 +222,16 @@ fn test_lessee_initiated_dispute_vs_lessor_initiated() {
     let data_bytes1 = Bytes::from_slice(&env, b"lessor_data");
     let data_hash1 = env.crypto().sha256(&data_bytes1).into();
 
-    let lease_id1 = client.create_lease(&lessor1, &lessee1, &land_id1, &location1, &100, &12, &1000, &data_hash1);
+    let lease_id1 = client.create_lease(
+        &lessor1,
+        &lessee1,
+        &land_id1,
+        &location1,
+        &100,
+        &12,
+        &1000,
+        &data_hash1,
+    );
 
     let land_bytes2 = Bytes::from_slice(&env, b"lessee_dispute");
     let land_id2 = env.crypto().sha256(&land_bytes2).into();
@@ -209,7 +239,16 @@ fn test_lessee_initiated_dispute_vs_lessor_initiated() {
     let data_bytes2 = Bytes::from_slice(&env, b"lessee_data");
     let data_hash2 = env.crypto().sha256(&data_bytes2).into();
 
-    let lease_id2 = client.create_lease(&lessor2, &lessee2, &land_id2, &location2, &100, &12, &1000, &data_hash2);
+    let lease_id2 = client.create_lease(
+        &lessor2,
+        &lessee2,
+        &land_id2,
+        &location2,
+        &100,
+        &12,
+        &1000,
+        &data_hash2,
+    );
 
     // Lessor-initiated dispute
     let lessor_dispute_reason = String::from_str(&env, "Lessee breach of contract");
@@ -251,7 +290,9 @@ fn test_dispute_state_persistence_across_operations() {
     let data_bytes = Bytes::from_slice(&env, b"persistence_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     // Initial state
     let initial_lease = client.get_lease_details(&lease_id).unwrap();
@@ -301,7 +342,9 @@ fn test_unauthorized_dispute_creation() {
     let data_bytes = Bytes::from_slice(&env, b"unauthorized_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     let dispute_reason = String::from_str(&env, "Unauthorized interference");
     client.raise_dispute(&lease_id, &outsider, &dispute_reason);
@@ -325,7 +368,9 @@ fn test_unauthorized_dispute_resolution() {
     let data_bytes = Bytes::from_slice(&env, b"resolution_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     let dispute_reason = String::from_str(&env, "Valid dispute");
     assert!(client.raise_dispute(&lease_id, &lessor, &dispute_reason));
@@ -352,7 +397,9 @@ fn test_empty_dispute_reason() {
     let data_bytes = Bytes::from_slice(&env, b"empty_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     let empty_reason = String::from_str(&env, "");
     client.raise_dispute(&lease_id, &lessor, &empty_reason);
@@ -376,7 +423,9 @@ fn test_dispute_on_terminated_lease() {
     let data_bytes = Bytes::from_slice(&env, b"terminated_data");
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
-    let lease_id = client.create_lease(&lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash);
+    let lease_id = client.create_lease(
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
+    );
 
     assert!(client.terminate_lease(&lease_id, &lessor));
 

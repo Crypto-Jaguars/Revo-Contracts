@@ -2,7 +2,7 @@
 
 use super::utils::*;
 use crate::*;
-use soroban_sdk::{String, Bytes, testutils::Address as _, Address};
+use soroban_sdk::{testutils::Address as _, Address, Bytes, String};
 
 #[test]
 fn test_process_payment() {
@@ -23,14 +23,7 @@ fn test_process_payment() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &50,
-        &6,
-        &500,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &50, &6, &500, &data_hash,
     );
 
     // Process payment
@@ -67,14 +60,7 @@ fn test_payment_by_wrong_user() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &50,
-        &6,
-        &500,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &50, &6, &500, &data_hash,
     );
 
     // This should panic - other_user is not the lessee
@@ -102,14 +88,9 @@ fn test_lease_completion() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &10,
+        &lessor, &lessee, &land_id, &location, &10,
         &1, // 1 month - will complete after 1 payment
-        &100,
-        &data_hash,
+        &100, &data_hash,
     );
 
     // Make the payment (completes the lease)
@@ -143,14 +124,8 @@ fn test_recurring_payments_validation() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &5, // 5 months
-        &200,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &100, &5, // 5 months
+        &200, &data_hash,
     );
 
     // Make payments over multiple months
@@ -188,13 +163,7 @@ fn test_incorrect_payment_amount() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &12,
-        &1000, // Expected payment is 1000
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, // Expected payment is 1000
         &data_hash,
     );
 
@@ -222,14 +191,7 @@ fn test_payment_insufficient_funds() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &12,
-        &1000,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
     );
 
     // This should panic - insufficient payment amount (paying less than required)
@@ -255,14 +217,8 @@ fn test_payment_schedule_adherence() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &150,
-        &6, // 6 months
-        &300,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &150, &6, // 6 months
+        &300, &data_hash,
     );
 
     // Make payments according to schedule
@@ -307,14 +263,8 @@ fn test_early_lease_termination_with_payments() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &10, // 10 months
-        &500,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &100, &10, // 10 months
+        &500, &data_hash,
     );
 
     // Make partial payments (3 of 10)
@@ -330,7 +280,10 @@ fn test_early_lease_termination_with_payments() {
 
     // Verify termination with partial payments
     let terminated_lease = client.get_lease_details(&lease_id).unwrap();
-    assert_eq!(terminated_lease.status, String::from_str(&env, "Terminated"));
+    assert_eq!(
+        terminated_lease.status,
+        String::from_str(&env, "Terminated")
+    );
     assert_eq!(terminated_lease.payments_made, 3);
 
     let payment_history = client.get_payment_history(&lease_id);
@@ -385,7 +338,7 @@ fn test_multiple_lease_payment_processing() {
         lease_ids.push_back(lease_id);
     }
 
-    // Process payments for all leases concurrently
+    // Process payments for all leases
     for i in 0..10 {
         let lease_id = lease_ids.get(i).unwrap();
         let lease_details = client.get_lease_details(&lease_id).unwrap();
@@ -428,14 +381,7 @@ fn test_commodity_token_integration_placeholder() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &12,
-        &1000,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
     );
 
     // Test foundation exists for commodity token integration
@@ -470,14 +416,7 @@ fn test_tokenized_payment_validation() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &150,
-        &8,
-        &750,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &150, &8, &750, &data_hash,
     );
 
     // Test foundation for tokenized payments

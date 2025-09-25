@@ -2,7 +2,7 @@
 
 use super::utils::*;
 use crate::*;
-use soroban_sdk::{Bytes, String, testutils::Address as _};
+use soroban_sdk::{testutils::Address as _, Bytes, String};
 
 #[test]
 fn test_initialize_contract() {
@@ -184,13 +184,7 @@ fn test_create_lease_invalid_payment_amount() {
 
     // This should panic due to zero payment amount
     client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &12,
-        &0, // Invalid payment amount
+        &lessor, &lessee, &land_id, &location, &100, &12, &0, // Invalid payment amount
         &data_hash,
     );
 }
@@ -216,14 +210,8 @@ fn test_create_lease_invalid_land_size() {
 
     // This should panic due to zero land size
     client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &0, // Invalid land size
-        &12,
-        &1000,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &0, // Invalid land size
+        &12, &1000, &data_hash,
     );
 }
 
@@ -287,14 +275,7 @@ fn test_unauthorized_lease_termination() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &12,
-        &1000,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
     );
 
     // This should panic - unauthorized termination
@@ -320,14 +301,7 @@ fn test_lease_termination_by_lessee() {
     let data_hash = env.crypto().sha256(&data_bytes).into();
 
     let lease_id = client.create_lease(
-        &lessor,
-        &lessee,
-        &land_id,
-        &location,
-        &100,
-        &12,
-        &1000,
-        &data_hash,
+        &lessor, &lessee, &land_id, &location, &100, &12, &1000, &data_hash,
     );
 
     // Lessee should be able to terminate
@@ -474,7 +448,10 @@ fn test_end_to_end_lease_ecosystem() {
     assert!(client.terminate_lease(&lease_id_1, &lessor_1));
 
     let terminated_lease = client.get_lease_details(&lease_id_1).unwrap();
-    assert_eq!(terminated_lease.status, String::from_str(&env, "Terminated"));
+    assert_eq!(
+        terminated_lease.status,
+        String::from_str(&env, "Terminated")
+    );
     assert_eq!(terminated_lease.payments_made, 2); // Partial payments before termination
 
     // Verify ecosystem integrity

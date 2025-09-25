@@ -1,9 +1,7 @@
 #![cfg(test)]
 
 use crate::*;
-use soroban_sdk::{
-    testutils::Address as _, Address, Env,
-};
+use soroban_sdk::{testutils::Address as _, Address, Env};
 
 pub fn create_test_contract(env: &Env) -> Address {
     env.register(LandLeasingContract, ())
