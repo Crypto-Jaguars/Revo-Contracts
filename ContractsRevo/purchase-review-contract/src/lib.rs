@@ -14,6 +14,9 @@ mod verification;
 #[cfg(test)]
 mod test;
 
+#[cfg(test)]
+mod tests;
+
 #[contract]
 pub struct PurchaseReviewContract;
 
@@ -117,9 +120,10 @@ impl PurchaseReviewContract {
         product_id: u64,
         review_id: u32,
     ) -> Result<ReviewDetails, PurchaseReviewError> {
+        let key = DataKeys::Review(product_id, review_id);
         env.storage()
             .persistent()
-            .get(&(product_id, review_id))
+            .get(&key)
             .ok_or(PurchaseReviewError::ReviewNotFound)
     }
 }

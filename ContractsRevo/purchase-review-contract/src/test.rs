@@ -145,9 +145,10 @@ fn test_get_review() {
 
     // Store the review in storage within contract context
     env.as_contract(&client.address, || {
+        let key = DataKeys::Review(product_id, review_id);
         env.storage()
             .persistent()
-            .set(&(product_id, review_id), &review);
+            .set(&key, &review);
     });
 
     // Retrieve and verify the review
