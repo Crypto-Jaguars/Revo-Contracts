@@ -3,7 +3,7 @@
 use super::super::*;
 use soroban_sdk::{
     testutils::{Address as _, Events, Ledger},
-    Address, Env, String, Vec,
+    Address, Env, String, Vec, Symbol, FromVal,
 };
 
 /// Test setup helper that initializes the contract with admin
@@ -92,31 +92,56 @@ pub fn create_review_text(env: &Env, length: usize) -> String {
 
 /// Helper to verify that an event was emitted
 pub fn assert_event_emitted(env: &Env, expected_contract_id: Address, expected_topic: &str) {
+    let expected_symbol = Symbol::new(env, expected_topic);
     let events = env.events().all();
     let mut found = false;
-    
+
     for event in events.iter() {
         if event.0 == expected_contract_id {
-            // Check if the topic matches (simplified check)
-            found = true;
+            let topics = &event.1;
+            for topic in topics.iter() {
+                let symbol = Symbol::from_val(env, &topic);
+                if symbol == expected_symbol {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if found {
             break;
         }
     }
-    
-    assert!(found, "Expected event with topic '{}' was not emitted", expected_topic);
+
+    assert!(
+        found,
+        "Expected event with topic '{}' was not emitted",
+        expected_topic
+    );
 }
 
 /// Helper to count events with specific topic
-pub fn count_events_with_topic(env: &Env, expected_contract_id: Address) -> usize {
+pub fn count_events_with_topic(
+    env: &Env,
+    expected_contract_id: Address,
+    expected_topic: &str,
+) -> usize {
+    let expected_symbol = Symbol::new(env, expected_topic);
     let events = env.events().all();
     let mut count = 0;
-    
+
     for event in events.iter() {
         if event.0 == expected_contract_id {
-            count += 1;
+            let topics = &event.1;
+            for topic in topics.iter() {
+                let symbol = Symbol::from_val(env, &topic);
+                if symbol == expected_symbol {
+                    count += 1;
+                    break;
+                }
+            }
         }
     }
-    
+
     count
 }
 
