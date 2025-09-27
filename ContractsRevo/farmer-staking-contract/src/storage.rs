@@ -1,6 +1,6 @@
-use soroban_sdk::{symbol_short, Address, Env, Symbol};
-use crate::types::{PoolInfo, StakeInfo};
 use crate::errors::StakingError;
+use crate::types::{PoolInfo, StakeInfo};
+use soroban_sdk::{symbol_short, Address, Env, Symbol};
 
 const POOL_INFO: Symbol = symbol_short!("POOL");
 const STAKE_PREFIX: Symbol = symbol_short!("STAKE");

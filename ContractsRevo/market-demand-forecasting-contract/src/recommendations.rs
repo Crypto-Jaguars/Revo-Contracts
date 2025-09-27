@@ -77,13 +77,12 @@ pub fn generate_recommendation(
 
             // Correctly place the key after the last element that was smaller.
             if averaged_demands.get(j).unwrap().1 < key.1 {
-                 averaged_demands.set(j, key);
+                averaged_demands.set(j, key);
             } else {
-                 averaged_demands.set(j + 1, key);
+                averaged_demands.set(j + 1, key);
             }
         }
     }
-
 
     // Fetch the full product data for the top recommendations.
     let mut recommendations = Vec::new(env);

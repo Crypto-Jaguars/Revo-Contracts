@@ -1,17 +1,25 @@
-use soroban_sdk::{testutils::{Address as _, Ledger}, vec, Address, BytesN, Env, String, Vec};
 use crate::{PriceStabilizationContract, PriceStabilizationContractClient};
+use soroban_sdk::{
+    testutils::{Address as _, Ledger},
+    vec, Address, BytesN, Env, String, Vec,
+};
 
 /// Setup test environment with contract and addresses
-pub fn setup_test_environment() -> (Env, PriceStabilizationContractClient<'static>, Address, Address) {
+pub fn setup_test_environment() -> (
+    Env,
+    PriceStabilizationContractClient<'static>,
+    Address,
+    Address,
+) {
     let env = Env::default();
     env.mock_all_auths();
 
     let contract_id = env.register(PriceStabilizationContract, ());
     let client = PriceStabilizationContractClient::new(&env, &contract_id);
-    
+
     let admin = Address::generate(&env);
     let farmer = Address::generate(&env);
-    
+
     (env, client, admin, farmer)
 }
 
@@ -57,18 +65,25 @@ pub fn create_test_farmer(env: &Env, _suffix: u8) -> Address {
 }
 
 /// Setup complete test scenario with fund and farmers
-pub fn setup_complete_scenario() -> (Env, PriceStabilizationContractClient<'static>, Address, Address, Address, BytesN<32>) {
+pub fn setup_complete_scenario() -> (
+    Env,
+    PriceStabilizationContractClient<'static>,
+    Address,
+    Address,
+    Address,
+    BytesN<32>,
+) {
     let (env, client, admin, farmer1) = setup_test_environment();
     let farmer2 = Address::generate(&env);
-    
+
     // Initialize contract
     client.init(&admin);
-    
+
     // Create fund
     let fund_name = create_test_fund_name(&env, 1);
     let crop_type = create_test_crop_type(&env, 1);
     let price_threshold = 10000i128;
-    
+
     let fund_result = client.try_create_fund(&admin, &fund_name, &price_threshold, &crop_type);
     let fund_id = match fund_result {
         Ok(inner_result) => match inner_result {
@@ -77,7 +92,7 @@ pub fn setup_complete_scenario() -> (Env, PriceStabilizationContractClient<'stat
         },
         Err(contract_err) => panic!("create_fund contract call failed: {:?}", contract_err),
     };
-    
+
     (env, client, admin, farmer1, farmer2, fund_id)
 }
 
@@ -85,11 +100,11 @@ pub fn setup_complete_scenario() -> (Env, PriceStabilizationContractClient<'stat
 pub fn validate_fund_creation(
     client: &PriceStabilizationContractClient<'_>,
     fund_id: &BytesN<32>,
-    _expected_crop_type: &String
+    _expected_crop_type: &String,
 ) {
     let status = client.try_get_fund_status(fund_id);
     assert!(status.is_ok(), "fund status should be retrievable");
-    
+
     // Additional validation can be added here based on fund status structure
 }
 
@@ -112,7 +127,7 @@ impl PerformanceUtils {
         }
         farmers
     }
-    
+
     /// Create multiple test contributions for scalability testing
     pub fn create_multiple_contributions(env: &Env, count: u32) -> Vec<i128> {
         let mut contributions = Vec::new(&env);
@@ -131,18 +146,18 @@ impl ValidationUtils {
     pub fn validate_farmer_eligibility(
         client: &PriceStabilizationContractClient<'_>,
         farmer: &Address,
-        fund_id: &BytesN<32>
+        fund_id: &BytesN<32>,
     ) -> bool {
         // This would check if farmer is registered and has crops assigned
         // Implementation depends on contract's farmer tracking structure
         client.try_get_farmer_payouts(fund_id, farmer).is_ok()
     }
-    
+
     /// Validate fund balance sufficiency
     pub fn validate_fund_balance(
         client: &PriceStabilizationContractClient<'_>,
         fund_id: &BytesN<32>,
-        _required_amount: i128
+        _required_amount: i128,
     ) -> bool {
         if let Ok(_status) = client.try_get_fund_status(fund_id) {
             // This would check fund balance vs required amount

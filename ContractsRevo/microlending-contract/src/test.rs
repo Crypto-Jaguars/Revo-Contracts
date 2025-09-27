@@ -2,8 +2,9 @@
 
 use super::*;
 use soroban_sdk::{
+    symbol_short,
     testutils::{Address as _, Ledger as _},
-    Address, BytesN, Env, IntoVal, String, symbol_short,
+    Address, BytesN, Env, IntoVal, String,
 };
 
 // Import for feature-gated test
@@ -41,7 +42,9 @@ fn setup_test<'a>() -> (
 
     // Deploy a mock token contract and mint tokens
     let token_admin = Address::generate(&env);
-    let token_address = env.register_stellar_asset_contract_v2(token_admin.clone()).address();
+    let token_address = env
+        .register_stellar_asset_contract_v2(token_admin.clone())
+        .address();
     mint_tokens(&env, &token_address, &borrower, 100_000);
     mint_tokens(&env, &token_address, &lender1, 100_000);
     mint_tokens(&env, &token_address, &lender2, 100_000);
@@ -607,7 +610,8 @@ fn test_funding_with_insufficient_balance() {
     let lender_with_insufficient_balance = Address::generate(&env);
     mint_tokens(
         &env,
-        &env.register_stellar_asset_contract_v2(Address::generate(&env)).address(),
+        &env.register_stellar_asset_contract_v2(Address::generate(&env))
+            .address(),
         &lender_with_insufficient_balance,
         500,
     ); // Low balance
@@ -709,11 +713,7 @@ fn test_repayment_by_wrong_borrower_is_rejected() {
 
     advance_days(&env, 31);
 
-    let result = client.try_repay_loan(
-        &wrong_borrower,
-        &loan_id,
-        &per_installment,
-    );
+    let result = client.try_repay_loan(&wrong_borrower, &loan_id, &per_installment);
     match result {
         Err(Ok(e)) if e == MicrolendingError::Unauthorized.into() => (),
         _ => panic!(
@@ -1168,10 +1168,10 @@ fn test_borrower_metrics_tracking() {
     let loan2 = client.get_loan_request(&loan_id2);
     assert_eq!(loan1.status, LoanStatus::Completed);
     assert_eq!(loan2.status, LoanStatus::Defaulted);
-    
+
     // Note: If there was a get_borrower_metrics() API, we would assert:
     // - metrics.total_loans == 2
-    // - metrics.completed_loans == 1  
+    // - metrics.completed_loans == 1
     // - metrics.defaulted_loans == 1
 }
 
@@ -1204,10 +1204,14 @@ fn test_lender_share_percentage_edge_cases() {
     // Should add up to close to 10000 basis points (100%) - allowing for rounding
     let total_percent = lender1_percent + lender2_percent;
     assert!(total_percent >= 9999 && total_percent <= 10000);
-    
+
     // Document where the rounding loss goes (if any)
     let rounding_loss = 10000 - total_percent;
-    assert!(rounding_loss <= 1, "Rounding loss should be at most 1 basis point, got: {}", rounding_loss);
+    assert!(
+        rounding_loss <= 1,
+        "Rounding loss should be at most 1 basis point, got: {}",
+        rounding_loss
+    );
 
     // Verify individual percentages (allowing for rounding)
     assert!(lender1_percent >= 3330 && lender1_percent <= 3340); // ~33.3%
@@ -1279,7 +1283,9 @@ fn test_repayment_flow_in_presence_of_other_tokens() {
 
     // Create other token contracts in the environment to ensure they don't interfere
     let _other_token_admin = Address::generate(&env);
-    let _other_token_id = env.register_stellar_asset_contract_v2(_other_token_admin).address();
+    let _other_token_id = env
+        .register_stellar_asset_contract_v2(_other_token_admin)
+        .address();
 
     let loan_id = client.create_loan_request(
         &borrower,
@@ -1364,7 +1370,9 @@ fn test_multiple_concurrent_loans() {
     // Create multiple borrowers for concurrent loans
     let borrower2 = Address::generate(&env);
     let borrower3 = Address::generate(&env);
-    let token_id = env.register_stellar_asset_contract_v2(Address::generate(&env)).address();
+    let token_id = env
+        .register_stellar_asset_contract_v2(Address::generate(&env))
+        .address();
 
     // Mint tokens for all borrowers
     mint_tokens(&env, &token_id, &borrower2, 50_000);
@@ -1623,7 +1631,6 @@ fn test_repayment_rounding_edge_cases() {
     assert_eq!(final_total_paid, total_due);
 }
 
-
 #[test]
 fn test_maximum_values_edge_case() {
     let (env, _contract_id, client, borrower, _lender1, _lender2) = setup_test();
@@ -1653,11 +1660,12 @@ fn test_maximum_values_edge_case() {
     let expected_interest = (100_000_000i128 * 10000i128) / 10000i128;
     let expected_total = 100_000_000 + expected_interest;
     assert_eq!(total_due, expected_total);
-    
+
     // Verify repayment schedule fields don't overflow
     assert!(loan.repayment_schedule.per_installment_amount > 0);
     if loan.repayment_schedule.installments > 0 {
-        let calculated_total = loan.repayment_schedule.per_installment_amount * loan.repayment_schedule.installments as i128;
+        let calculated_total = loan.repayment_schedule.per_installment_amount
+            * loan.repayment_schedule.installments as i128;
         // Should be close to total_due, with remainder handled in final payment
         assert!(calculated_total <= total_due);
         let remainder = total_due - calculated_total;
@@ -1729,35 +1737,37 @@ fn test_multiple_concurrent_loans_slow() {
         estimated_value: 10000,
         verification_data: BytesN::from_array(&env, &[1u8; 32]),
     };
-    
+
     let borrower2 = Address::generate(&env);
     let borrower3 = Address::generate(&env);
-    let token_id = env.register_stellar_asset_contract_v2(Address::generate(&env)).address();
-    
+    let token_id = env
+        .register_stellar_asset_contract_v2(Address::generate(&env))
+        .address();
+
     mint_tokens(&env, &token_id, &borrower2, 50_000);
     mint_tokens(&env, &token_id, &borrower3, 50_000);
-    
+
     // Create 5 loans with standard Vec collection
     let mut loan_ids: std::vec::Vec<u32> = std::vec::Vec::new();
     for i in 0..5 {
         let amount = 500 + (i * 100) as i128;
         let duration = 30 + (i * 15);
         let rate = 400 + (i * 50);
-        
+
         let current_borrower = match i {
             0..=1 => &borrower,
             2..=3 => &borrower2,
             _ => &borrower3,
         };
-        
+
         let purpose = match i {
             0 => "Loan 0",
             1 => "Loan 1",
-            2 => "Loan 2", 
+            2 => "Loan 2",
             3 => "Loan 3",
             _ => "Loan 4",
         };
-        
+
         let loan_id = client.create_loan_request(
             current_borrower,
             &amount,
@@ -1768,21 +1778,21 @@ fn test_multiple_concurrent_loans_slow() {
         );
         loan_ids.push(loan_id);
     }
-    
+
     // Fund all loans
     for (i, &loan_id) in loan_ids.iter().enumerate() {
         let loan = client.get_loan_request(&loan_id);
         let lender = if i % 2 == 0 { &lender1 } else { &lender2 };
         client.fund_loan(lender, &loan_id, &loan.amount);
     }
-    
+
     // Verify all loans were funded
     for &loan_id in &loan_ids {
         let loan = client.get_loan_request(&loan_id);
         assert_eq!(loan.status, LoanStatus::Funded);
         assert_eq!(loan.funded_amount, loan.amount);
     }
-    
+
     let lender1_loans = client.get_lender_loans(&lender1);
     let lender2_loans = client.get_lender_loans(&lender2);
     assert_eq!(lender1_loans.len(), 3); // Loans 0, 2, 4

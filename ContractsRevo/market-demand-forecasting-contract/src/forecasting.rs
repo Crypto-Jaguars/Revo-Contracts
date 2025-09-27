@@ -21,11 +21,7 @@ pub fn generate_forecast(
     // Generate a unique ID for the forecast.
     let forecast_id = utils::generate_id(
         env,
-        (
-            product_id.clone(),
-            region.clone(),
-            env.ledger().timestamp(),
-        ),
+        (product_id.clone(), region.clone(), env.ledger().timestamp()),
     );
 
     let forecast = DemandForecast {

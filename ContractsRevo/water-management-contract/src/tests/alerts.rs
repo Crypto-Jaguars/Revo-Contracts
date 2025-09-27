@@ -1,15 +1,8 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address, BytesN, Env, String, Vec,
-};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, String, Vec};
 
-use crate::{
-    datatypes::*,
-    WaterManagementContract,
-    WaterManagementContractClient,
-};
+use crate::{datatypes::*, WaterManagementContract, WaterManagementContractClient};
 
 use super::utils::*;
 
@@ -237,13 +230,7 @@ fn test_get_farmer_alerts() {
             _ => AlertType::EfficiencyAlert,
         };
 
-        client.generate_alert(
-            &alert_id,
-            &farmer,
-            &parcel_id,
-            &alert_type,
-            &message,
-        );
+        client.generate_alert(&alert_id, &farmer, &parcel_id, &alert_type, &message);
     }
 
     // Get all alerts for farmer
@@ -347,7 +334,7 @@ fn test_excessive_single_usage_alert() {
             excessive_count += 1;
         }
     }
-    
+
     assert!(excessive_count >= 1);
 }
 
@@ -403,14 +390,9 @@ fn test_alert_types_coverage() {
 
     for (i, alert_type) in alert_types.iter().enumerate() {
         let alert_id = create_test_alert_id(&env, (i + 1) as u8);
-        
-        let result = client.try_generate_alert(
-            &alert_id,
-            &farmer,
-            &parcel_id,
-            alert_type,
-            &message,
-        );
+
+        let result =
+            client.try_generate_alert(&alert_id, &farmer, &parcel_id, alert_type, &message);
         assert!(result.is_ok());
 
         // Verify alert was created with correct type
@@ -489,7 +471,7 @@ fn test_alert_edge_cases() {
 
     // Test resolving already resolved alert
     let alert_id = create_test_alert_id(&env, 1);
-    
+
     client.generate_alert(
         &alert_id,
         &farmer,

@@ -9,7 +9,13 @@ fn test_create_basic_loyalty_program() {
     let (env, contract_address, program_id) = setup_test();
     let rewards = create_basic_rewards(&env);
 
-    setup_loyalty_program(&env, &contract_address, program_id.clone(), 1, rewards.clone());
+    setup_loyalty_program(
+        &env,
+        &contract_address,
+        program_id.clone(),
+        1,
+        rewards.clone(),
+    );
 
     let program = get_program_details(&env, &contract_address, program_id.clone());
     assert_eq!(program.program_id, program_id);
@@ -26,7 +32,13 @@ fn test_create_program_with_different_point_rates() {
 
     for (i, &rate) in test_rates.iter().enumerate() {
         let program_id = create_program_with_id(&env, i as u8 + 2);
-        setup_loyalty_program(&env, &contract_address, program_id.clone(), rate, rewards.clone());
+        setup_loyalty_program(
+            &env,
+            &contract_address,
+            program_id.clone(),
+            rate,
+            rewards.clone(),
+        );
 
         let program = get_program_details(&env, &contract_address, program_id);
         assert_eq!(program.points_per_transaction, rate);
@@ -38,7 +50,13 @@ fn test_create_program_with_no_rewards() {
     let (env, contract_address, program_id) = setup_test();
     let empty_rewards = Vec::new(&env);
 
-    setup_loyalty_program(&env, &contract_address, program_id.clone(), 1, empty_rewards);
+    setup_loyalty_program(
+        &env,
+        &contract_address,
+        program_id.clone(),
+        1,
+        empty_rewards,
+    );
 
     let program = get_program_details(&env, &contract_address, program_id);
     assert_eq!(program.redemption_options.len(), 0);
@@ -49,7 +67,13 @@ fn test_create_program_with_single_reward() {
     let (env, contract_address, program_id) = setup_test();
     let single_reward = create_single_reward(&env, 1, "Exclusive Gift", 500, 1);
 
-    setup_loyalty_program(&env, &contract_address, program_id.clone(), 2, single_reward);
+    setup_loyalty_program(
+        &env,
+        &contract_address,
+        program_id.clone(),
+        2,
+        single_reward,
+    );
 
     let program = get_program_details(&env, &contract_address, program_id);
     assert_eq!(program.redemption_options.len(), 1);
@@ -68,7 +92,13 @@ fn test_create_duplicate_program() {
     let rewards = create_basic_rewards(&env);
 
     // Create program first time
-    setup_loyalty_program(&env, &contract_address, program_id.clone(), 1, rewards.clone());
+    setup_loyalty_program(
+        &env,
+        &contract_address,
+        program_id.clone(),
+        1,
+        rewards.clone(),
+    );
 
     // Attempt to create same program again
     setup_loyalty_program(&env, &contract_address, program_id, 2, rewards);
@@ -85,8 +115,20 @@ fn test_create_multiple_different_programs() {
     let program3 = create_program_with_id(&env, 12);
 
     setup_loyalty_program(&env, &contract_address, program1.clone(), 1, basic_rewards);
-    setup_loyalty_program(&env, &contract_address, program2.clone(), 5, premium_rewards);
-    setup_loyalty_program(&env, &contract_address, program3.clone(), 10, Vec::new(&env));
+    setup_loyalty_program(
+        &env,
+        &contract_address,
+        program2.clone(),
+        5,
+        premium_rewards,
+    );
+    setup_loyalty_program(
+        &env,
+        &contract_address,
+        program3.clone(),
+        10,
+        Vec::new(&env),
+    );
 
     // Verify each program
     let retrieved_program1 = get_program_details(&env, &contract_address, program1);
@@ -126,9 +168,21 @@ fn test_program_with_varying_reward_quantities() {
     let program = get_program_details(&env, &contract_address, program_id);
     assert_eq!(program.redemption_options.len(), 3);
 
-    let common = program.redemption_options.iter().find(|r| r.id == 1).unwrap();
-    let rare = program.redemption_options.iter().find(|r| r.id == 2).unwrap();
-    let ultra_rare = program.redemption_options.iter().find(|r| r.id == 3).unwrap();
+    let common = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 1)
+        .unwrap();
+    let rare = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 2)
+        .unwrap();
+    let ultra_rare = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 3)
+        .unwrap();
 
     assert_eq!(common.available_quantity, 100);
     assert_eq!(rare.available_quantity, 10);
@@ -148,9 +202,21 @@ fn test_program_with_varying_point_requirements() {
 
     let program = get_program_details(&env, &contract_address, program_id);
 
-    let low_cost = program.redemption_options.iter().find(|r| r.id == 1).unwrap();
-    let medium_cost = program.redemption_options.iter().find(|r| r.id == 2).unwrap();
-    let high_cost = program.redemption_options.iter().find(|r| r.id == 3).unwrap();
+    let low_cost = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 1)
+        .unwrap();
+    let medium_cost = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 2)
+        .unwrap();
+    let high_cost = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 3)
+        .unwrap();
 
     assert_eq!(low_cost.points_required, 10);
     assert_eq!(medium_cost.points_required, 250);
@@ -189,7 +255,13 @@ fn test_program_with_max_point_rate() {
     let (env, contract_address, program_id) = setup_test();
     let rewards = create_basic_rewards(&env);
 
-    setup_loyalty_program(&env, &contract_address, program_id.clone(), u32::MAX, rewards);
+    setup_loyalty_program(
+        &env,
+        &contract_address,
+        program_id.clone(),
+        u32::MAX,
+        rewards,
+    );
 
     let program = get_program_details(&env, &contract_address, program_id);
     assert_eq!(program.points_per_transaction, u32::MAX);
@@ -203,12 +275,22 @@ fn test_program_reward_modifications_after_creation() {
     setup_basic_program(&env, &contract_address, program_id.clone());
 
     // Award points and redeem to modify inventory
-    award_points_to_user(&env, &contract_address, program_id.clone(), user.clone(), 200);
+    award_points_to_user(
+        &env,
+        &contract_address,
+        program_id.clone(),
+        user.clone(),
+        200,
+    );
     redeem_reward_for_user(&env, &contract_address, program_id.clone(), user, 1);
 
     // Check that program reflects inventory changes
     let program = get_program_details(&env, &contract_address, program_id);
-    let gift_card = program.redemption_options.iter().find(|r| r.id == 1).unwrap();
+    let gift_card = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 1)
+        .unwrap();
     assert_eq!(gift_card.available_quantity, 9); // Reduced from 10 to 9
 }
 
@@ -224,7 +306,13 @@ fn test_list_available_rewards() {
     assert_eq!(available_rewards.len(), 3);
 
     // Exhaust one type of reward
-    award_points_to_user(&env, &contract_address, program_id.clone(), user.clone(), 500);
+    award_points_to_user(
+        &env,
+        &contract_address,
+        program_id.clone(),
+        user.clone(),
+        500,
+    );
 
     // Redeem all Discount Coupons (5 available, 100 points each)
     for _ in 0..5 {
@@ -247,7 +335,13 @@ fn test_program_with_large_number_of_rewards() {
 
     let mut rewards = Vec::new(&env);
     for i in 1..=50 {
-        let reward_name = if i <= 10 { "Reward Low" } else if i <= 30 { "Reward Med" } else { "Reward High" };
+        let reward_name = if i <= 10 {
+            "Reward Low"
+        } else if i <= 30 {
+            "Reward Med"
+        } else {
+            "Reward High"
+        };
         rewards.push_back(create_test_reward(&env, i, reward_name, i * 10, i));
     }
 
@@ -257,8 +351,16 @@ fn test_program_with_large_number_of_rewards() {
     assert_eq!(program.redemption_options.len(), 50);
 
     // Verify first and last rewards
-    let first_reward = program.redemption_options.iter().find(|r| r.id == 1).unwrap();
-    let last_reward = program.redemption_options.iter().find(|r| r.id == 50).unwrap();
+    let first_reward = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 1)
+        .unwrap();
+    let last_reward = program
+        .redemption_options
+        .iter()
+        .find(|r| r.id == 50)
+        .unwrap();
 
     assert_eq!(first_reward.points_required, 10);
     assert_eq!(first_reward.available_quantity, 1);
@@ -278,8 +380,18 @@ fn test_cross_program_insufficient_points() {
     let program2 = create_program_with_id(&env, 11);
 
     env.as_contract(&contract_address, || {
-        LoyaltyContract::create_loyalty_program(env.clone(), program1, 1, create_basic_rewards(&env));
-        LoyaltyContract::create_loyalty_program(env.clone(), program2.clone(), 3, create_premium_rewards(&env));
+        LoyaltyContract::create_loyalty_program(
+            env.clone(),
+            program1,
+            1,
+            create_basic_rewards(&env),
+        );
+        LoyaltyContract::create_loyalty_program(
+            env.clone(),
+            program2.clone(),
+            3,
+            create_premium_rewards(&env),
+        );
 
         LoyaltyContract::award_points(env.clone(), program2.clone(), user.clone(), 200);
 
@@ -289,7 +401,13 @@ fn test_cross_program_insufficient_points() {
 }
 
 // Helper function for creating test rewards
-fn create_test_reward(env: &soroban_sdk::Env, id: u32, name: &str, points: u32, quantity: u32) -> crate::RedemptionOption {
+fn create_test_reward(
+    env: &soroban_sdk::Env,
+    id: u32,
+    name: &str,
+    points: u32,
+    quantity: u32,
+) -> crate::RedemptionOption {
     crate::RedemptionOption {
         id,
         name: soroban_sdk::String::from_str(env, name),
