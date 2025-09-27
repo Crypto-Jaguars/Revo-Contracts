@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, testutils::Events, Env, vec, Address};
+use soroban_sdk::{testutils::Address as _, testutils::Events, Env, Address, Vec};
 use crate::{FarmerLiquidityPoolContract, FarmerLiquidityPoolContractClient};
 
 #[test]
@@ -64,9 +64,9 @@ fn test_pool_initialization_different_fee_rates() {
     let env = Env::default();
     
     // Test various valid fee rates
-    let fee_rates = vec![&env, 0, 1, 10, 30, 100, 500, 1000, 5000, 10000];
+    let fee_rates: Vec<u32> = Vec::from_slice(&env, &[0, 1, 10, 30, 100, 500, 1000, 5000, 10000]);
     
-    for fee_rate in fee_rates.iter() {
+    for fee_rate in fee_rates {
         let admin = Address::generate(&env);
         let token_a = Address::generate(&env);
         let token_b = Address::generate(&env);

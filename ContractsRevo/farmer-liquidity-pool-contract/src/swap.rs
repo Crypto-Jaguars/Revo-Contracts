@@ -1,6 +1,6 @@
 use soroban_sdk::{panic_with_error, Address, Env, Symbol, token};
 use crate::error::PoolError;
-use crate::storage::{get_pool_info as storage_get_pool_info, set_pool_info, get_total_fees, set_total_fees};
+use crate::storage::{set_pool_info, get_total_fees, set_total_fees};
 use crate::pool::{require_initialized, require_active, get_pool_info};
 
 pub fn execute_swap(
@@ -23,7 +23,7 @@ pub fn execute_swap(
     let (token_out, reserve_in, reserve_out) = if token_in == pool_info.token_a {
         (pool_info.token_b.clone(), pool_info.reserve_a, pool_info.reserve_b)
     } else if token_in == pool_info.token_b {
-        (pool_info.token_a.clone(), pool_info.reserve_a, pool_info.reserve_b)
+        (pool_info.token_a.clone(), pool_info.reserve_b, pool_info.reserve_a)
     } else {
         panic_with_error!(env, PoolError::InvalidToken);
     };

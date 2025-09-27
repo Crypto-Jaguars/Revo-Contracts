@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, Env, Symbol, token};
-use crate::storage::{get_accumulated_fees as storage_get_accumulated_fees, set_accumulated_fees, get_pool_info as storage_get_pool_info, get_total_fees, set_total_fees, get_lp_balance as storage_get_lp_balance};
+use soroban_sdk::{panic_with_error, Address, Env, Symbol, token};
+use crate::storage::{get_accumulated_fees as storage_get_accumulated_fees, set_accumulated_fees, get_total_fees, set_total_fees, get_lp_balance as storage_get_lp_balance};
 use crate::pool::{require_initialized, require_active, get_pool_info};
 
 pub fn claim_fees(env: &Env, provider: Address) -> (i128, i128) {
@@ -12,7 +12,12 @@ pub fn claim_fees(env: &Env, provider: Address) -> (i128, i128) {
         return (0, 0);
     }
 
-    let pool_info = get_pool_info(env);
+    let mut pool_info = get_pool_info(env);
+    
+    // Check if we have sufficient reserves for the fee payout
+    if fees_a > pool_info.reserve_a || fees_b > pool_info.reserve_b {
+        panic_with_error!(env, crate::error::PoolError::InsufficientReserves);
+    }
     
     // Transfer fees to provider
     if fees_a > 0 {
@@ -22,6 +27,11 @@ pub fn claim_fees(env: &Env, provider: Address) -> (i128, i128) {
     if fees_b > 0 {
         token::Client::new(env, &pool_info.token_b).transfer(&env.current_contract_address(), &provider, &fees_b);
     }
+
+    // Decrease stored reserves to reflect the payout
+    pool_info.reserve_a -= fees_a;
+    pool_info.reserve_b -= fees_b;
+    crate::storage::set_pool_info(env, &pool_info);
 
     // Reset accumulated fees for provider
     set_accumulated_fees(env, &provider, 0, 0);
@@ -54,8 +64,15 @@ pub fn distribute_fees(env: &Env) {
         return;
     }
 
-    // For simplicity, we'll distribute fees proportionally to LP token holders
-    // In a real implementation, you might want to track fee distribution more granularly
+    // Distribute fees proportionally to LP token holders
+    // For simplicity, we'll add fees to the pool reserves and let providers claim them
+    // In a more sophisticated implementation, you would track individual provider shares
+    
+    // Add fees to pool reserves (they will be claimable by LP providers)
+    let mut updated_pool_info = pool_info.clone();
+    updated_pool_info.reserve_a += total_fees_a;
+    updated_pool_info.reserve_b += total_fees_b;
+    crate::storage::set_pool_info(env, &updated_pool_info);
     
     // Reset total fees as they are being distributed
     set_total_fees(env, 0, 0);

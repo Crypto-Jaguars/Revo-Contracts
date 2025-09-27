@@ -1,12 +1,12 @@
 use soroban_sdk::{panic_with_error, Address, Env, Symbol, token};
 use crate::error::PoolError;
-use crate::storage::{get_lp_balance as storage_get_lp_balance, set_lp_balance, get_pool_info as storage_get_pool_info, set_pool_info};
+use crate::storage::{get_lp_balance as storage_get_lp_balance, set_lp_balance, set_pool_info};
 use crate::pool::{require_initialized, require_active, get_pool_info};
 
 // Simple square root implementation for i128
-fn sqrt(n: i128) -> i128 {
+fn sqrt(env: &Env, n: i128) -> i128 {
     if n < 0 {
-        panic_with_error!(&Env::default(), PoolError::MathOverflow);
+        panic_with_error!(env, PoolError::MathOverflow);
     }
     if n == 0 {
         return 0;
@@ -43,7 +43,10 @@ pub fn add_liquidity(
 
     let lp_tokens = if pool_info.total_lp_tokens == 0 {
         // First liquidity provision - use geometric mean
-        sqrt(amount_a * amount_b)
+        let product = amount_a.checked_mul(amount_b).unwrap_or_else(|| {
+            panic_with_error!(env, PoolError::MathOverflow)
+        });
+        sqrt(env, product)
     } else {
         // Calculate LP tokens based on existing reserves
         let lp_tokens_a = (amount_a * pool_info.total_lp_tokens) / pool_info.reserve_a;

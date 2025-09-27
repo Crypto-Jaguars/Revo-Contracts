@@ -1,4 +1,4 @@
-use soroban_sdk::{testutils::Address as _, Address, Env, token, vec};
+use soroban_sdk::{testutils::Address as _, Address, Env, token, vec, StellarAssetClient};
 use crate::{FarmerLiquidityPoolContract, FarmerLiquidityPoolContractClient};
 
 pub fn create_token_contract<'a>(env: &Env, admin: &Address) -> (Address, token::Client<'a>) {
@@ -13,8 +13,11 @@ pub fn create_token_contract_with_initial_supply<'a>(
     initial_supply: i128,
 ) -> (Address, token::Client<'a>) {
     let (contract_address, client) = create_token_contract(env, admin);
-    // Note: In Soroban SDK 22.0.7, mint method might not be available
-    // For testing purposes, we'll skip the mint step
+    
+    // Use StellarAssetClient to mint initial supply
+    let stellar_client = StellarAssetClient::new(env, &contract_address);
+    stellar_client.mint(admin, &initial_supply);
+    
     (contract_address, client)
 }
 
