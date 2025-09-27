@@ -3,6 +3,9 @@
 ## 🎯 Overview
 The Water Management Contract is a smart contract built on the Soroban framework for the Stellar blockchain. It tracks and incentivizes efficient water usage in agriculture, ensuring sustainable practices and regulatory compliance. The contract integrates IoT sensor data, provides rewards for efficient usage, and generates alerts for excessive consumption.
 
++- Deployment: Stellar Testnet **(test only)**
++- contractId: [CCRXOA4MCDIPEW73ZVJRR2D3EDDA2J2WGGAICQQ22O3VWCS6J33PH5NA](https://stellar.expert/explorer/testnet/contract/CCRXOA4MCDIPEW73ZVJRR2D3EDDA2J2WGGAICQQ22O3VWCS6J33PH5NA)
+
 ## 📜 Features
 - **Water Usage Tracking**: Record water consumption per parcel using IoT sensor data
 - **Incentive System**: Reward farmers with loyalty tokens for efficient water usage
