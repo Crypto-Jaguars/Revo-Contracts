@@ -362,11 +362,11 @@ fn calculate_metric_score(
     // Apply time decay factor (reduce score by 1% per day after certification)
     let days_since_cert = (env.ledger().timestamp() - certification.issue_date) / (24 * 60 * 60);
     let time_factor = if days_since_cert > 0 {
-        let decay = (days_since_cert as f64) * 0.01; // 1% per day
-        if decay >= 1.0 {
+        let decay = (days_since_cert) * (1/ 100); // 1% per day
+        if decay >= 1 {
             0
         } else {
-            ((1.0 - decay) * base_score as f64) as u32
+            ((1 - decay) * base_score as u64) as u32
         }
     } else {
         base_score
