@@ -6,7 +6,8 @@ mod maintenance;
 mod pricing;
 mod rental;
 
-mod test;
+#[cfg(test)]
+mod tests;
 
 /// Main contract for equipment rental management
 #[contract]

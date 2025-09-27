@@ -55,4 +55,5 @@ impl TransactionNFTContract {
     }
 }
 
-mod test;
+#[cfg(test)]
+mod tests;
