@@ -4,9 +4,7 @@ use crate::{equipment::MaintenanceStatus, rental::RentalStatus};
 
 use super::utils::{register_basic_equipment, setup_test, create_standard_rental};
 
-// ============================================================================
-// RENTAL AGREEMENT CREATION TESTS
-// ============================================================================
+
 
 #[test]
 fn test_create_rental_success() {
