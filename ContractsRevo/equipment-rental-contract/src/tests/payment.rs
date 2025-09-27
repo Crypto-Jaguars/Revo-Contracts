@@ -224,21 +224,43 @@ fn test_pricing_integration_with_rental_flow() {
 }
 
 #[test]
-fn test_payment_validation_prevents_invalid_rentals() {
+fn test_payment_validation_prevents_invalid_rentals_success() {
     let (env, _contract_id, client, _owner, renter1, _renter2) = setup_test();
     let equipment_id = register_basic_equipment(&client, &env, "tractor_001", 1000);
 
     let start_day = (env.ledger().timestamp() / 86400) + 1;
     let end_day = start_day + 2; // 2 days, should cost 2000
-
-    // Test validation then create rental with correct price
+    
+    // Test that correct price validation succeeds
     let correct_price = 2000;
+    let tolerance = 100;
+    // This should not panic
+    client.validate_price(&equipment_id, &start_day, &end_day, &correct_price, &tolerance);
+    
+    // Create rental with correct price
     let start_timestamp = start_day * 86400;
     let end_timestamp = end_day * 86400;
     client.create_rental(&equipment_id, &renter1, &start_timestamp, &end_timestamp, &correct_price);
     
     let rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(rental.total_price, correct_price);
+}
+
+#[test]
+#[should_panic]
+fn test_payment_validation_prevents_invalid_rentals_failure() {
+    let (env, _contract_id, client, _owner, _renter1, _renter2) = setup_test();
+    let equipment_id = register_basic_equipment(&client, &env, "tractor_001", 1000);
+
+    let start_day = (env.ledger().timestamp() / 86400) + 1;
+    let end_day = start_day + 2; // 2 days, should cost 2000
+    
+    // Test that invalid price validation fails
+    let incorrect_price = 5000; // Way too high for 2 days * 1000 = 2000
+    let tolerance = 100;
+    
+    // This should panic due to price being way outside tolerance
+    client.validate_price(&equipment_id, &start_day, &end_day, &incorrect_price, &tolerance);
 }
 
 // ============================================================================

@@ -3,7 +3,7 @@
 extern crate std;
 
 use crate::equipment::MaintenanceStatus;
-use soroban_sdk::{String, Vec, vec};
+use soroban_sdk::String;
 
 use super::utils::{register_basic_equipment, setup_test, create_standard_rental};
 
