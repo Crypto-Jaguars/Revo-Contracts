@@ -3,6 +3,9 @@
 ## 🎯 Overview
 The Equipment Rental Contract is a smart contract built on the Soroban framework for the Stellar blockchain. It enables agricultural equipment owners to list their machinery for rental, while allowing farmers to rent equipment for specific time periods. The contract manages the entire rental lifecycle, from equipment registration and maintenance tracking to rental agreements and pricing calculations.
 
+- contractId: CACWW3GDQVFQJTVLGHCMZMWI6QT5XFYU2NLOYQ3KQKAHPV2D4T4BPBQG
+- Link: https://stellar.expert/explorer/testnet/contract/CACWW3GDQVFQJTVLGHCMZMWI6QT5XFYU2NLOYQ3KQKAHPV2D4T4BPBQG
+
 ## 📜 Features
 - Equipment registration with detailed metadata
 - Real-time availability management
