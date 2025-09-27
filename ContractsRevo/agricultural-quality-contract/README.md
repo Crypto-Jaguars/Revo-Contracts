@@ -2,8 +2,8 @@
 
 A stellar smart contract for managing agricultural product quality control, verification, and dispute resolution on the Stellar network.
 
-- contractId: CDZ7KPCB4XP45NGVKWIEAENEJIEX63EOPF6TJ77VWQXN53BGP5TRBC3F
-- Link: https://stellar.expert/explorer/testnet/contract/CDZ7KPCB4XP45NGVKWIEAENEJIEX63EOPF6TJ77VWQXN53BGP5TRBC3F
++- Deployment: Stellar Testnet **(test only)**
++- contractId: [CDZ7KPCB4XP45NGVKWIEAENEJIEX63EOPF6TJ77VWQXN53BGP5TRBC3F](https://stellar.expert/explorer/testnet/contract/CDZ7KPCB4XP45NGVKWIEAENEJIEX63EOPF6TJ77VWQXN53BGP5TRBC3F)
 
 ## 📌 Overview
 
