@@ -9,7 +9,7 @@ mod initialize;
 mod issue;
 mod revoke;
 #[cfg(test)]
-mod test;
+mod tests;
 mod verify;
 
 pub use datatypes::*;
