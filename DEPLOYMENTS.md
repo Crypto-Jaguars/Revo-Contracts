@@ -34,6 +34,13 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CBAQQ2WHODYMR6W4AEPABCDVW4UHMGRMK6SESD6NZ4LZSE7HUVP6I77R | testnet | 2025-09-28 | done | Market Demand Forecasting Contract |
 
+## Loyalty Token Contract
+
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CAW4JRV4WUGQ2EMRATLMMYBIA5IHTUMOD6I4LFZJI3BX445YS2ZFE46N | testnet | 2025-09-28 | done | Loyalty Token Contract |
+
 
 
 ### Mainnet Deployments
