@@ -42,6 +42,12 @@ This document tracks all deployed contracts across different networks.
 | CAW4JRV4WUGQ2EMRATLMMYBIA5IHTUMOD6I4LFZJI3BX445YS2ZFE46N | testnet | 2025-09-28 | done | Loyalty Token Contract |
 
 
+## Land Leasing Contract
+
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CB7UOYOVLZWBWOHBBUM5RPZGX3XKHKWAWNA7DYIXHVR3TA4A7GLX22DU | testnet | 2025-09-28 | done | Land Leasing Contract |
 
 ### Mainnet Deployments
 
@@ -90,7 +96,6 @@ soroban contract invoke \
 - All testnet deployments are for testing purposes only
 - Mainnet deployments require careful consideration and testing
 - Contract IDs should be updated in this file after successful deployment
-
 
 
 
