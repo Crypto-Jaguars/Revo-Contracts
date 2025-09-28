@@ -77,6 +77,11 @@ This document tracks all deployed contracts across different networks.
 | CCJEXT7MP5TGOXUCI6HIV5IJANJ5OZA2KIOXDI2TW3MIXL3THFG3JF32 | testnet | 2025-09-28 | done | Cross Cooperative Trade Contract |
 
 
+## Environmental Impact Tracking Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDSBCHNYOIO4H3RWUJMQN42NJ25PFXNS2MHJXIB7KVF4D6P4QWT3NKN2 | testnet | 2025-09-28 | done | Environmental Impact Tracking Contract |
 
 ### Mainnet Deployments
 
