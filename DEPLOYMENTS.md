@@ -27,6 +27,14 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CBR7Z27SC7K3AJ7HZEZTFEQ7QJRNQNFF4FI3RBWIEZFTT3E7RHEYQPFL | testnet | 2025-09-28 | done | Purchase Review Contract |
 
+## Market Demand Forecasting Contract
+
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CBAQQ2WHODYMR6W4AEPABCDVW4UHMGRMK6SESD6NZ4LZSE7HUVP6I77R | testnet | 2025-09-28 | done | Market Demand Forecasting Contract |
+
+
 
 ### Mainnet Deployments
 
