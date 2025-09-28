@@ -70,6 +70,11 @@ This document tracks all deployed contracts across different networks.
 | CAYPBBCJ4YFSWFXNG2TMVQTH4RULIWYTHYECJBBDUGFKVGBGTXP5CMFZ | testnet | 2025-09-28 | done | Crowdfunding Farmer Contract |
 
 
+## Cross Cooperative Trade Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CCJEXT7MP5TGOXUCI6HIV5IJANJ5OZA2KIOXDI2TW3MIXL3THFG3JF32 | testnet | 2025-09-28 | done | Cross Cooperative Trade Contract |
 
 
 
