@@ -250,22 +250,99 @@ contract.repay_loan(
 
 ## Development
 
+### Prerequisites
+1. Install Soroban CLI: `cargo install soroban-cli`
+2. Set up your identity: `soroban config identity generate <name>`
+3. Fund your account for deployment fees
+
 ### Building the Contract
 ```bash
 cd ContractsRevo/microlending-contract
+make build
+# or manually:
 cargo build --target wasm32-unknown-unknown --release
+soroban contract build
 ```
 
 ### Testing
 ```bash
+make test
+# or manually:
 cargo test
 ```
 
 ### Deployment
-Deploy to Stellar testnet or mainnet using Soroban CLI:
+
+#### Deploy to Testnet
 ```bash
-soroban contract deploy --wasm target/wasm32-unknown-unknown/release/micro_lending.wasm
+# Set your secret key
+export ADMIN_SECRET=<your-secret-key>
+
+# Deploy to testnet
+make deploy-testnet
 ```
+
+#### Deploy to Mainnet
+```bash
+# Set your secret key
+export ADMIN_SECRET=<your-secret-key>
+
+# Deploy to mainnet (use with caution)
+make deploy-mainnet
+```
+
+#### Manual Deployment
+```bash
+# Upload contract
+soroban contract upload \
+  --source-account <identity-or-secret-key> \
+  --network testnet \
+  --wasm target/wasm32-unknown-unknown/release/micro_lending.wasm
+
+# Deploy contract
+soroban contract deploy \
+  --source-account <identity-or-secret-key> \
+  --network testnet \
+  --wasm target/wasm32-unknown-unknown/release/micro_lending.wasm
+```
+
+### Contract Interaction
+After deployment, you can interact with the contract:
+
+```bash
+# Initialize the contract with a token address
+soroban contract invoke \
+  --id <CONTRACT_ID> \
+  --source <your-identity> \
+  --network testnet \
+  -- \
+  initialize \
+  --token_address <TOKEN_ADDRESS>
+
+# Create a loan request
+soroban contract invoke \
+  --id <CONTRACT_ID> \
+  --source <your-identity> \
+  --network testnet \
+  -- \
+  create_loan_request \
+  --borrower <BORROWER_ADDRESS> \
+  --amount 10000 \
+  --purpose "Agricultural equipment" \
+  --duration_days 90 \
+  --interest_rate 1500 \
+  --collateral '{"asset_type": "Future harvest", "estimated_value": 15000, "verification_data": "0x..."}'
+```
+
+### Available Makefile Targets
+- `make build` - Build the contract
+- `make test` - Run tests
+- `make clean` - Clean build artifacts
+- `make deploy-testnet` - Deploy to testnet (requires ADMIN_SECRET)
+- `make deploy-mainnet` - Deploy to mainnet (requires ADMIN_SECRET)
+- `make docs` - Generate documentation
+- `make dev-setup` - Setup development environment
+- `make help` - Show available targets
 
 ## License
 
