@@ -56,6 +56,20 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CAVZIYLTAFKJNTT3A5USHFB56JDAQ56YCQRYQMYF4T2M5PWC5LEANNKP | testnet | 2025-09-28 | done | Farmer Insurance Contract |
 
+## CSA Membership Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDWXXXKDYIDRYKFNOMACYGGGCCJ7YCJ3D2SWA4Y2WLEXC63XWTFDY5K5 | testnet | 2025-09-28 | done | CSA Membership Contract |
+
+
+## Crowdfunding Farmer Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CAYPBBCJ4YFSWFXNG2TMVQTH4RULIWYTHYECJBBDUGFKVGBGTXP5CMFZ | testnet | 2025-09-28 | done | Crowdfunding Farmer Contract |
+
+
 
 
 
