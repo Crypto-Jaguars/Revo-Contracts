@@ -9,6 +9,8 @@ This document tracks all deployed contracts across different networks.
 | Contract ID | Network | Deployed Date | Status | Notes |
 |-------------|---------|---------------|--------|-------|
 | TBD | testnet | TBD | pending | Microlending contract deployment pending |
+
+
 ## Product Auction Contract
 
 ### Testnet Deployments
@@ -16,6 +18,15 @@ This document tracks all deployed contracts across different networks.
 | Contract ID | Network | Deployed Date | Status | Notes |
 |-------------|---------|---------------|--------|-------|
 | CBORFMBO3CWISM5POWHFQIE2O2JAAGPCFVSRCTA2GL4KZJQIYN7NBGDI | testnet | 2025-09-28 | done | Product auction contract |
+
+
+## Purchase Review Contract
+
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CBR7Z27SC7K3AJ7HZEZTFEQ7QJRNQNFF4FI3RBWIEZFTT3E7RHEYQPFL | testnet | 2025-09-28 | done | Purchase Review Contract |
+
 
 ### Mainnet Deployments
 
@@ -64,3 +75,10 @@ soroban contract invoke \
 - All testnet deployments are for testing purposes only
 - Mainnet deployments require careful consideration and testing
 - Contract IDs should be updated in this file after successful deployment
+
+
+
+
+
+
+
