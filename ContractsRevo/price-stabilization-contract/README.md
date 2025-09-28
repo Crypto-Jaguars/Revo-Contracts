@@ -1,5 +1,8 @@
 # Price Stabilization Contract
 
++- Deployment: Stellar Testnet **(test only)**
++- contractId: [CAH5VUS3OV2Y6K7QSFE7F4WLWBHCAZ2RX2LTQ6V4J77MGQE4QOUT35BR](https://stellar.expert/explorer/testnet/contract/CAH5VUS3OV2Y6K7QSFE7F4WLWBHCAZ2RX2LTQ6V4J77MGQE4QOUT35BR)
+
 ## 🎯 Overview
 
 The Price Stabilization Contract is a decentralized smart contract built on the Soroban framework for the Stellar blockchain. It enables agricultural cooperatives and market participants to mitigate price volatility for agricultural products by managing a stabilization fund and distributing payments to farmers when prices fall below a predefined threshold.
