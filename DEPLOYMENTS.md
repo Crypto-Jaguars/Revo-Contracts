@@ -9,6 +9,12 @@ This document tracks all deployed contracts across different networks.
 | Contract ID | Network | Deployed Date | Status | Notes |
 |-------------|---------|---------------|--------|-------|
 | TBD | testnet | TBD | pending | Microlending contract deployment pending |
+## Product Auction Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
 | CBORFMBO3CWISM5POWHFQIE2O2JAAGPCFVSRCTA2GL4KZJQIYN7NBGDI | testnet | 2025-09-28 | done | Product auction contract |
 
 ### Mainnet Deployments
