@@ -49,6 +49,16 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CB7UOYOVLZWBWOHBBUM5RPZGX3XKHKWAWNA7DYIXHVR3TA4A7GLX22DU | testnet | 2025-09-28 | done | Land Leasing Contract |
 
+
+## Farmer Insurance Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CAVZIYLTAFKJNTT3A5USHFB56JDAQ56YCQRYQMYF4T2M5PWC5LEANNKP | testnet | 2025-09-28 | done | Farmer Insurance Contract |
+
+
+
+
 ### Mainnet Deployments
 
 | Contract ID | Network | Deployed Date | Status | Notes |
