@@ -1,12 +1,12 @@
 [workspace]
 resolver = "2"
 members = [
-
-    "ContractsRevo/*",
+    "ContractsRevo/*"
 ]
 [workspace.dependencies]
 soroban-sdk = "22.0.7"
 certificate-management-contract = { path = "ContractsRevo/certificate-management-contract/"}
+num-integer = { version = "0.1", default-features = false }
 
 [profile.release]
 opt-level = "z"

@@ -1,0 +1,18 @@
+[package]
+name = "a-lp-token-contract"
+description = "Soroban standard token contract"
+version = "0.1.0"
+edition = "2021"
+publish = false
+autobins = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+soroban-token-sdk = "22.0.7"
+
+
+[dev_dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
