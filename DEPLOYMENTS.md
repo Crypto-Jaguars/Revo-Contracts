@@ -27,6 +27,61 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CBR7Z27SC7K3AJ7HZEZTFEQ7QJRNQNFF4FI3RBWIEZFTT3E7RHEYQPFL | testnet | 2025-09-28 | done | Purchase Review Contract |
 
+## Market Demand Forecasting Contract
+
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CBAQQ2WHODYMR6W4AEPABCDVW4UHMGRMK6SESD6NZ4LZSE7HUVP6I77R | testnet | 2025-09-28 | done | Market Demand Forecasting Contract |
+
+## Loyalty Token Contract
+
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CAW4JRV4WUGQ2EMRATLMMYBIA5IHTUMOD6I4LFZJI3BX445YS2ZFE46N | testnet | 2025-09-28 | done | Loyalty Token Contract |
+
+
+## Land Leasing Contract
+
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CB7UOYOVLZWBWOHBBUM5RPZGX3XKHKWAWNA7DYIXHVR3TA4A7GLX22DU | testnet | 2025-09-28 | done | Land Leasing Contract |
+
+
+## Farmer Insurance Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CAVZIYLTAFKJNTT3A5USHFB56JDAQ56YCQRYQMYF4T2M5PWC5LEANNKP | testnet | 2025-09-28 | done | Farmer Insurance Contract |
+
+## CSA Membership Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDWXXXKDYIDRYKFNOMACYGGGCCJ7YCJ3D2SWA4Y2WLEXC63XWTFDY5K5 | testnet | 2025-09-28 | done | CSA Membership Contract |
+
+
+## Crowdfunding Farmer Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CAYPBBCJ4YFSWFXNG2TMVQTH4RULIWYTHYECJBBDUGFKVGBGTXP5CMFZ | testnet | 2025-09-28 | done | Crowdfunding Farmer Contract |
+
+
+## Cross Cooperative Trade Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CCJEXT7MP5TGOXUCI6HIV5IJANJ5OZA2KIOXDI2TW3MIXL3THFG3JF32 | testnet | 2025-09-28 | done | Cross Cooperative Trade Contract |
+
+
+## Environmental Impact Tracking Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDSBCHNYOIO4H3RWUJMQN42NJ25PFXNS2MHJXIB7KVF4D6P4QWT3NKN2 | testnet | 2025-09-28 | done | Environmental Impact Tracking Contract |
 
 ### Mainnet Deployments
 
@@ -75,7 +130,6 @@ soroban contract invoke \
 - All testnet deployments are for testing purposes only
 - Mainnet deployments require careful consideration and testing
 - Contract IDs should be updated in this file after successful deployment
-
 
 
 
