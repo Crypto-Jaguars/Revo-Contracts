@@ -69,7 +69,7 @@ deploy:
 deploy-testnet: build
 	@echo "Deploying Supply Chain Tracking Contract to Stellar testnet..."
 	@echo "Installing contract WASM..."
-	stellar contract install \
+	stellar contract upload \
 		--wasm target/wasm32-unknown-unknown/release/supply_chain_tracking_contract.wasm \
 		--network testnet
 	@echo "Deploying contract..."
@@ -85,7 +85,7 @@ else
 deploy-testnet-custom: build
 	@echo "Deploying Supply Chain Tracking Contract to Stellar testnet with custom source..."
 	@echo "Installing contract WASM..."
-	stellar contract install \
+	stellar contract upload \
 		--wasm target/wasm32-unknown-unknown/release/supply_chain_tracking_contract.wasm \
 		--network testnet \
 		--source $(STELLAR_SOURCE)
