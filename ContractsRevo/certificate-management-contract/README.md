@@ -65,6 +65,8 @@ Ensure you have the following installed:
    cargo test
    ```
 
+NB: Contract deployed to Testnet on `CATFMGOLSDM4ZZX4L6POV2JPJOLHSWKHYW3ZSBEQFSXPZYVBP5UZZSQU`
+
 ## 📊 Data Structures
 ### **Certification**
 Represents a digital certificate with the following properties:

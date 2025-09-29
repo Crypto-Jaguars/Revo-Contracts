@@ -126,6 +126,20 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
 
+## Certificate Management Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CATFMGOLSDM4ZZX4L6POV2JPJOLHSWKHYW3ZSBEQFSXPZYVBP5UZZSQU | Testnet | 2025-09-29 | Successful | Deployer - GBQN4GBWMHBZFPQWPBTADECR764DMIQRHFFJTH5ZRLP7ADGR2Q5BZ7GK |
+
+### Mainnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
+
 ## Deployment Instructions
 
 ### Prerequisites
