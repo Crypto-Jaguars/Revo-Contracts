@@ -1,48 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-
-     # Token contracts first (dependencies for other contracts)
-    "ContractsRevo/lp-token-contract",
-    "ContractsRevo/farmer-token-contract",
-    "ContractsRevo/commodity-token-contract",
-    "ContractsRevo/loyalty-token-contract",
-    
-    # Core infrastructure contracts
-    "ContractsRevo/certificate-management-contract",
-    "ContractsRevo/farmer-liquidity-pool-contract",
-    
-    # Agricultural contracts
-    "ContractsRevo/agricultural-auction-contract",
-    "ContractsRevo/agricultural-quality-contract",
-    "ContractsRevo/agricultural-training-contract",
-    "ContractsRevo/crop-yield-prediction",
-    "ContractsRevo/supply-chain-tracking-contract",
-    
-    # Financial contracts
-    "ContractsRevo/microlending-contract",
-    "ContractsRevo/farmer-insurance-contract",
-    "ContractsRevo/crowdfunding-farmer-contract",
-    
-    # Trade and marketplace contracts
-    "ContractsRevo/product-auction-contract",
-    "ContractsRevo/cross-cooperative-trade-contract",
-    "ContractsRevo/purchase-review-contract",
-    "ContractsRevo/rating-system-contract",
-    
-    # Resource management contracts
-    "ContractsRevo/equipment-rental-contract",
-    "ContractsRevo/land-leasing-contract",
-    "ContractsRevo/water-management-contract",
-    
-    # Market and forecasting contracts
-    "ContractsRevo/market-demand-forecasting-contract",
-    "ContractsRevo/environmental-impact-tracking",
-    
-    # Membership and engagement contracts
-    "ContractsRevo/csa-membership-contract",
-    "ContractsRevo/transaction-nft-contract",
-  
+    "ContractsRevo/*"
 ]
 [workspace.dependencies]
 soroban-sdk = "22.0.7"

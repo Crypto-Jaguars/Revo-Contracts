@@ -7,9 +7,8 @@ mod storage;
 mod types;
 mod utils;
 
-// Note : If any changes made in lp-token-contract  , then don't forget to update the given wasm  fom new updates.
 pub mod token {
     soroban_sdk::contractimport!(
-        file = "./lp_token_contract.wasm"
+        file = "../../target/wasm32v1-none/release/a_lp_token_contract.wasm"
     );
 }
