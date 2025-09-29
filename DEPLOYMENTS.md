@@ -34,6 +34,20 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
 
+## Supply Chain Tracking Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CB4DQWGDOV6QTOPJSYPOG2TALXMQZKJX6QISUBFKMJ5BJZWW3GE5KWW5 | Testnet | 2025-09-29 | Successful | Deployer - GCHC7NIC7CB2ED4PMUTPNONPQEPN2OL7S6MWWNM53WPCHKB3TYKY4EK6 |
+
+### Mainnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
+
 ## Deployment Instructions
 
 ### Prerequisites

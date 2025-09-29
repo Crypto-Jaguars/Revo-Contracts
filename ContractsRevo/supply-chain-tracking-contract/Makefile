@@ -65,6 +65,37 @@ deploy:
 	@echo "Note: Add your deployment commands here"
 	@echo "Example: stellar contract deploy --wasm target/wasm32-unknown-unknown/release/supply_chain_tracking_contract.wasm"
 
+# Deploy to Stellar testnet
+deploy-testnet: build
+	@echo "Deploying Supply Chain Tracking Contract to Stellar testnet..."
+	@echo "Installing contract WASM..."
+	stellar contract install \
+		--wasm target/wasm32-unknown-unknown/release/supply_chain_tracking_contract.wasm \
+		--network testnet
+	@echo "Deploying contract..."
+	stellar contract deploy \
+		--wasm target/wasm32-unknown-unknown/release/supply_chain_tracking_contract.wasm \
+		--network testnet
+
+# Deploy to Stellar testnet with custom source
+ifeq ($(strip $(STELLAR_SOURCE)),)
+deploy-testnet-custom:
+	$(error STELLAR_SOURCE environment variable is not set. Usage: make deploy-testnet-custom STELLAR_SOURCE=your_secret_key)
+else
+deploy-testnet-custom: build
+	@echo "Deploying Supply Chain Tracking Contract to Stellar testnet with custom source..."
+	@echo "Installing contract WASM..."
+	stellar contract install \
+		--wasm target/wasm32-unknown-unknown/release/supply_chain_tracking_contract.wasm \
+		--network testnet \
+		--source $(STELLAR_SOURCE)
+	@echo "Deploying contract..."
+	stellar contract deploy \
+		--wasm target/wasm32-unknown-unknown/release/supply_chain_tracking_contract.wasm \
+		--network testnet \
+		--source $(STELLAR_SOURCE)
+endif
+
 # Generate docs
 docs:
 	@echo "Generating documentation..."
