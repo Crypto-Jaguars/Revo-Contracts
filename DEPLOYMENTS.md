@@ -112,6 +112,20 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
 
+## Agricultural Training Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CA33BT2EGOVSOHFGP47HLXFDST4AXWDIG7GNHY6FVVQFOKCVCFSRYT3R | Testnet | 2025-09-29 | Successful | Deployer - GBQN4GBWMHBZFPQWPBTADECR764DMIQRHFFJTH5ZRLP7ADGR2Q5BZ7GK |
+
+### Mainnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
+
 ## Deployment Instructions
 
 ### Prerequisites
@@ -153,9 +167,3 @@ soroban contract invoke \
 - All testnet deployments are for testing purposes only
 - Mainnet deployments require careful consideration and testing
 - Contract IDs should be updated in this file after successful deployment
-
-
-
-
-
-
