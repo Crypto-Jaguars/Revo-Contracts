@@ -3,14 +3,6 @@
 version = 4
 
 [[package]]
-name = "a-lp-token-contract"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk",
- "soroban-token-sdk",
-]
-
-[[package]]
 name = "agricultural-auction-contract"
 version = "0.1.0"
 dependencies = [
@@ -614,15 +606,11 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "farmer-liquidity-pool-contract"
-version = "0.1.0"
-dependencies = [
- "num-integer",
- "soroban-sdk",
-]
-
-[[package]]
+=======
 name = "farmer-token-contract"
+>>>>>>> upstream/main
 version = "0.1.0"
 dependencies = [
  "soroban-sdk",
@@ -1404,15 +1392,6 @@ dependencies = [
  "stellar-xdr",
  "syn 2.0.101",
  "thiserror",
-]
-
-[[package]]
-name = "soroban-token-sdk"
-version = "22.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "858a3c2d7fce27bd105c4747850dfb2b0d945eb8880aeaa963d5c8ac659ca105"
-dependencies = [
- "soroban-sdk",
 ]
 
 [[package]]
