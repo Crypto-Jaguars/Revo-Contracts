@@ -14,11 +14,11 @@ CONTRACTS_DIR="ContractsRevo"
 echo "${GREEN}Starting deployment script...${NC}"
 
 # Check for required environment variable
-# if [ -z "$STELLAR_SECRET_KEY" ]; then
-#     echo "${RED}Error: STELLAR_SECRET_KEY environment variable is not set${NC}"
-#     echo "Please set it using: export STELLAR_SECRET_KEY=your_secret_key"
-#     exit 1
-# fi
+if [ -z "$STELLAR_SECRET_KEY" ]; then
+    echo "${RED}Error: STELLAR_SECRET_KEY environment variable is not set${NC}"
+    echo "Please set it using: export STELLAR_SECRET_KEY=your_secret_key"
+    exit 1
+fi
 
 # Check if contracts directory exists
 if [ ! -d "$CONTRACTS_DIR" ]; then
