@@ -70,7 +70,7 @@ pub fn execute_swap(
 
     // Emit swap event
     env.events().publish(
-        (Symbol::new(env, "swap_executed"),),
+        (Symbol::new(env, "swap"),),
         (trader, token_in, amount_in, token_out, amount_out),
     );
 

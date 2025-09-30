@@ -8,16 +8,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 soroban-sdk = { workspace = true }
-<<<<<<< HEAD
+num-integer = { workspace = true, features = ["i128"] }
 
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
-=======
-num-integer = { workspace = true, features = ["i128"] }
-
-[dev_dependencies]
-soroban-sdk = { workspace = true, features = ["testutils"] }
 
 [features]
-testutils = ["soroban-sdk/testutils"]>>>>>>> upstream/main
+testutils = ["soroban-sdk/testutils"]
 

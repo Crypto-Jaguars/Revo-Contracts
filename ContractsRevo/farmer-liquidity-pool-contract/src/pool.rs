@@ -36,7 +36,7 @@ pub fn initialize(
 
     // Emit initialization event
     env.events().publish(
-        (Symbol::new(env, "pool_initialized"),),
+        (Symbol::new(env, "init"),),
         (token_a, token_b, fee_rate),
     );
 }

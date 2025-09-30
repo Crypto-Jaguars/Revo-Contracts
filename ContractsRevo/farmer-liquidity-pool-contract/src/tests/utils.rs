@@ -1,10 +1,11 @@
-use soroban_sdk::{testutils::Address as _, Address, Env, token, vec, StellarAssetClient};
+use soroban_sdk::{testutils::Address as _, Address, Env, token, token::StellarAssetClient, IntoVal};
 use crate::{FarmerLiquidityPoolContract, FarmerLiquidityPoolContractClient};
 
 pub fn create_token_contract<'a>(env: &Env, admin: &Address) -> (Address, token::Client<'a>) {
     let contract_address = env.register_stellar_asset_contract_v2(admin.clone());
-    let client = token::Client::new(env, &contract_address);
-    (contract_address, client)
+    let address = contract_address.address();
+    let client = token::Client::new(env, &address);
+    (address, client)
 }
 
 pub fn create_token_contract_with_initial_supply<'a>(
@@ -16,13 +17,25 @@ pub fn create_token_contract_with_initial_supply<'a>(
     
     // Use StellarAssetClient to mint initial supply
     let stellar_client = StellarAssetClient::new(env, &contract_address);
+    
+    // Set up authentication context for minting
+    env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+        address: admin,
+        invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            contract: &contract_address,
+            fn_name: "mint",
+            args: (admin.clone(), initial_supply).into_val(env),
+            sub_invokes: &[],
+        },
+    }]);
+    
     stellar_client.mint(admin, &initial_supply);
     
     (contract_address, client)
 }
 
 pub fn create_pool_contract(env: &Env) -> FarmerLiquidityPoolContractClient {
-    let contract_id = env.register(None, FarmerLiquidityPoolContract);
+    let contract_id = env.register_contract(None, FarmerLiquidityPoolContract);
     FarmerLiquidityPoolContractClient::new(env, &contract_id)
 }
 
@@ -36,13 +49,71 @@ pub fn setup_test_environment(env: &Env) -> TestEnvironment {
     let (token_a, token_a_client) = create_token_contract_with_initial_supply(env, &admin, 1_000_000);
     let (token_b, token_b_client) = create_token_contract_with_initial_supply(env, &admin, 1_000_000);
 
-    // Distribute tokens to users
+    // Distribute tokens to users with proper authentication
+    env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+        address: &admin,
+        invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            contract: &token_a,
+            fn_name: "transfer",
+            args: (admin.clone(), user1.clone(), 100_000i128).into_val(env),
+            sub_invokes: &[],
+        },
+    }]);
     token_a_client.transfer(&admin, &user1, &100_000);
+    
+    env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+        address: &admin,
+        invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            contract: &token_a,
+            fn_name: "transfer",
+            args: (admin.clone(), user2.clone(), 100_000i128).into_val(env),
+            sub_invokes: &[],
+        },
+    }]);
     token_a_client.transfer(&admin, &user2, &100_000);
+    
+    env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+        address: &admin,
+        invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            contract: &token_a,
+            fn_name: "transfer",
+            args: (admin.clone(), user3.clone(), 100_000i128).into_val(env),
+            sub_invokes: &[],
+        },
+    }]);
     token_a_client.transfer(&admin, &user3, &100_000);
 
+    env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+        address: &admin,
+        invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            contract: &token_b,
+            fn_name: "transfer",
+            args: (admin.clone(), user1.clone(), 100_000i128).into_val(env),
+            sub_invokes: &[],
+        },
+    }]);
     token_b_client.transfer(&admin, &user1, &100_000);
+    
+    env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+        address: &admin,
+        invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            contract: &token_b,
+            fn_name: "transfer",
+            args: (admin.clone(), user2.clone(), 100_000i128).into_val(env),
+            sub_invokes: &[],
+        },
+    }]);
     token_b_client.transfer(&admin, &user2, &100_000);
+    
+    env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+        address: &admin,
+        invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            contract: &token_b,
+            fn_name: "transfer",
+            args: (admin.clone(), user3.clone(), 100_000i128).into_val(env),
+            sub_invokes: &[],
+        },
+    }]);
     token_b_client.transfer(&admin, &user3, &100_000);
 
     let pool_contract = create_pool_contract(env);
@@ -85,9 +156,50 @@ impl<'a> TestEnvironment<'a> {
     }
 
     pub fn add_liquidity(&self, provider: &Address, amount_a: i128, amount_b: i128) -> i128 {
-        // Approve tokens first
+        // Approve tokens first with proper authentication
+        self.env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+            address: provider,
+            invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                contract: &self.token_a,
+                fn_name: "approve",
+                args: (provider.clone(), self.pool_contract.address.clone(), amount_a, 1000u32).into_val(&self.env),
+                sub_invokes: &[],
+            },
+        }]);
         self.token_a_client.approve(provider, &self.pool_contract.address, &amount_a, &1000);
+        
+        self.env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+            address: provider,
+            invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                contract: &self.token_b,
+                fn_name: "approve",
+                args: (provider.clone(), self.pool_contract.address.clone(), amount_b, 1000u32).into_val(&self.env),
+                sub_invokes: &[],
+            },
+        }]);
         self.token_b_client.approve(provider, &self.pool_contract.address, &amount_b, &1000);
+
+        // Set up authentication for the contract's transfer calls
+        self.env.mock_auths(&[
+            soroban_sdk::testutils::MockAuth {
+                address: provider,
+                invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                    contract: &self.token_a,
+                    fn_name: "transfer",
+                    args: (provider.clone(), self.pool_contract.address.clone(), amount_a).into_val(&self.env),
+                    sub_invokes: &[],
+                },
+            },
+            soroban_sdk::testutils::MockAuth {
+                address: provider,
+                invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                    contract: &self.token_b,
+                    fn_name: "transfer",
+                    args: (provider.clone(), self.pool_contract.address.clone(), amount_b).into_val(&self.env),
+                    sub_invokes: &[],
+                },
+            },
+        ]);
 
         self.pool_contract.add_liquidity(provider, &amount_a, &amount_b, &0)
     }
@@ -97,11 +209,51 @@ impl<'a> TestEnvironment<'a> {
     }
 
     pub fn swap(&self, trader: &Address, token_in: &Address, amount_in: i128) -> i128 {
-        // Approve token first
+        // Approve token first with proper authentication
         if *token_in == self.token_a {
+            self.env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+                address: trader,
+                invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                    contract: &self.token_a,
+                    fn_name: "approve",
+                    args: (trader.clone(), self.pool_contract.address.clone(), amount_in, 1000u32).into_val(&self.env),
+                    sub_invokes: &[],
+                },
+            }]);
             self.token_a_client.approve(trader, &self.pool_contract.address, &amount_in, &1000);
+            
+            // Set up authentication for the contract's transfer call
+            self.env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+                address: trader,
+                invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                    contract: &self.token_a,
+                    fn_name: "transfer",
+                    args: (trader.clone(), self.pool_contract.address.clone(), amount_in).into_val(&self.env),
+                    sub_invokes: &[],
+                },
+            }]);
         } else {
+            self.env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+                address: trader,
+                invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                    contract: &self.token_b,
+                    fn_name: "approve",
+                    args: (trader.clone(), self.pool_contract.address.clone(), amount_in, 1000u32).into_val(&self.env),
+                    sub_invokes: &[],
+                },
+            }]);
             self.token_b_client.approve(trader, &self.pool_contract.address, &amount_in, &1000);
+            
+            // Set up authentication for the contract's transfer call
+            self.env.mock_auths(&[soroban_sdk::testutils::MockAuth {
+                address: trader,
+                invoke: &soroban_sdk::testutils::MockAuthInvoke {
+                    contract: &self.token_b,
+                    fn_name: "transfer",
+                    args: (trader.clone(), self.pool_contract.address.clone(), amount_in).into_val(&self.env),
+                    sub_invokes: &[],
+                },
+            }]);
         }
 
         self.pool_contract.swap(trader, token_in, &amount_in, &0)

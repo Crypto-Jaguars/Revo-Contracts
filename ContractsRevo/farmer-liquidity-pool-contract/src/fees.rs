@@ -38,7 +38,7 @@ pub fn claim_fees(env: &Env, provider: Address) -> (i128, i128) {
 
     // Emit fee claim event
     env.events().publish(
-        (Symbol::new(env, "fees_claimed"),),
+        (Symbol::new(env, "fee_claim"),),
         (provider, fees_a, fees_b),
     );
 
@@ -79,7 +79,7 @@ pub fn distribute_fees(env: &Env) {
 
     // Emit fee distribution event
     env.events().publish(
-        (Symbol::new(env, "fees_distributed"),),
+        (Symbol::new(env, "fee_dist"),),
         (total_fees_a, total_fees_b, pool_info.total_lp_tokens),
     );
 }

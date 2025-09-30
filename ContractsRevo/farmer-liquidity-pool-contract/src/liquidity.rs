@@ -77,7 +77,7 @@ pub fn add_liquidity(
 
     // Emit liquidity added event
     env.events().publish(
-        (Symbol::new(env, "liquidity_added"),),
+        (Symbol::new(env, "liq_add"),),
         (provider, amount_a, amount_b, lp_tokens),
     );
 
@@ -137,7 +137,7 @@ pub fn remove_liquidity(
 
     // Emit liquidity removed event
     env.events().publish(
-        (Symbol::new(env, "liquidity_removed"),),
+        (Symbol::new(env, "liq_rem"),),
         (provider, lp_tokens, amount_a, amount_b),
     );
 

@@ -1,5 +1,6 @@
-<<<<<<< HEAD
-use soroban_sdk::{contracttype, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{contracttype, symbol_short, Address, Env, Symbol, ConversionError, TryFromVal, Val};
+
+use crate::types::{DataKey, Position};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -29,6 +30,15 @@ const LP_BALANCES: Symbol = symbol_short!("LP_BAL");
 const ACCUMULATED_FEES: Symbol = symbol_short!("ACC_FEES");
 const TOTAL_FEES: Symbol = symbol_short!("TOT_FEES");
 
+impl TryFromVal<Env, DataKey> for Val {
+    type Error = ConversionError;
+
+    fn try_from_val(_env: &Env, v: &DataKey) -> Result<Self, Self::Error> {
+        Ok((*v as u32).into())
+    }
+}
+
+// Pool info functions
 pub fn get_pool_info(env: &Env) -> Option<PoolInfo> {
     env.storage().persistent().get(&POOL_INFO)
 }
@@ -37,6 +47,11 @@ pub fn set_pool_info(env: &Env, pool_info: &PoolInfo) {
     env.storage().persistent().set(&POOL_INFO, pool_info);
 }
 
+pub fn is_initialized(env: &Env) -> bool {
+    env.storage().persistent().has(&POOL_INFO)
+}
+
+// LP balance functions
 pub fn get_lp_balance(env: &Env, provider: &Address) -> i128 {
     env.storage()
         .persistent()
@@ -48,6 +63,7 @@ pub fn set_lp_balance(env: &Env, provider: &Address, amount: i128) {
     env.storage().persistent().set(&(LP_BALANCES, provider), &amount);
 }
 
+// Fee functions
 pub fn get_accumulated_fees(env: &Env, provider: &Address) -> (i128, i128) {
     let fees: Option<(i128, i128)> = env.storage()
         .persistent()
@@ -70,21 +86,7 @@ pub fn set_total_fees(env: &Env, fees_a: i128, fees_b: i128) {
     env.storage().persistent().set(&TOTAL_FEES, &(fees_a, fees_b));
 }
 
-pub fn is_initialized(env: &Env) -> bool {
-    env.storage().persistent().has(&POOL_INFO)
-=======
-use soroban_sdk::{Address, ConversionError, Env, TryFromVal, Val};
-
-use crate::types::{DataKey, Position};
-
-impl TryFromVal<Env, DataKey> for Val {
-    type Error = ConversionError;
-
-    fn try_from_val(_env: &Env, v: &DataKey) -> Result<Self, Self::Error> {
-        Ok((*v as u32).into())
-    }
-}
-
+// Legacy functions for compatibility with the other implementation
 pub fn get_token_a(e: &Env) -> Address {
     e.storage().instance().get(&DataKey::TokenA).unwrap()
 }
@@ -144,6 +146,7 @@ pub fn get_fee_per_share_b(e: &Env) -> i128 {
         .get(&DataKey::FeePerShareB)
         .unwrap_or(0)
 }
+
 pub fn put_token_a(e: &Env, contract: Address) {
     e.storage().instance().set(&DataKey::TokenA, &contract);
 }
@@ -202,5 +205,4 @@ pub fn remove_position(e: &Env, provider: &Address) {
 
 pub fn has_position(e: &Env, provider: &Address) -> bool {
     e.storage().instance().has(provider)
->>>>>>> upstream/main
 }
