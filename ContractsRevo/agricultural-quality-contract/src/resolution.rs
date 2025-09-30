@@ -18,9 +18,9 @@ fn verify_mediator(env: &Env, mediator: &Address) -> Result<(), AgricQualityErro
 
 // Helper function to calculate compensation based on resolution outcome
 fn calculate_compensation_amount(
-    env: &Env,
+    _env: &Env,
     certification: &CertificationData,
-    dispute: &DisputeData,
+    _dispute: &DisputeData,
     outcome: &ResolutionOutcome,
 ) -> u32 {
     match outcome {
@@ -49,7 +49,7 @@ pub fn resolve_dispute(
     mediator: &Address,
     dispute_id: &BytesN<32>,
     outcome: ResolutionOutcome,
-    _notes: String, // Prefix with underscore since unused
+    _notes: String, // unused
 ) -> Result<(), AgricQualityError> {
     // Verify mediator authorization
     verify_mediator(env, mediator)?;
@@ -129,7 +129,7 @@ pub fn process_appeal(
     appellant: &Address,
     dispute_id: &BytesN<32>,
     new_evidence: Vec<BytesN<32>>,
-    _justification: String,
+    _justification: String, // unused
 ) -> Result<(), AgricQualityError> {
     // Get dispute data
     let mut dispute: DisputeData = env
@@ -210,7 +210,7 @@ pub fn track_enforcement(
     authority: &Address,
     dispute_id: &BytesN<32>,
     enforced: bool,
-    _notes: String, // Prefix with underscore since unused
+    _notes: String, // unused
 ) -> Result<(), AgricQualityError> {
     // Verify authority
     let authorities: Vec<Address> = env
