@@ -91,6 +91,13 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CBJJP6QKZOO53PKWPBZGJD533DL6W63YONCAU4LXIJ2TZ2MYEQL55M3F | testnet | 2025-09-28 | done | Transaction NFT Contract |
 
+## Agricultural Auction Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDWSULCLR6U65VTZXPYFQB3ZYI467ECPEC7YM2B2PLLA6KS57MYA643F | testnet | 2025-09-30 | done | Test-only deployment |
 
 ### Mainnet Deployments
 
