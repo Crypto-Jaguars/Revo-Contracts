@@ -2,6 +2,41 @@
 
 This directory contains automated deployment scripts for Revo Contracts.
 
+## Available Deployment Scripts
+
+- [`deploy_water_management.zsh`](#water-management-contract-deployment) - Water Management Contract
+- [`deploy_product_auction.zsh`](#product-auction-contract-deployment) - Product Auction Contract
+- [`deploy_crop_yield_prediction.zsh`](#crop-yield-prediction-contract-deployment) - Crop Yield Prediction Contract
+
+## Crop Yield Prediction Contract Deployment
+
+The `deploy_crop_yield_prediction.zsh` script automates building, uploading, and deploying the crop yield prediction contract to Stellar networks.
+
+### Usage
+
+```bash
+./deploy_crop_yield_prediction.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet
+./deploy_crop_yield_prediction.zsh testnet testnet_account
+
+# View help
+./deploy_crop_yield_prediction.zsh --help
+```
+
+### Documentation
+
+See `ContractsRevo/crop-yield-prediction/DEPLOYMENT.md` for complete usage guide.
+
+---
+
 ## Water Management Contract Deployment
 
 The `deploy_water_management.zsh` script automates the complete deployment process for the water management contract to Stellar networks.
@@ -210,3 +245,60 @@ For issues or questions:
 2. Verify all prerequisites are installed and configured
 3. Ensure network connectivity and account funding
 4. Review Stellar CLI documentation for network-specific requirements
+
+---
+
+## Product Auction Contract Deployment
+
+The `deploy_product_auction.zsh` script automates the deployment of the product auction contract. It follows the same pattern as other deployment scripts with all the standard features.
+
+### Usage
+
+```bash
+./deploy_product_auction.zsh [network] [profile]
+```
+
+See the Water Management section above for detailed documentation on features, prerequisites, and usage patterns. All deployment scripts share the same core functionality.
+
+---
+
+## General Prerequisites
+
+All deployment scripts require:
+
+1. **Stellar CLI**: `cargo install stellar-cli`
+2. **jq**: `brew install jq` (macOS) or `apt-get install jq` (Linux)
+3. **Rust & Cargo**: https://rustup.rs/
+4. **Stellar Profile**: Configured with funded account
+
+## Common Usage Patterns
+
+### View Help
+```bash
+./deploy_[contract_name].zsh --help
+```
+
+### Deploy to Testnet
+```bash
+./deploy_[contract_name].zsh testnet
+```
+
+### Deploy to Mainnet
+```bash
+./deploy_[contract_name].zsh mainnet production_profile
+```
+
+## Best Practices
+
+1. **Always test on testnet first** before deploying to mainnet
+2. **Use separate profiles** for different environments
+3. **Review logs** after deployment
+4. **Backup deployment results** including WASM hash and Contract ID
+5. **Verify on Explorer** after deployment
+
+## Resources
+
+- [Stellar Smart Contracts Documentation](https://developers.stellar.org/docs/smart-contracts)
+- [Stellar CLI Reference](https://developers.stellar.org/docs/tools/cli)
+- [Testnet Explorer](https://testnet.stellar.org/explorer)
+- [Mainnet Explorer](https://stellar.org/explorer)
