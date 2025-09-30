@@ -11,7 +11,6 @@ mod swap;
 mod fees;
 mod error;
 mod storage;
-mod contract;
 mod event;
 mod interface;
 mod types;
