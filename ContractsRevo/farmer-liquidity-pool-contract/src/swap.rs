@@ -115,11 +115,12 @@ fn calculate_swap_output_internal(
     // Constant product formula: (reserve_in + amount_in_after_fee) * (reserve_out - amount_out) = reserve_in * reserve_out
     // Solving for amount_out: amount_out = (amount_in_after_fee * reserve_out) / (reserve_in + amount_in_after_fee)
     
-    let numerator = amount_in_after_fee * reserve_out;
+    let numerator = amount_in_after_fee.checked_mul(reserve_out)
+        .unwrap_or_else(|| panic_with_error!(env, PoolError::MathOverflow));
     let denominator = reserve_in + amount_in_after_fee;
     
     if denominator == 0 {
-        panic_with_error!(env, PoolError::MathOverflow);
+        panic_with_error!(env, PoolError::DivisionByZero);
     }
     
     numerator / denominator

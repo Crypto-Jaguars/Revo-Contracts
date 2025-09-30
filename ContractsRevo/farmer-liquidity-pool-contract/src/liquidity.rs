@@ -49,8 +49,14 @@ pub fn add_liquidity(
         sqrt(env, product)
     } else {
         // Calculate LP tokens based on existing reserves
-        let lp_tokens_a = (amount_a * pool_info.total_lp_tokens) / pool_info.reserve_a;
-        let lp_tokens_b = (amount_b * pool_info.total_lp_tokens) / pool_info.reserve_b;
+        let scaled_a = amount_a.checked_mul(pool_info.total_lp_tokens).unwrap_or_else(|| {
+            panic_with_error!(env, PoolError::MathOverflow)
+        });
+        let scaled_b = amount_b.checked_mul(pool_info.total_lp_tokens).unwrap_or_else(|| {
+            panic_with_error!(env, PoolError::MathOverflow)
+        });
+        let lp_tokens_a = scaled_a / pool_info.reserve_a;
+        let lp_tokens_b = scaled_b / pool_info.reserve_b;
         
         // Use the smaller amount to maintain ratio
         if lp_tokens_a < lp_tokens_b {
@@ -110,8 +116,14 @@ pub fn remove_liquidity(
     }
 
     // Calculate amounts to return
-    let amount_a = (lp_tokens * pool_info.reserve_a) / pool_info.total_lp_tokens;
-    let amount_b = (lp_tokens * pool_info.reserve_b) / pool_info.total_lp_tokens;
+    let scaled_a = lp_tokens.checked_mul(pool_info.reserve_a).unwrap_or_else(|| {
+        panic_with_error!(env, PoolError::MathOverflow)
+    });
+    let scaled_b = lp_tokens.checked_mul(pool_info.reserve_b).unwrap_or_else(|| {
+        panic_with_error!(env, PoolError::MathOverflow)
+    });
+    let amount_a = scaled_a / pool_info.total_lp_tokens;
+    let amount_b = scaled_b / pool_info.total_lp_tokens;
 
     if amount_a < min_amount_a || amount_b < min_amount_b {
         panic_with_error!(env, PoolError::SlippageExceeded);

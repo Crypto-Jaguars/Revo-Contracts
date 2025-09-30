@@ -186,9 +186,6 @@ fn test_swap_events() {
     // Check events
     let events = env.events().all();
     assert!(events.len() >= 3); // Initialization + liquidity added + swap
-
-    // Check that we have at least three events (initialization + liquidity added + swap)
-    assert!(events.len() >= 3);
 }
 
 // Note: Test for swap before initialization removed due to no_std environment

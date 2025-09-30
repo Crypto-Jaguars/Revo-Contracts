@@ -71,9 +71,6 @@ fn test_pool_initialization_events() {
     // Check that initialization event was emitted
     let events = env.events().all();
     assert!(!events.is_empty());
-    
-    // Check that we have at least one event (initialization event)
-    assert!(!events.is_empty());
 }
 
 #[test]
