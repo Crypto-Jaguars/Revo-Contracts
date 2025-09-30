@@ -77,6 +77,21 @@ This document tracks all deployed contracts across different networks.
 | CCJEXT7MP5TGOXUCI6HIV5IJANJ5OZA2KIOXDI2TW3MIXL3THFG3JF32 | testnet | 2025-09-28 | done | Cross Cooperative Trade Contract |
 
 
+## Crop Yield Prediction Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CD4DEPWDUP4UQLQUF4WMXUOEXPBCKVY5CX7XTD2BDI6YWYHZQZARMGJP | testnet | 2025-09-30 | Test Only | Deployer - GDCLDPFHDMNBYBCDIWAF4EAT6YQLCSPN2LRQOCND3675F27QCWQGLCGI |
+
+### Mainnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
+
+
 ## Environmental Impact Tracking Contract
 ### Testnet Deployments
 | Contract ID | Network | Deployed Date | Status | Notes |
@@ -91,6 +106,13 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CBJJP6QKZOO53PKWPBZGJD533DL6W63YONCAU4LXIJ2TZ2MYEQL55M3F | testnet | 2025-09-28 | done | Transaction NFT Contract |
 
+## Agricultural Auction Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDWSULCLR6U65VTZXPYFQB3ZYI467ECPEC7YM2B2PLLA6KS57MYA643F | testnet | 2025-09-30 | done | Test-only deployment |
 
 ### Mainnet Deployments
 
@@ -133,6 +155,20 @@ This document tracks all deployed contracts across different networks.
 | Contract ID | Network | Deployed Date | Status | Notes |
 |-------------|---------|---------------|--------|-------|
 | CATFMGOLSDM4ZZX4L6POV2JPJOLHSWKHYW3ZSBEQFSXPZYVBP5UZZSQU | Testnet | 2025-09-29 | Successful | Deployer - GBQN4GBWMHBZFPQWPBTADECR764DMIQRHFFJTH5ZRLP7ADGR2Q5BZ7GK |
+
+### Mainnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
+
+## Cooperative Management Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CAYKKIE7WW45UI5EPK43B3NFR4SI2BU2JSOB33ZPWDFKTQOQAVS2CVBM | Testnet | 2025-09-30 | Successful | Deployer - GCHC7NIC7CB2ED4PMUTPNONPQEPN2OL7S6MWWNM53WPCHKB3TYKY4EK6 |
 
 ### Mainnet Deployments
 
