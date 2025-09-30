@@ -7,7 +7,9 @@ This directory contains automated deployment scripts for Revo Contracts.
 - [`deploy_water_management.zsh`](#water-management-contract-deployment) - Water Management Contract
 - [`deploy_product_auction.zsh`](#product-auction-contract-deployment) - Product Auction Contract
 - [`deploy_crop_yield_prediction.zsh`](#crop-yield-prediction-contract-deployment) - Crop Yield Prediction Contract
+- [`deploy_agricultural_quality.zsh`](#agricultural-quality-contract-deployment) - Agricultural Quality Contract
 - [`deploy_transaction_nft_contract.zsh`](#transaction-nft-contract-deployment) - Transaction NFT Contract
+
 
 ## Transaction NFT Contract Deployment
 
@@ -91,6 +93,35 @@ The `deploy_crop_yield_prediction.zsh` script automates building, uploading, and
 ### Documentation
 
 See `ContractsRevo/crop-yield-prediction/DEPLOYMENT.md` for complete usage guide.
+
+---
+
+## Agricultural Quality Contract Deployment
+
+The `deploy_agricultural_quality.zsh` script automates building, uploading, and deploying the agricultural quality contract to Stellar networks.
+
+### Usage
+
+```bash
+./deploy_agricultural_quality.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet
+./deploy_agricultural_quality.zsh testnet testnet_account
+
+# View help
+./deploy_agricultural_quality.zsh --help
+```
+
+### Documentation
+
+See `ContractsRevo/agricultural-quality-contract/DEPLOYMENT.md` for the complete usage guide.
 
 ---
 
