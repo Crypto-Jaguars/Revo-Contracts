@@ -45,6 +45,7 @@ deploy_contract() {
             echo "Build failed for ${contract}" >> failed_contracts.txt
             return 1
         fi
+        echo "${GREEN}Build successful for ${contract}${NC}"
         
         # Get contract ID from built WASM
         sanitized_contract_name=$(echo "$contract" | tr '-' '_')
@@ -56,7 +57,19 @@ deploy_contract() {
             echo "WASM not found for ${contract}" >> failed_contracts.txt
             return 1
         fi
-        
+
+        # Upload build
+        echo "Uploading build..."
+        if ! soroban contract upload \
+            --wasm $wasm_path \
+            --network testnet \
+            --source-account $STELLAR_SECRET_KEY; then
+            echo "${RED}Failed to upload contract ${contract}${NC}"
+            echo "Upload failed for ${contract}" >> failed_contracts.txt
+            return 1
+        fi
+        echo "${GREEN}Upload successful for ${contract}${NC}"
+
         # Deploy to testnet
         echo "Deploying to testnet..."
         local contract_id
