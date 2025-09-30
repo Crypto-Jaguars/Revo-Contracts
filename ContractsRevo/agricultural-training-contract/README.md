@@ -67,5 +67,7 @@ make test
    ```
 4. **Interact**: Use the other `make` commands (`create-program`, `enroll-farmer`, etc.) to interact with the deployed contract.
 
+NB: Contract deployed to testnet on `CA33BT2EGOVSOHFGP47HLXFDST4AXWDIG7GNHY6FVVQFOKCVCFSRYT3R`
+
 ---
 This contract is designed to be a core component of a larger agricultural ecosystem, enabling verifiable, on-chain educational credentials for farmers.
