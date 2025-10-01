@@ -228,7 +228,7 @@ impl FarmerYieldFarmingContract {
 
         let enabled: bool = env.storage().instance().get(&DataKey::EmergencyWithdraw).unwrap_or(false);
         if !enabled {
-           return  Err(ContractError::EmergencyNotEnabled);;
+           return  Err(ContractError::EmergencyNotEnabled);
         }
 
         let mut farm: FarmPool = env.storage().persistent().get(&DataKey::Farm(farm_id)).unwrap();
