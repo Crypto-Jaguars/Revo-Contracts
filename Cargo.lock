@@ -657,8 +657,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "farmer-staking-contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "farmer-token-contract"
 version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
+name = "farmer-yield-farming-contract"
+version = "0.0.0"
 dependencies = [
  "soroban-sdk",
 ]
