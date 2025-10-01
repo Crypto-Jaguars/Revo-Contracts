@@ -114,6 +114,16 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CDWSULCLR6U65VTZXPYFQB3ZYI467ECPEC7YM2B2PLLA6KS57MYA643F | testnet | 2025-09-30 | done | Test-only deployment |
 
+## Agricultural Auction Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDLULL7QAPF3E43MC4XT6E2B7EVQU4CVC2URDWKSKQJCFKR7VFMRYYYJ | testnet | 2025-10-1 | done | Test-only deployment |
+
+
+
 ### Mainnet Deployments
 
 | Contract ID | Network | Deployed Date | Status | Notes |
