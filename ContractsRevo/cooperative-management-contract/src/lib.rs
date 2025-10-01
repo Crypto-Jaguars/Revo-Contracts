@@ -10,7 +10,12 @@ mod interface;
 mod membership;
 mod profit_distribution;
 mod resource_sharing;
-mod test;
+
+#[cfg(test)]
+mod original_tests;
+
+#[cfg(test)]
+mod tests;
 
 #[contract]
 pub struct CooperativeManagementContract;
