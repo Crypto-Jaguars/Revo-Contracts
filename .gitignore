@@ -1,1 +1,12 @@
 /target
+
+# Deployment logs (user-specific, should not be committed)
+**/logs/
+*.log
+
+# Deployment results (user-specific)
+**/deployment_results.json
+**/latest_deployment.txt
+deployed_contracts.txt
+failed_contracts.txt
+logs/

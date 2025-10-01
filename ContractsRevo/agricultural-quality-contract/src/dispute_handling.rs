@@ -34,7 +34,7 @@ fn verify_mediator(env: &Env, mediator: &Address) -> Result<(), AgricQualityErro
 }
 
 // Helper function to validate evidence format
-fn validate_evidence(env: &Env, evidence: &Vec<BytesN<32>>) -> Result<(), AgricQualityError> {
+fn validate_evidence(_env: &Env, evidence: &Vec<BytesN<32>>) -> Result<(), AgricQualityError> {
     if evidence.is_empty() {
         return Err(AgricQualityError::InvalidEvidence);
     }
