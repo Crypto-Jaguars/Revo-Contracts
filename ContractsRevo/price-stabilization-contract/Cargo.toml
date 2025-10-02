@@ -2,9 +2,24 @@
 name = "price-stabilization-contract"
 version = "0.1.0"
 edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
 
 [dependencies]
-soroban-sdk.workspace = true
+soroban-sdk = { workspace = true }
 
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
+
+[features]
+slow_tests = []
+
+# Optimize for size in release builds
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
