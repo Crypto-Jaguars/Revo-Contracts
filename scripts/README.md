@@ -9,6 +9,7 @@ This directory contains automated deployment scripts for Revo Contracts.
 - [`deploy_crop_yield_prediction.zsh`](#crop-yield-prediction-contract-deployment) - Crop Yield Prediction Contract
 - [`deploy_agricultural_quality.zsh`](#agricultural-quality-contract-deployment) - Agricultural Quality Contract
 - [`deploy_transaction_nft_contract.zsh`](#transaction-nft-contract-deployment) - Transaction NFT Contract
+- [`deploy_crowdfunding_farmer.zsh`](#crowdfunding-farmer-contract-deployment) - Crowdfunding Farmer Contract
 
 
 ## Transaction NFT Contract Deployment
@@ -122,6 +123,69 @@ The `deploy_agricultural_quality.zsh` script automates building, uploading, and 
 ### Documentation
 
 See `ContractsRevo/agricultural-quality-contract/DEPLOYMENT.md` for the complete usage guide.
+
+---
+
+## Crowdfunding Farmer Contract Deployment
+
+The `deploy_crowdfunding_farmer.zsh` script automates the complete deployment process for the crowdfunding farmer contract to Stellar networks.
+
+### Features
+
+- ✅ Automated build, upload, and deploy process
+- ✅ Network selection (testnet/mainnet)
+- ✅ Identity-based deployment
+- ✅ Comprehensive error handling and validation
+- ✅ Detailed logging with timestamps
+- ✅ JSON and text result files
+- ✅ Colored output for better readability
+- ✅ Prerequisites validation
+
+### Usage
+
+```bash
+./deploy_crowdfunding_farmer.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet with default identity
+./deploy_crowdfunding_farmer.zsh testnet
+
+# Deploy to testnet with specific identity
+./deploy_crowdfunding_farmer.zsh testnet alice
+
+# Deploy to mainnet with production identity
+./deploy_crowdfunding_farmer.zsh mainnet production
+
+# View help
+./deploy_crowdfunding_farmer.zsh --help
+```
+
+### Contract Functions
+
+The deployed contract provides the following functions:
+- `create_campaign(farmer, goal, duration, description)` - Create new crowdfunding campaign
+- `contribute(campaign_id, amount)` - Contribute to a campaign
+- `distribute_rewards(campaign_id)` - Distribute rewards to contributors
+- `get_campaign(campaign_id)` - Retrieve campaign information
+- `get_contributions(campaign_id)` - Get campaign contributions
+
+### Output Files
+
+The script creates several files in `ContractsRevo/crowdfunding-farmer-contract/logs/`:
+
+- `deployment_YYYYMMDD_HHMMSS.log` - Detailed deployment log
+- `deployment_results.json` - JSON file with deployment metadata
+- `latest_deployment.txt` - Human-readable summary
+
+### Documentation
+
+See `ContractsRevo/crowdfunding-farmer-contract/DEPLOYMENT_GUIDE.md` for the complete usage guide.
 
 ---
 
