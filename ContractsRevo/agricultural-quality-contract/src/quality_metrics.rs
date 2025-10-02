@@ -1,5 +1,5 @@
 use crate::datatypes::*;
-use soroban_sdk::{log, vec, symbol_short, Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{vec, symbol_short, Address, BytesN, Env, String, Symbol, Vec};
 
 // Helper function to verify authority
 fn verify_authority(env: &Env, authority: &Address) -> Result<(), AgricQualityError> {
@@ -270,7 +270,7 @@ pub fn check_compliance(
         .ok_or(AgricQualityError::NotFound)?;
 
         // Get standard requirements
-    let (min_overall_score, required_metrics) = get_standard_requirements(&certification.standard);
+    let (_min_overall_score, _required_metrics) = get_standard_requirements(&certification.standard);
 
     // Get metrics for the standard
     let metrics = get_standard_metrics(env, &certification.standard)?;

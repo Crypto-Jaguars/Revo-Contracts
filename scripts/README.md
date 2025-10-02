@@ -7,6 +7,65 @@ This directory contains automated deployment scripts for Revo Contracts.
 - [`deploy_water_management.zsh`](#water-management-contract-deployment) - Water Management Contract
 - [`deploy_product_auction.zsh`](#product-auction-contract-deployment) - Product Auction Contract
 - [`deploy_crop_yield_prediction.zsh`](#crop-yield-prediction-contract-deployment) - Crop Yield Prediction Contract
+- [`deploy_agricultural_quality.zsh`](#agricultural-quality-contract-deployment) - Agricultural Quality Contract
+- [`deploy_transaction_nft_contract.zsh`](#transaction-nft-contract-deployment) - Transaction NFT Contract
+
+
+## Transaction NFT Contract Deployment
+
+The `deploy_transaction_nft_contract.zsh` script automates the complete deployment process for the transaction NFT contract to Stellar networks.
+
+### Features
+
+- ✅ Automated build, upload, and deploy process
+- ✅ Network selection (testnet/mainnet)
+- ✅ Identity-based deployment
+- ✅ Comprehensive error handling and validation
+- ✅ Detailed logging with timestamps
+- ✅ JSON and text result files
+- ✅ Colored output for better readability
+- ✅ Prerequisites validation
+
+### Usage
+
+```bash
+./deploy_transaction_nft_contract.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet with default identity
+./deploy_transaction_nft_contract.zsh testnet
+
+# Deploy to testnet with specific identity
+./deploy_transaction_nft_contract.zsh testnet alice
+
+# Deploy to mainnet with production identity
+./deploy_transaction_nft_contract.zsh mainnet production
+
+# View help
+./deploy_transaction_nft_contract.zsh --help
+```
+
+### Contract Functions
+
+The deployed contract provides the following functions:
+- `mint_nft(buyer, seller, amount, product)` - Mint transaction NFT
+- `get_nft_metadata(tx_id)` - Retrieve NFT metadata
+
+### Output Files
+
+The script creates several files in `ContractsRevo/transaction-nft-contract/logs/`:
+
+- `deployment_YYYYMMDD_HHMMSS.log` - Detailed deployment log
+- `deployment_results.json` - JSON file with deployment metadata
+- `latest_deployment.txt` - Human-readable summary
+
+---
 
 ## Crop Yield Prediction Contract Deployment
 
@@ -34,6 +93,35 @@ The `deploy_crop_yield_prediction.zsh` script automates building, uploading, and
 ### Documentation
 
 See `ContractsRevo/crop-yield-prediction/DEPLOYMENT.md` for complete usage guide.
+
+---
+
+## Agricultural Quality Contract Deployment
+
+The `deploy_agricultural_quality.zsh` script automates building, uploading, and deploying the agricultural quality contract to Stellar networks.
+
+### Usage
+
+```bash
+./deploy_agricultural_quality.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet
+./deploy_agricultural_quality.zsh testnet testnet_account
+
+# View help
+./deploy_agricultural_quality.zsh --help
+```
+
+### Documentation
+
+See `ContractsRevo/agricultural-quality-contract/DEPLOYMENT.md` for the complete usage guide.
 
 ---
 

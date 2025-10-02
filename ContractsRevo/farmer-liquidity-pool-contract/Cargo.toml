@@ -10,8 +10,9 @@ crate-type = ["cdylib"]
 soroban-sdk = { workspace = true }
 num-integer = { workspace = true, features = ["i128"] }
 
-[dev_dependencies]
+[dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
 
 [features]
 testutils = ["soroban-sdk/testutils"]
+
