@@ -1,6 +1,6 @@
 use soroban_sdk::{contracterror, contracttype, Address, String, Vec};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 #[contracterror]
 pub enum CooperativeError {
     MemberNotFound = 1,
