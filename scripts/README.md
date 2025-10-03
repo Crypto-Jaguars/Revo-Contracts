@@ -9,6 +9,7 @@ This directory contains automated deployment scripts for Revo Contracts.
 - [`deploy_crop_yield_prediction.zsh`](#crop-yield-prediction-contract-deployment) - Crop Yield Prediction Contract
 - [`deploy_agricultural_quality.zsh`](#agricultural-quality-contract-deployment) - Agricultural Quality Contract
 - [`deploy_transaction_nft_contract.zsh`](#transaction-nft-contract-deployment) - Transaction NFT Contract
+- [`deploy_certificate_management_contract.zsh`](#certificate-management-contract-deployment) - Certificate Management Contract
 
 
 ## Transaction NFT Contract Deployment
@@ -383,6 +384,101 @@ All deployment scripts require:
 3. **Review logs** after deployment
 4. **Backup deployment results** including WASM hash and Contract ID
 5. **Verify on Explorer** after deployment
+
+## Certificate Management Contract Deployment
+
+The `deploy_certificate_management_contract.zsh` script automates the complete deployment process for the certificate management contract to Stellar networks.
+
+### Features
+
+- ✅ Automated build, upload, and deploy process
+- ✅ Network selection (testnet/mainnet)
+- ✅ Identity-based deployment
+- ✅ Comprehensive error handling and validation
+- ✅ Detailed logging with timestamps
+- ✅ JSON and text result files
+- ✅ Colored output for better readability
+- ✅ Prerequisites validation
+- ✅ WASM path auto-detection across multiple locations
+
+### Usage
+
+```bash
+./deploy_certificate_management_contract.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet with default identity
+./deploy_certificate_management_contract.zsh testnet
+
+# Deploy to testnet with specific identity
+./deploy_certificate_management_contract.zsh testnet alice
+
+# Deploy to mainnet with production identity
+./deploy_certificate_management_contract.zsh mainnet production
+
+# View help
+./deploy_certificate_management_contract.zsh --help
+```
+
+### Prerequisites
+
+1. **Stellar CLI**: Install with `cargo install stellar-cli`
+2. **Rust & Cargo**: Required for building contracts
+3. **Stellar Identity**: Create with `stellar keys generate <name> --network <network>`
+4. **jq** (optional): For enhanced JSON parsing
+
+### What the Script Does
+
+1. **Prerequisites Check**: Validates required tools are installed
+2. **Parameter Validation**: Ensures network and identity are valid
+3. **Contract Build**: Builds using `stellar contract build --profile release`
+4. **WASM Upload**: Uploads to specified network and captures WASM hash
+5. **Contract Deploy**: Deploys using WASM hash and captures Contract ID
+6. **Results Storage**: Saves deployment results to JSON and text files
+7. **Logging**: Creates timestamped deployment logs
+
+### Output Files
+
+After successful deployment:
+
+```
+ContractsRevo/certificate-management-contract/logs/
+├── deployment_YYYYMMDD_HHMMSS.log      # Detailed deployment log
+├── deployment_results.json              # JSON results file
+└── latest_deployment.txt                # Human-readable summary
+```
+
+### Post-Deployment
+
+After deployment, initialize the contract:
+
+```bash
+stellar contract invoke \
+  --id <CONTRACT_ID> \
+  --source-account <IDENTITY> \
+  --network <NETWORK> \
+  -- initialize \
+  --admin <ADMIN_ADDRESS>
+```
+
+### Documentation
+
+For detailed deployment guide, see: [DEPLOYMENT.md](../ContractsRevo/certificate-management-contract/DEPLOYMENT.md)
+
+### Troubleshooting
+
+Common issues and solutions:
+
+1. **WASM file not found**: Script auto-detects WASM in multiple locations
+2. **Identity not found**: Run `stellar keys ls` to view available identities
+3. **Network error**: Ensure network connectivity and try again
+4. **Build fails**: Check Rust/Cargo installation and dependencies
 
 ## Resources
 
