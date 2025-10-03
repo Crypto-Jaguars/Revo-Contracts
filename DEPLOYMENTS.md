@@ -202,6 +202,21 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
 
+
+## Commodity Token Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDTSHXWZGKRCJQBE5PJQUZL3GM4OESHQKOONQ7J72XLVXH2UI2VSSU5N | Testnet | 2025-09-30 | Successful | Deployer - GGABV2M4GWVINA6KJQSICFWOA6Y4HF5HNGZTIBQBQQ3N6T2DBVXUIZBZD |
+
+### Mainnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
+
 ## Deployment Instructions
 
 ### Prerequisites
