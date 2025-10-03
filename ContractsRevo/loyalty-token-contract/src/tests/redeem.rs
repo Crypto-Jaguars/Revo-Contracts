@@ -97,7 +97,11 @@ fn test_successful_reward_redemption() {
 
         // Check inventory is updated
         let program = LoyaltyContract::get_program_info(env.clone(), program_id);
-        let gift_card = program.redemption_options.iter().find(|opt| opt.id == 1).unwrap();
+        let gift_card = program
+            .redemption_options
+            .iter()
+            .find(|opt| opt.id == 1)
+            .unwrap();
         assert_eq!(gift_card.available_quantity, 9); // Started with 10, now 9
     });
 }
@@ -155,8 +159,16 @@ fn test_full_loyalty_program_lifecycle() {
         assert_eq!(remaining_points, 100);
 
         let updated_program = LoyaltyContract::get_program_info(env.clone(), program_id);
-        let discount_coupon = updated_program.redemption_options.iter().find(|r| r.id == 2).unwrap();
-        let free_shipping = updated_program.redemption_options.iter().find(|r| r.id == 3).unwrap();
+        let discount_coupon = updated_program
+            .redemption_options
+            .iter()
+            .find(|r| r.id == 2)
+            .unwrap();
+        let free_shipping = updated_program
+            .redemption_options
+            .iter()
+            .find(|r| r.id == 3)
+            .unwrap();
 
         assert_eq!(discount_coupon.available_quantity, 4);
         assert_eq!(free_shipping.available_quantity, 19);

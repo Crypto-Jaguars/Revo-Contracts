@@ -1,4 +1,4 @@
-use soroban_sdk::{ contracterror, contracttype, Address };
+use soroban_sdk::{contracterror, contracttype, Address};
 
 #[derive(Clone)]
 #[contracttype]
@@ -64,7 +64,6 @@ pub enum ContractError {
     InvalidMultiplier = 14,
     NotInitialized = 15,
 }
-
 
 pub const PRECISION: i128 = 1_000_000_000_000;
 pub const MIN_STAKE_AMOUNT: i128 = 100;

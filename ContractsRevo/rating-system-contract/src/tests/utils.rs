@@ -19,8 +19,10 @@ impl TestCtx {
         crate::RatingSystemContractClient::new(&self.env, &self.contract_id)
     }
 
-    pub fn gen_addr(&self) -> Address { Address::generate(&self.env) }
-    
+    pub fn gen_addr(&self) -> Address {
+        Address::generate(&self.env)
+    }
+
     pub fn seller_keys(&self, seller: &Address) -> (DataKey, DataKey, DataKey) {
         (
             DataKey::Rating(seller.clone()),

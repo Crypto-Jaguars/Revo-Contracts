@@ -1,7 +1,4 @@
-use soroban_sdk::{
-    Address, BytesN, Env, Symbol,
-    contracterror,
-};
+use soroban_sdk::{contracterror, Address, BytesN, Env, Symbol};
 
 use crate::pool::{get_pool_info, update_epoch, RewardPool};
 use crate::staking::{Stake, StakeStorageKey};
@@ -55,7 +52,9 @@ pub fn calculate_pending_rewards(
     let rewards_with_multiplier = (base_rewards * lock_multiplier) / 100;
 
     // Subtract reward debt (already claimed rewards)
-    let pending_rewards = rewards_with_multiplier.checked_sub(stake.reward_debt).unwrap_or(0);
+    let pending_rewards = rewards_with_multiplier
+        .checked_sub(stake.reward_debt)
+        .unwrap_or(0);
 
     Ok(pending_rewards.max(0))
 }
@@ -104,20 +103,15 @@ pub fn update_reward_debt(stake_amount: i128, pool: RewardPool) -> i128 {
 }
 
 /// Claim pending rewards without unstaking
-pub fn claim_rewards(
-    env: Env,
-    farmer: Address,
-    pool_id: BytesN<32>,
-) -> Result<i128, RewardError> {
+pub fn claim_rewards(env: Env, farmer: Address, pool_id: BytesN<32>) -> Result<i128, RewardError> {
     farmer.require_auth();
 
     // Update epoch before calculating rewards
-    update_epoch(env.clone(), pool_id.clone())
-        .map_err(|_| RewardError::CalculationError)?;
+    update_epoch(env.clone(), pool_id.clone()).map_err(|_| RewardError::CalculationError)?;
 
     // Get updated pool info
-    let pool = get_pool_info(env.clone(), pool_id.clone())
-        .map_err(|_| RewardError::PoolNotFound)?;
+    let pool =
+        get_pool_info(env.clone(), pool_id.clone()).map_err(|_| RewardError::PoolNotFound)?;
 
     // Get stake
     let stake_key = StakeStorageKey::Stake(farmer.clone(), pool_id.clone());
@@ -128,11 +122,7 @@ pub fn claim_rewards(
         .ok_or(RewardError::StakeNotFound)?;
 
     // Calculate pending rewards
-    let pending_rewards = calculate_pending_rewards(
-        env.clone(),
-        stake.clone(),
-        pool.clone(),
-    )?;
+    let pending_rewards = calculate_pending_rewards(env.clone(), stake.clone(), pool.clone())?;
 
     if pending_rewards == 0 {
         return Err(RewardError::NoRewardsToClaim);
@@ -144,14 +134,16 @@ pub fn claim_rewards(
         pool.token_address.clone(),
         farmer.clone(),
         pending_rewards,
-    ).map_err(|_| RewardError::TransferFailed)?;
+    )
+    .map_err(|_| RewardError::TransferFailed)?;
 
     // Update reward debt
-    stake.reward_debt = stake.reward_debt.checked_add(pending_rewards).unwrap_or(stake.reward_debt);
+    stake.reward_debt = stake
+        .reward_debt
+        .checked_add(pending_rewards)
+        .unwrap_or(stake.reward_debt);
 
-    env.storage()
-        .persistent()
-        .set(&stake_key, &stake);
+    env.storage().persistent().set(&stake_key, &stake);
 
     // Log event
     env.events().publish(
@@ -171,12 +163,11 @@ pub fn compound_rewards(
     farmer.require_auth();
 
     // Update epoch
-    update_epoch(env.clone(), pool_id.clone())
-        .map_err(|_| RewardError::CalculationError)?;
+    update_epoch(env.clone(), pool_id.clone()).map_err(|_| RewardError::CalculationError)?;
 
     // Get updated pool info
-    let pool = get_pool_info(env.clone(), pool_id.clone())
-        .map_err(|_| RewardError::PoolNotFound)?;
+    let pool =
+        get_pool_info(env.clone(), pool_id.clone()).map_err(|_| RewardError::PoolNotFound)?;
 
     // Get stake
     let stake_key = StakeStorageKey::Stake(farmer.clone(), pool_id.clone());
@@ -187,25 +178,22 @@ pub fn compound_rewards(
         .ok_or(RewardError::StakeNotFound)?;
 
     // Calculate pending rewards
-    let pending_rewards = calculate_pending_rewards(
-        env.clone(),
-        stake.clone(),
-        pool.clone(),
-    )?;
+    let pending_rewards = calculate_pending_rewards(env.clone(), stake.clone(), pool.clone())?;
 
     if pending_rewards == 0 {
         return Err(RewardError::NoRewardsToClaim);
     }
 
     // Add rewards to stake amount (compound)
-    stake.amount = stake.amount.checked_add(pending_rewards).unwrap_or(stake.amount);
+    stake.amount = stake
+        .amount
+        .checked_add(pending_rewards)
+        .unwrap_or(stake.amount);
 
     // Update reward debt
     stake.reward_debt = update_reward_debt(stake.amount, pool.clone());
 
-    env.storage()
-        .persistent()
-        .set(&stake_key, &stake);
+    env.storage().persistent().set(&stake_key, &stake);
 
     // Update pool total staked (rewards are now staked)
     use crate::pool::update_total_staked;
@@ -224,8 +212,7 @@ pub fn compound_rewards(
 /// Calculate APR for a given lock period
 /// Returns APR as basis points (10000 = 100%)
 pub fn calculate_apr(env: Env, pool_id: BytesN<32>, lock_period: u64) -> Result<i128, RewardError> {
-    let pool = get_pool_info(env, pool_id)
-        .map_err(|_| RewardError::PoolNotFound)?;
+    let pool = get_pool_info(env, pool_id).map_err(|_| RewardError::PoolNotFound)?;
 
     if pool.total_staked == 0 {
         return Ok(0);
@@ -244,8 +231,7 @@ pub fn calculate_apr(env: Env, pool_id: BytesN<32>, lock_period: u64) -> Result<
 
 /// Get total rewards distributed from a pool
 pub fn get_total_rewards_distributed(env: Env, pool_id: BytesN<32>) -> Result<i128, RewardError> {
-    let pool = get_pool_info(env, pool_id)
-        .map_err(|_| RewardError::PoolNotFound)?;
+    let pool = get_pool_info(env, pool_id).map_err(|_| RewardError::PoolNotFound)?;
 
     // Total rewards = reward_rate * epochs_passed
     let total_rewards = pool.reward_rate * pool.current_epoch as i128;

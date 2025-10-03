@@ -148,10 +148,8 @@ mod tests {
                 let project_id = create_project_id(&test_env.env, project_num);
 
                 for credit_num in 1..=3 {
-                    let credit_id = create_credit_id(
-                        &test_env.env,
-                        (project_num - 1) * 10 + credit_num,
-                    );
+                    let credit_id =
+                        create_credit_id(&test_env.env, (project_num - 1) * 10 + credit_num);
 
                     EnvironmentalContract::issue_carbon_credit(
                         &test_env.env,
@@ -176,13 +174,7 @@ mod tests {
         let test_env = setup_test();
         let project_id = create_project_id(&test_env.env, 1);
 
-        let custom_standards = [
-            "ISO 14064",
-            "PAS 2060",
-            "GHG Protocol",
-            "CDP",
-            "SBTi",
-        ];
+        let custom_standards = ["ISO 14064", "PAS 2060", "GHG Protocol", "CDP", "SBTi"];
 
         test_env.env.as_contract(&test_env.contract_id, || {
             for (i, standard) in custom_standards.iter().enumerate() {
@@ -259,8 +251,7 @@ mod tests {
 
             // Get initial status
             let status_before =
-                EnvironmentalContract::get_credit_status(&test_env.env, credit_id.clone())
-                    .unwrap();
+                EnvironmentalContract::get_credit_status(&test_env.env, credit_id.clone()).unwrap();
 
             // Perform verification
             EnvironmentalContract::verify_credit(&test_env.env, credit_id.clone()).unwrap();

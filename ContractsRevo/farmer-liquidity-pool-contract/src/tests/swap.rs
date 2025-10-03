@@ -1,5 +1,7 @@
+use super::utils::{
+    assert_approx_eq, assert_balance, assert_pool_reserves, setup_test_environment,
+};
 use soroban_sdk::{testutils::Address as _, testutils::Events, Env};
-use super::utils::{setup_test_environment, assert_balance, assert_pool_reserves, assert_approx_eq};
 
 #[test]
 fn test_swap_token_a_to_token_b() {
@@ -24,7 +26,12 @@ fn test_swap_token_a_to_token_b() {
 
     // Check user balances
     assert_balance(&env, &test_env.token_a, &test_env.user2, 99_000); // 100_000 - 1_000
-    assert_balance(&env, &test_env.token_b, &test_env.user2, 100_000 + amount_out);
+    assert_balance(
+        &env,
+        &test_env.token_b,
+        &test_env.user2,
+        100_000 + amount_out,
+    );
 }
 
 #[test]
@@ -49,7 +56,12 @@ fn test_swap_token_b_to_token_a() {
     assert_pool_reserves(&test_env, 10000 - amount_out, 22000);
 
     // Check user balances
-    assert_balance(&env, &test_env.token_a, &test_env.user2, 100_000 + amount_out);
+    assert_balance(
+        &env,
+        &test_env.token_a,
+        &test_env.user2,
+        100_000 + amount_out,
+    );
     assert_balance(&env, &test_env.token_b, &test_env.user2, 98_000); // 100_000 - 2_000
 }
 
@@ -197,23 +209,23 @@ fn test_swap_events() {
 #[test]
 fn test_swap_with_different_fee_rates() {
     let env = Env::default();
-    
+
     // Test with different fee rates
     let fee_rates = [0, 10, 30, 100, 500];
-    
+
     for fee_rate in fee_rates {
         let test_env = setup_test_environment(&env);
         test_env.initialize_pool(fee_rate);
-        
+
         // Add initial liquidity
         test_env.add_liquidity(&test_env.user1, 10000, 20000);
-        
+
         let amount_in = 1000;
         let amount_out = test_env.swap(&test_env.user2, &test_env.token_a, amount_in);
-        
+
         // Higher fee rate should result in lower output
         assert!(amount_out > 0);
-        
+
         // With higher fees, output should be lower
         if fee_rate > 0 {
             let fee_amount = (amount_in * fee_rate as i128) / 10000;

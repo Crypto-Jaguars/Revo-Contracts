@@ -1,9 +1,6 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address, BytesN, Env, String,
-};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, String};
 
 use crate::{datatypes::*, WaterManagementContract, WaterManagementContractClient};
 
@@ -70,7 +67,13 @@ fn test_set_and_get_threshold() {
     let parcel_id = create_test_parcel_id(&env, 1);
 
     // Set threshold
-    let result = client.try_set_threshold(&admin, &parcel_id, &DAILY_LIMIT, &WEEKLY_LIMIT, &MONTHLY_LIMIT);
+    let result = client.try_set_threshold(
+        &admin,
+        &parcel_id,
+        &DAILY_LIMIT,
+        &WEEKLY_LIMIT,
+        &MONTHLY_LIMIT,
+    );
     assert!(result.is_ok());
 
     // Get threshold
@@ -96,7 +99,13 @@ fn test_incentive_system() {
     let volume = EFFICIENT_USAGE_VOLUME; // Efficient usage
 
     // Set threshold first
-    let _ = client.try_set_threshold(&admin, &parcel_id, &DAILY_LIMIT, &WEEKLY_LIMIT, &MONTHLY_LIMIT);
+    let _ = client.try_set_threshold(
+        &admin,
+        &parcel_id,
+        &DAILY_LIMIT,
+        &WEEKLY_LIMIT,
+        &MONTHLY_LIMIT,
+    );
 
     // Record efficient usage
     let _ = client.try_record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
@@ -134,13 +143,17 @@ fn test_usage_report() {
 
     // Get usage report
     let current_time = env.ledger().timestamp();
-    let start_time = if current_time > 86400 { current_time - 86400 } else { 0 };
+    let start_time = if current_time > 86400 {
+        current_time - 86400
+    } else {
+        0
+    };
     let end_time = current_time + 86400;
     let report_data = client.get_usage_report(
         &farmer,
         &Some(parcel_id.clone()),
         &start_time, // 24 hours ago
-        &end_time, // 24 hours from now
+        &end_time,   // 24 hours from now
     );
 
     assert_eq!(report_data.farmer_id, farmer);
@@ -220,13 +233,13 @@ fn test_farmer_rewards_calculation() {
 
     // Calculate farmer rewards
     let current_time = env.ledger().timestamp();
-    let start_time = if current_time > 86400 { current_time - 86400 } else { 0 };
+    let start_time = if current_time > 86400 {
+        current_time - 86400
+    } else {
+        0
+    };
     let end_time = current_time + 86400;
-    let rewards = client.calculate_farmer_rewards(
-        &farmer,
-        &start_time,
-        &end_time,
-    );
+    let rewards = client.calculate_farmer_rewards(&farmer, &start_time, &end_time);
 
     assert_eq!(rewards, total_expected_rewards);
 }
@@ -244,7 +257,13 @@ fn test_comprehensive_integration() {
     let data_hash = create_test_data_hash(&env, 1);
 
     // Set threshold
-    client.set_threshold(&admin, &parcel_id, &DAILY_LIMIT, &WEEKLY_LIMIT, &MONTHLY_LIMIT);
+    client.set_threshold(
+        &admin,
+        &parcel_id,
+        &DAILY_LIMIT,
+        &WEEKLY_LIMIT,
+        &MONTHLY_LIMIT,
+    );
 
     // Record efficient usage
     let usage_id = create_test_usage_id(&env, 1);

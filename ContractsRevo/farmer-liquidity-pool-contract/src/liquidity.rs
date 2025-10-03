@@ -1,7 +1,7 @@
-use soroban_sdk::{panic_with_error, Address, Env, Symbol, token};
 use crate::error::PoolError;
+use crate::pool::{get_pool_info, require_active, require_initialized};
 use crate::storage::{get_lp_balance as storage_get_lp_balance, set_lp_balance, set_pool_info};
-use crate::pool::{require_initialized, require_active, get_pool_info};
+use soroban_sdk::{panic_with_error, token, Address, Env, Symbol};
 
 // Simple square root implementation for i128
 fn sqrt(env: &Env, n: i128) -> i128 {
@@ -11,7 +11,7 @@ fn sqrt(env: &Env, n: i128) -> i128 {
     if n == 0 {
         return 0;
     }
-    
+
     let mut x = n;
     let mut y = (x + 1) / 2;
     while y < x {
@@ -36,28 +36,36 @@ pub fn add_liquidity(
     }
 
     let mut pool_info = get_pool_info(env);
-    
+
     // Transfer tokens from provider to contract
-    token::Client::new(env, &pool_info.token_a).transfer(&provider, &env.current_contract_address(), &amount_a);
-    token::Client::new(env, &pool_info.token_b).transfer(&provider, &env.current_contract_address(), &amount_b);
+    token::Client::new(env, &pool_info.token_a).transfer(
+        &provider,
+        &env.current_contract_address(),
+        &amount_a,
+    );
+    token::Client::new(env, &pool_info.token_b).transfer(
+        &provider,
+        &env.current_contract_address(),
+        &amount_b,
+    );
 
     let lp_tokens = if pool_info.total_lp_tokens == 0 {
         // First liquidity provision - use geometric mean
-        let product = amount_a.checked_mul(amount_b).unwrap_or_else(|| {
-            panic_with_error!(env, PoolError::MathOverflow)
-        });
+        let product = amount_a
+            .checked_mul(amount_b)
+            .unwrap_or_else(|| panic_with_error!(env, PoolError::MathOverflow));
         sqrt(env, product)
     } else {
         // Calculate LP tokens based on existing reserves
-        let scaled_a = amount_a.checked_mul(pool_info.total_lp_tokens).unwrap_or_else(|| {
-            panic_with_error!(env, PoolError::MathOverflow)
-        });
-        let scaled_b = amount_b.checked_mul(pool_info.total_lp_tokens).unwrap_or_else(|| {
-            panic_with_error!(env, PoolError::MathOverflow)
-        });
+        let scaled_a = amount_a
+            .checked_mul(pool_info.total_lp_tokens)
+            .unwrap_or_else(|| panic_with_error!(env, PoolError::MathOverflow));
+        let scaled_b = amount_b
+            .checked_mul(pool_info.total_lp_tokens)
+            .unwrap_or_else(|| panic_with_error!(env, PoolError::MathOverflow));
         let lp_tokens_a = scaled_a / pool_info.reserve_a;
         let lp_tokens_b = scaled_b / pool_info.reserve_b;
-        
+
         // Use the smaller amount to maintain ratio
         if lp_tokens_a < lp_tokens_b {
             lp_tokens_a
@@ -74,7 +82,7 @@ pub fn add_liquidity(
     pool_info.reserve_a += amount_a;
     pool_info.reserve_b += amount_b;
     pool_info.total_lp_tokens += lp_tokens;
-    
+
     set_pool_info(env, &pool_info);
 
     // Update provider's LP token balance
@@ -110,18 +118,18 @@ pub fn remove_liquidity(
     }
 
     let mut pool_info = get_pool_info(env);
-    
+
     if pool_info.total_lp_tokens == 0 {
         panic_with_error!(env, PoolError::InsufficientLiquidity);
     }
 
     // Calculate amounts to return
-    let scaled_a = lp_tokens.checked_mul(pool_info.reserve_a).unwrap_or_else(|| {
-        panic_with_error!(env, PoolError::MathOverflow)
-    });
-    let scaled_b = lp_tokens.checked_mul(pool_info.reserve_b).unwrap_or_else(|| {
-        panic_with_error!(env, PoolError::MathOverflow)
-    });
+    let scaled_a = lp_tokens
+        .checked_mul(pool_info.reserve_a)
+        .unwrap_or_else(|| panic_with_error!(env, PoolError::MathOverflow));
+    let scaled_b = lp_tokens
+        .checked_mul(pool_info.reserve_b)
+        .unwrap_or_else(|| panic_with_error!(env, PoolError::MathOverflow));
     let amount_a = scaled_a / pool_info.total_lp_tokens;
     let amount_b = scaled_b / pool_info.total_lp_tokens;
 
@@ -137,15 +145,23 @@ pub fn remove_liquidity(
     pool_info.reserve_a -= amount_a;
     pool_info.reserve_b -= amount_b;
     pool_info.total_lp_tokens -= lp_tokens;
-    
+
     set_pool_info(env, &pool_info);
 
     // Update provider's LP token balance
     set_lp_balance(env, &provider, provider_balance - lp_tokens);
 
     // Transfer tokens back to provider
-    token::Client::new(env, &pool_info.token_a).transfer(&env.current_contract_address(), &provider, &amount_a);
-    token::Client::new(env, &pool_info.token_b).transfer(&env.current_contract_address(), &provider, &amount_b);
+    token::Client::new(env, &pool_info.token_a).transfer(
+        &env.current_contract_address(),
+        &provider,
+        &amount_a,
+    );
+    token::Client::new(env, &pool_info.token_b).transfer(
+        &env.current_contract_address(),
+        &provider,
+        &amount_b,
+    );
 
     // Emit liquidity removed event
     env.events().publish(

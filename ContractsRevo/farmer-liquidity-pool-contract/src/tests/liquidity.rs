@@ -1,6 +1,9 @@
-use soroban_sdk::{testutils::Address as _, testutils::Events, Env};
+use super::utils::{
+    assert_approx_eq, assert_balance, assert_lp_balance, assert_pool_reserves,
+    setup_test_environment,
+};
 use num_integer::Roots;
-use super::utils::{setup_test_environment, assert_balance, assert_pool_reserves, assert_lp_balance, assert_approx_eq};
+use soroban_sdk::{testutils::Address as _, testutils::Events, Env};
 
 #[test]
 fn test_add_liquidity_first_provider() {
@@ -104,8 +107,18 @@ fn test_remove_liquidity() {
     assert_lp_balance(&test_env, &test_env.user1, lp_tokens / 2);
 
     // Check token balances
-    assert_balance(&env, &test_env.token_a, &test_env.user1, initial_balance_a + amount_a);
-    assert_balance(&env, &test_env.token_b, &test_env.user1, initial_balance_b + amount_b);
+    assert_balance(
+        &env,
+        &test_env.token_a,
+        &test_env.user1,
+        initial_balance_a + amount_a,
+    );
+    assert_balance(
+        &env,
+        &test_env.token_b,
+        &test_env.user1,
+        initial_balance_b + amount_b,
+    );
 }
 
 #[test]

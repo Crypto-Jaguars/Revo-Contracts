@@ -1,19 +1,16 @@
-use soroban_sdk::{panic_with_error, Address, Env, Symbol};
 use crate::error::PoolError;
-use crate::storage::{get_pool_info as storage_get_pool_info, set_pool_info, is_initialized, PoolInfo};
+use crate::storage::{
+    get_pool_info as storage_get_pool_info, is_initialized, set_pool_info, PoolInfo,
+};
+use soroban_sdk::{panic_with_error, Address, Env, Symbol};
 
-pub fn initialize(
-    env: &Env,
-    admin: Address,
-    token_a: Address,
-    token_b: Address,
-    fee_rate: u32,
-) {
+pub fn initialize(env: &Env, admin: Address, token_a: Address, token_b: Address, fee_rate: u32) {
     if is_initialized(env) {
         panic_with_error!(env, PoolError::AlreadyInitialized);
     }
 
-    if fee_rate > 10000 { // Max 100% fee
+    if fee_rate > 10000 {
+        // Max 100% fee
         panic_with_error!(env, PoolError::InvalidFeeRate);
     }
 
@@ -35,10 +32,8 @@ pub fn initialize(
     set_pool_info(env, &pool_info);
 
     // Emit initialization event
-    env.events().publish(
-        (Symbol::new(env, "init"),),
-        (token_a, token_b, fee_rate),
-    );
+    env.events()
+        .publish((Symbol::new(env, "init"),), (token_a, token_b, fee_rate));
 }
 
 pub fn get_pool_info(env: &Env) -> PoolInfo {

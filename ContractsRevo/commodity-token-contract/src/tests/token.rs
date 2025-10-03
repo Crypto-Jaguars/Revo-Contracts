@@ -18,15 +18,7 @@ fn token_creation_and_metadata() {
     let issuer = ctx.admin.clone();
 
     // Issue a token
-    let token_id = ctx.issue_token(
-        &issuer,
-        "COFFEE",
-        250,
-        "AA",
-        "WH-1",
-        60 * 60,
-        &verification,
-    );
+    let token_id = ctx.issue_token(&issuer, "COFFEE", 250, "AA", "WH-1", 60 * 60, &verification);
 
     // Validate metadata and storage
     let token = ctx.env.as_contract(&ctx.contract_id, || {

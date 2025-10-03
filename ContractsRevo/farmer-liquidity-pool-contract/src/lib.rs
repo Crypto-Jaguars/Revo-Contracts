@@ -5,23 +5,23 @@ use soroban_sdk::{contract, contractimpl, Address, Env};
 #[cfg(test)]
 mod tests;
 
-mod pool;
-mod liquidity;
-mod swap;
-mod fees;
 mod error;
-mod storage;
 mod event;
+mod fees;
 mod interface;
+mod liquidity;
+mod pool;
+mod storage;
+mod swap;
 mod types;
 mod utils;
 
-pub use pool::*;
-pub use liquidity::*;
-pub use swap::*;
-pub use fees::*;
 pub use error::*;
-pub use storage::{PoolInfo, LiquidityProvider, is_initialized, set_pool_info};
+pub use fees::*;
+pub use liquidity::*;
+pub use pool::*;
+pub use storage::{is_initialized, set_pool_info, LiquidityProvider, PoolInfo};
+pub use swap::*;
 
 // If below wasm of lp-token-contact change then plese update this wasm also !
 pub mod token {
@@ -98,11 +98,7 @@ impl FarmerLiquidityPoolContract {
     }
 
     /// Calculate swap output amount
-    pub fn calculate_swap_output(
-        env: Env,
-        token_in: Address,
-        amount_in: i128,
-    ) -> i128 {
+    pub fn calculate_swap_output(env: Env, token_in: Address, amount_in: i128) -> i128 {
         swap::calculate_swap_output(&env, token_in, amount_in)
     }
 

@@ -1,4 +1,6 @@
-use soroban_sdk::{contracttype, symbol_short, Address, Env, Symbol, ConversionError, TryFromVal, Val};
+use soroban_sdk::{
+    contracttype, symbol_short, Address, ConversionError, Env, Symbol, TryFromVal, Val,
+};
 
 use crate::types::{DataKey, Position};
 
@@ -60,19 +62,24 @@ pub fn get_lp_balance(env: &Env, provider: &Address) -> i128 {
 }
 
 pub fn set_lp_balance(env: &Env, provider: &Address, amount: i128) {
-    env.storage().persistent().set(&(LP_BALANCES, provider), &amount);
+    env.storage()
+        .persistent()
+        .set(&(LP_BALANCES, provider), &amount);
 }
 
 // Fee functions
 pub fn get_accumulated_fees(env: &Env, provider: &Address) -> (i128, i128) {
-    let fees: Option<(i128, i128)> = env.storage()
+    let fees: Option<(i128, i128)> = env
+        .storage()
         .persistent()
         .get(&(ACCUMULATED_FEES, provider));
     fees.unwrap_or((0, 0))
 }
 
 pub fn set_accumulated_fees(env: &Env, provider: &Address, fees_a: i128, fees_b: i128) {
-    env.storage().persistent().set(&(ACCUMULATED_FEES, provider), &(fees_a, fees_b));
+    env.storage()
+        .persistent()
+        .set(&(ACCUMULATED_FEES, provider), &(fees_a, fees_b));
 }
 
 pub fn get_total_fees(env: &Env) -> (i128, i128) {
@@ -83,7 +90,9 @@ pub fn get_total_fees(env: &Env) -> (i128, i128) {
 }
 
 pub fn set_total_fees(env: &Env, fees_a: i128, fees_b: i128) {
-    env.storage().persistent().set(&TOTAL_FEES, &(fees_a, fees_b));
+    env.storage()
+        .persistent()
+        .set(&TOTAL_FEES, &(fees_a, fees_b));
 }
 
 // Legacy functions for compatibility with the other implementation

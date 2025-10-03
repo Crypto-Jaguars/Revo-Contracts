@@ -17,7 +17,10 @@ pub fn create_training_program(
     }
 
     // Generate a unique ID for the program.
-    let program_id = utils::generate_id(env, (title.clone(), instructor.clone(), env.ledger().timestamp()));
+    let program_id = utils::generate_id(
+        env,
+        (title.clone(), instructor.clone(), env.ledger().timestamp()),
+    );
 
     let program = TrainingProgram {
         program_id: program_id.clone(),
