@@ -178,13 +178,14 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
 
-## Cooperative Management Contract
+
+## Commodity Token Contract
 
 ### Testnet Deployments
 
 | Contract ID | Network | Deployed Date | Status | Notes |
 |-------------|---------|---------------|--------|-------|
-| CAYKKIE7WW45UI5EPK43B3NFR4SI2BU2JSOB33ZPWDFKTQOQAVS2CVBM | Testnet | 2025-09-30 | Successful | Deployer - GCHC7NIC7CB2ED4PMUTPNONPQEPN2OL7S6MWWNM53WPCHKB3TYKY4EK6 |
+| CDTSHXWZGKRCJQBE5PJQUZL3GM4OESHQKOONQ7J72XLVXH2UI2VSSU5N | Testnet | 2025-09-30 | Successful | Deployer - GGABV2M4GWVINA6KJQSICFWOA6Y4HF5HNGZTIBQBQQ3N6T2DBVXUIZBZD |
 
 ## Cooperative Management Contract
 
