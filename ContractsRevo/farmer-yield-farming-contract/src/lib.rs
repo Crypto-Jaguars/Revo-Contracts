@@ -16,15 +16,10 @@ impl FarmerYieldFarmingContract {
         admin.require_auth();
         env.storage().instance().set(&DataKey::Admin, &admin);
         env.storage().instance().set(&DataKey::FarmCount, &0u32);
-        env.storage()
-            .instance()
-            .set(&DataKey::GlobalMultiplier, &BASE_MULTIPLIER);
-        env.storage()
-            .instance()
-            .set(&DataKey::MinStakePeriod, &COOLDOWN_PERIOD);
-        env.storage()
-            .instance()
-            .set(&DataKey::EmergencyWithdraw, &false);
+        env.storage().instance().set(&DataKey::GlobalMultiplier, &BASE_MULTIPLIER);
+        env.storage().instance().set(&DataKey::MinStakePeriod, &COOLDOWN_PERIOD);
+        env.storage().instance().set(&DataKey::EmergencyWithdraw, &false);
+        env.storage().instance().extend_ttl(1000000, 1000000);
         Ok(true)
     }
 
@@ -336,7 +331,7 @@ impl FarmerYieldFarmingContract {
             .get(&DataKey::EmergencyWithdraw)
             .unwrap_or(false);
         if !enabled {
-            return Err(ContractError::EmergencyNotEnabled);
+           return  Err(ContractError::EmergencyNotEnabled);
         }
 
         let mut farm: FarmPool = env
@@ -565,3 +560,16 @@ impl FarmerYieldFarmingContract {
         token::Client::new(&env, &token).transfer(&admin, &env.current_contract_address(), &amount);
     }
 }
+
+#[cfg(test)]
+mod test;
+mod utils;
+
+// Farm pool creation and management tests
+mod farming;
+
+// LP token staking and validation tests
+mod staking;
+
+// Reward harvesting and distribution tests
+mod rewards;
