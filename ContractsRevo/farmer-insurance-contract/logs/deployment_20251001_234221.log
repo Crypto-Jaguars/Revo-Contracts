@@ -1,0 +1,78 @@
+[2025-10-01 23:42:21 UTC] === Farmer Insurance Contract Deployment ===
+[2025-10-01 23:42:21 UTC] [INFO] Starting deployment process...
+[2025-10-01 23:42:21 UTC] [INFO] Checking prerequisites...
+[2025-10-01 23:42:21 UTC] [SUCCESS] Stellar CLI found
+[2025-10-01 23:42:21 UTC] [SUCCESS] Prerequisites check passed
+[2025-10-01 23:42:21 UTC] Starting deployment of farmer-insurance-contract
+[2025-10-01 23:42:21 UTC] Network: testnet
+[2025-10-01 23:42:21 UTC] Profile: default
+[2025-10-01 23:42:22 UTC] Source Identity: alice
+[2025-10-01 23:42:22 UTC] Contract Directory: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract
+[2025-10-01 23:42:22 UTC] WASM Path: C:\Users\hp\Desktop\rev\Revo-Contracts\target\wasm32v1-none\release\farmer_insurance_contract.wasm
+[2025-10-01 23:42:22 UTC] === Building Contract ===
+[2025-10-01 23:42:22 UTC] [INFO] Building farmer-insurance-contract with profile: default
+[2025-10-01 23:42:22 UTC] Build command: stellar contract build --profile default
+Gä¦n+Å  CARGO_BUILD_RUSTFLAGS=--remap-path-prefix=C:/Users/hp/.cargo/registry/src= cargo rustc --manifest-path=Cargo.toml --crate-type=cdylib --target=wasm32v1-none --profile=default
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-token-contract\Cargo.toml
+workspace: C:\Users\hp\Desktop\rev\Revo-Contracts\Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\microlending-contract\Cargo.toml
+workspace: C:\Users\hp\Desktop\rev\Revo-Contracts\Cargo.toml
+warning: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-liquidity-pool-contract\Cargo.toml: `dev_dependencies` is deprecated in favor of `dev-dependencies` and will not work in the 2024 edition
+(in the `farmer-liquidity-pool-contract` package)
+warning: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\a-lp-token-contract\Cargo.toml: `dev_dependencies` is deprecated in favor of `dev-dependencies` and will not work in the 2024 edition
+(in the `a-lp-token-contract` package)
+error: profile `default` is not defined
+G¥î error: exit status exit code: 101
+[2025-10-01 23:42:22 UTC] [SUCCESS] Contract built successfully
+[2025-10-01 23:42:22 UTC] [INFO] WASM file created: C:\Users\hp\Desktop\rev\Revo-Contracts\target\wasm32v1-none\release\farmer_insurance_contract.wasm (7169 bytes)
+[2025-10-01 23:42:22 UTC] WASM file size: 7169 bytes
+[2025-10-01 23:42:22 UTC] === Uploading Contract ===
+[2025-10-01 23:42:22 UTC] [INFO] Uploading WASM to testnet network...
+[2025-10-01 23:42:22 UTC] Upload command: stellar contract upload --source alice --network testnet --wasm C:\Users\hp\Desktop\rev\Revo-Contracts\target\wasm32v1-none\release\farmer_insurance_contract.wasm
+Gä¦n+Å  Simulating install transactionGÇª
+Gä¦n+Å  Signing transaction: e7c4fad7797a1e155fb0ca41e8324bc79fcea6c08b52dd1c8bf0b23cd9cf21ed
+=ƒîÄ Submitting install transactionGÇª
+4cd6f325d4abc31bbb8823a4f9469424be8fa9636b2b2ea50558541abdf9705c
+[2025-10-01 23:42:32 UTC] [SUCCESS] Contract uploaded successfully
+[2025-10-01 23:42:32 UTC] [INFO] WASM Hash: 4cd6f325d4abc31bbb8823a4f9469424be8fa9636b2b2ea50558541abdf9705c
+[2025-10-01 23:42:32 UTC] WASM Hash: 4cd6f325d4abc31bbb8823a4f9469424be8fa9636b2b2ea50558541abdf9705c
+[2025-10-01 23:42:32 UTC] === Deploying Contract ===
+[2025-10-01 23:42:32 UTC] [INFO] Deploying contract to testnet network...
+[2025-10-01 23:42:32 UTC] Deploy command: stellar contract deploy --source alice --network testnet --wasm C:\Users\hp\Desktop\rev\Revo-Contracts\target\wasm32v1-none\release\farmer_insurance_contract.wasm
+Gä¦n+Å  Skipping install because wasm already installed
+Gä¦n+Å  Using wasm hash 4cd6f325d4abc31bbb8823a4f9469424be8fa9636b2b2ea50558541abdf9705c
+Gä¦n+Å  Simulating deploy transactionGÇª
+Gä¦n+Å  Transaction hash is f1707f2d1008f2c9a9f89007e5b7b00c9b17366bbbeb2b01efa44a96ee04ae55
+=ƒöù https://stellar.expert/explorer/testnet/tx/f1707f2d1008f2c9a9f89007e5b7b00c9b17366bbbeb2b01efa44a96ee04ae55
+Gä¦n+Å  Signing transaction: f1707f2d1008f2c9a9f89007e5b7b00c9b17366bbbeb2b01efa44a96ee04ae55
+=ƒîÄ Submitting deploy transactionGÇª
+=ƒöù https://stellar.expert/explorer/testnet/contract/CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG
+G£à Deployed!
+CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG
+[2025-10-01 23:42:36 UTC] [SUCCESS] Contract deployed successfully
+[2025-10-01 23:42:36 UTC] [INFO] Contract ID: CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG
+[2025-10-01 23:42:36 UTC] Contract ID: CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG
+[2025-10-01 23:42:36 UTC] === Deployment Summary ===
+[2025-10-01 23:42:37 UTC] [SUCCESS] Deployment summary saved to: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract\logs\deployment_summary_20251001_234221.json
+[2025-10-01 23:42:37 UTC] [INFO] === DEPLOYMENT RESULTS ===
+[2025-10-01 23:42:37 UTC] [INFO] Contract Name: farmer-insurance-contract
+[2025-10-01 23:42:37 UTC] [INFO] Network: testnet
+[2025-10-01 23:42:37 UTC] [INFO] Profile: default
+[2025-10-01 23:42:37 UTC] [INFO] Source Identity: alice
+[2025-10-01 23:42:37 UTC] [INFO] WASM Hash: 4cd6f325d4abc31bbb8823a4f9469424be8fa9636b2b2ea50558541abdf9705c
+[2025-10-01 23:42:37 UTC] [INFO] Contract ID: CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG
+[2025-10-01 23:42:37 UTC] [INFO] Deployment Time: 2025-10-01 23:42:37 UTC
+[2025-10-01 23:42:37 UTC] [INFO] Log File: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract\logs\deployment_20251001_234221.log
+[2025-10-01 23:42:37 UTC] [INFO] Summary File: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract\logs\deployment_summary_20251001_234221.json
+[2025-10-01 23:42:37 UTC] === DEPLOYMENT SUMMARY ===
+[2025-10-01 23:42:37 UTC] WASM Hash: 4cd6f325d4abc31bbb8823a4f9469424be8fa9636b2b2ea50558541abdf9705c
+[2025-10-01 23:42:37 UTC] Contract ID: CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG
+[2025-10-01 23:42:37 UTC] Summary saved to: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract\logs\deployment_summary_20251001_234221.json
+[2025-10-01 23:42:37 UTC] === Verifying Deployment ===
+[2025-10-01 23:42:37 UTC] [INFO] Verifying contract deployment...
+[2025-10-01 23:42:37 UTC] [SUCCESS] Contract verification successful - contract is accessible
+[2025-10-01 23:42:37 UTC] Contract verification: SUCCESS
+[2025-10-01 23:42:37 UTC] [SUCCESS] Deployment completed successfully!
+[2025-10-01 23:42:37 UTC] Deployment process completed successfully

@@ -1,0 +1,29 @@
+[2025-10-01 23:37:25 UTC] === Farmer Insurance Contract Deployment ===
+[2025-10-01 23:37:25 UTC] [INFO] Starting deployment process...
+[2025-10-01 23:37:25 UTC] [INFO] Checking prerequisites...
+[2025-10-01 23:37:26 UTC] [SUCCESS] Stellar CLI found
+[2025-10-01 23:37:26 UTC] [SUCCESS] Prerequisites check passed
+[2025-10-01 23:37:26 UTC] Starting deployment of farmer-insurance-contract
+[2025-10-01 23:37:26 UTC] Network: testnet
+[2025-10-01 23:37:26 UTC] Profile: default
+[2025-10-01 23:37:26 UTC] Source Identity: alice
+[2025-10-01 23:37:26 UTC] Contract Directory: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract
+[2025-10-01 23:37:26 UTC] WASM Path: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract\target\wasm32v1-none\release\farmer_insurance_contract.wasm
+[2025-10-01 23:37:26 UTC] === Building Contract ===
+[2025-10-01 23:37:26 UTC] [INFO] Building farmer-insurance-contract with profile: default
+[2025-10-01 23:37:26 UTC] Build command: stellar contract build --profile default
+Gä¦n+Å  CARGO_BUILD_RUSTFLAGS=--remap-path-prefix=C:/Users/hp/.cargo/registry/src= cargo rustc --manifest-path=Cargo.toml --crate-type=cdylib --target=wasm32v1-none --profile=default
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-token-contract\Cargo.toml
+workspace: C:\Users\hp\Desktop\rev\Revo-Contracts\Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\microlending-contract\Cargo.toml
+workspace: C:\Users\hp\Desktop\rev\Revo-Contracts\Cargo.toml
+warning: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-liquidity-pool-contract\Cargo.toml: `dev_dependencies` is deprecated in favor of `dev-dependencies` and will not work in the 2024 edition
+(in the `farmer-liquidity-pool-contract` package)
+warning: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\a-lp-token-contract\Cargo.toml: `dev_dependencies` is deprecated in favor of `dev-dependencies` and will not work in the 2024 edition
+(in the `a-lp-token-contract` package)
+error: profile `default` is not defined
+G¥î error: exit status exit code: 101
+[2025-10-01 23:37:28 UTC] [SUCCESS] Contract built successfully
+[2025-10-01 23:37:28 UTC] [ERROR] WASM file not found after build: C:\Users\hp\Desktop\rev\Revo-Contracts\ContractsRevo\farmer-insurance-contract\target\wasm32v1-none\release\farmer_insurance_contract.wasm
