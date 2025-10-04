@@ -1,8 +1,5 @@
 #![cfg(test)]
-use crate::{
-    tests::utils::TestContext,
-    CertStatus, AdminError, IssueError,
-};
+use crate::{tests::utils::TestContext, AdminError, CertStatus, IssueError};
 
 #[test]
 fn test_contract_initialization() {
@@ -187,13 +184,13 @@ fn test_different_cert_types() {
     let _cert_types = ["ORGANIC", "FAIRTRADE", "NON_GMO", "RAINFOREST_ALLIANCE"];
 
     context.env.mock_all_auths();
-    
+
     let cert_types = ["ORGANIC", "FAIRTRADE", "NON_GMO", "RAINFOREST_ALLIANCE"];
     let cert_docs = [
         "Organic certification",
-        "Fair trade certification", 
+        "Fair trade certification",
         "Non-GMO certification",
-        "Rainforest Alliance certification"
+        "Rainforest Alliance certification",
     ];
 
     for (index, (cert_type, doc_content)) in cert_types.iter().zip(cert_docs.iter()).enumerate() {

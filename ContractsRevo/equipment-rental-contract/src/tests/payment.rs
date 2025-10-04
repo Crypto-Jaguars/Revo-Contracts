@@ -75,7 +75,13 @@ fn test_validate_price_within_tolerance() {
     let tolerance = 100; // Within tolerance
 
     // Should not panic
-    client.validate_price(&equipment_id, &start_day, &end_day, &proposed_price, &tolerance);
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &proposed_price,
+        &tolerance,
+    );
 }
 
 #[test]
@@ -89,7 +95,13 @@ fn test_validate_price_exact_match() {
     let tolerance = 0; // No tolerance needed for exact match
 
     // Should not panic
-    client.validate_price(&equipment_id, &start_day, &end_day, &exact_price, &tolerance);
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &exact_price,
+        &tolerance,
+    );
 }
 
 #[test]
@@ -103,7 +115,13 @@ fn test_validate_price_outside_tolerance_high() {
     let proposed_price = 5000; // Too high
     let tolerance = 100;
 
-    client.validate_price(&equipment_id, &start_day, &end_day, &proposed_price, &tolerance);
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &proposed_price,
+        &tolerance,
+    );
 }
 
 #[test]
@@ -117,7 +135,13 @@ fn test_validate_price_outside_tolerance_low() {
     let proposed_price = 1000; // Too low
     let tolerance = 100;
 
-    client.validate_price(&equipment_id, &start_day, &end_day, &proposed_price, &tolerance);
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &proposed_price,
+        &tolerance,
+    );
 }
 
 // ============================================================================
@@ -138,7 +162,13 @@ fn test_rental_payment_tracking() {
     // Create rental with computed price
     let start_timestamp = start_day * 86400;
     let end_timestamp = end_day * 86400;
-    client.create_rental(&equipment_id, &renter1, &start_timestamp, &end_timestamp, &expected_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_timestamp,
+        &end_timestamp,
+        &expected_price,
+    );
 
     // Verify rental tracks correct payment amount
     let rental = client.get_rental(&equipment_id).unwrap();
@@ -148,7 +178,7 @@ fn test_rental_payment_tracking() {
 #[test]
 fn test_different_pricing_tiers() {
     let (env, _contract_id, client, _owner, _renter1, _renter2) = setup_test();
-    
+
     // Register equipment with different price tiers
     let basic_tractor = register_basic_equipment(&client, &env, "basic_tractor", 800);
     let premium_tractor = register_basic_equipment(&client, &env, "premium_tractor", 2000);
@@ -210,12 +240,24 @@ fn test_pricing_integration_with_rental_flow() {
 
     // 2. Validate the price
     let tolerance = 50;
-    client.validate_price(&equipment_id, &start_day, &end_day, &expected_price, &tolerance);
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &expected_price,
+        &tolerance,
+    );
 
     // 3. Create rental with validated price
     let start_timestamp = start_day * 86400;
     let end_timestamp = end_day * 86400;
-    client.create_rental(&equipment_id, &renter1, &start_timestamp, &end_timestamp, &expected_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_timestamp,
+        &end_timestamp,
+        &expected_price,
+    );
 
     // 4. Verify rental was created with correct price
     let rental = client.get_rental(&equipment_id).unwrap();
@@ -230,18 +272,30 @@ fn test_payment_validation_prevents_invalid_rentals_success() {
 
     let start_day = (env.ledger().timestamp() / 86400) + 1;
     let end_day = start_day + 2; // 2 days, should cost 2000
-    
+
     // Test that correct price validation succeeds
     let correct_price = 2000;
     let tolerance = 100;
     // This should not panic
-    client.validate_price(&equipment_id, &start_day, &end_day, &correct_price, &tolerance);
-    
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &correct_price,
+        &tolerance,
+    );
+
     // Create rental with correct price
     let start_timestamp = start_day * 86400;
     let end_timestamp = end_day * 86400;
-    client.create_rental(&equipment_id, &renter1, &start_timestamp, &end_timestamp, &correct_price);
-    
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_timestamp,
+        &end_timestamp,
+        &correct_price,
+    );
+
     let rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(rental.total_price, correct_price);
 }
@@ -254,17 +308,23 @@ fn test_payment_validation_prevents_invalid_rentals_failure() {
 
     let start_day = (env.ledger().timestamp() / 86400) + 1;
     let end_day = start_day + 2; // 2 days, should cost 2000
-    
+
     // Test that invalid price validation fails
     let incorrect_price = 5000; // Way too high for 2 days * 1000 = 2000
     let tolerance = 100;
-    
+
     // This should panic due to price being way outside tolerance
-    client.validate_price(&equipment_id, &start_day, &end_day, &incorrect_price, &tolerance);
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &incorrect_price,
+        &tolerance,
+    );
 }
 
 // ============================================================================
-// INTEGRATION SIMULATION TESTS 
+// INTEGRATION SIMULATION TESTS
 // ============================================================================
 
 #[test]
@@ -281,12 +341,24 @@ fn test_payment_flow_simulation() {
 
     // Simulate payment validation (what would happen with token contract)
     let tolerance = 50;
-    client.validate_price(&equipment_id, &start_day, &end_day, &expected_price, &tolerance);
+    client.validate_price(
+        &equipment_id,
+        &start_day,
+        &end_day,
+        &expected_price,
+        &tolerance,
+    );
 
     // Create rental with validated price (simulating successful token payment)
     let start_timestamp = start_day * 86400;
     let end_timestamp = end_day * 86400;
-    client.create_rental(&equipment_id, &renter1, &start_timestamp, &end_timestamp, &expected_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_timestamp,
+        &end_timestamp,
+        &expected_price,
+    );
     client.confirm_rental(&equipment_id);
 
     // Verify the rental was created successfully with proper price tracking

@@ -1,8 +1,5 @@
 #![cfg(test)]
-use crate::{
-    tests::utils::TestContext,
-    CertStatus, CertificationError, RevokeError,
-};
+use crate::{tests::utils::TestContext, CertStatus, CertificationError, RevokeError};
 
 #[test]
 fn test_successful_revocation() {

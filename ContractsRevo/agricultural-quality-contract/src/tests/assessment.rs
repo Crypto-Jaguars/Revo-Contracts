@@ -6,9 +6,9 @@ mod test {
     use crate::QualityStandard;
     use crate::ResolutionOutcome;
 
-    use crate::tests::utils::setup_test; 
-    use soroban_sdk::{testutils::Address as _, Address, Env, symbol_short, vec, String};
-    use crate::{AgricQualityContract, AgricQualityContractClient, };
+    use crate::tests::utils::setup_test;
+    use crate::{AgricQualityContract, AgricQualityContractClient};
+    use soroban_sdk::{symbol_short, testutils::Address as _, vec, Address, Env, String};
 
     // Test initialization
     #[test]
@@ -38,7 +38,8 @@ mod test {
         let weight = 50u32;
 
         // Register quality metric
-        let result = client.register_metric(&authority, &standard, &metric_name, &min_score, &weight);
+        let result =
+            client.register_metric(&authority, &standard, &metric_name, &min_score, &weight);
 
         // Verify metric storage
         let metrics = client.get_standard_metrics(&standard);
@@ -70,7 +71,13 @@ mod test {
         // Update metric
         let new_min_score = 85u32;
         let new_weight = 60u32;
-        let result = client.update_metric(&authority, &standard, &metric_name, &new_min_score, &new_weight);
+        let result = client.update_metric(
+            &authority,
+            &standard,
+            &metric_name,
+            &new_min_score,
+            &new_weight,
+        );
 
         // Verify updated metric
         let metrics = client.get_standard_metrics(&standard);
@@ -78,7 +85,10 @@ mod test {
 
         let metric = metrics.get(0).unwrap();
         assert_eq!(metric.name, metric_name, "Metric name should match");
-        assert_eq!(metric.min_score, new_min_score, "Min score should be updated");
+        assert_eq!(
+            metric.min_score, new_min_score,
+            "Min score should be updated"
+        );
         assert_eq!(metric.weight, new_weight, "Weight should be updated");
     }
 
@@ -118,7 +128,10 @@ mod test {
 
         // Record inspection with passing score
         let metrics = vec![&env, (metric_name.clone(), 90u32)]; // Above min_score
-        let findings = vec![&env, String::from_str(&env, "No pesticide residue detected")];
+        let findings = vec![
+            &env,
+            String::from_str(&env, "No pesticide residue detected"),
+        ];
         let recommendations = vec![&env, String::from_str(&env, "Maintain current practices")];
         client.record_inspection(&inspector, &cert_id, &metrics, &findings, &recommendations);
 
@@ -126,14 +139,29 @@ mod test {
         let report = client.check_compliance(&cert_id, &inspector);
         assert_eq!(report.inspector, inspector, "Inspector should match");
         assert_eq!(report.metrics.len(), 1, "One metric should be recorded");
-        assert_eq!(report.metrics.get(0).unwrap().0, metric_name, "Metric name should match");
-        assert_eq!(report.metrics.get(0).unwrap().1, 90u32, "Metric score should match");
-        assert_eq!(report.overall_score, 90u32, "Overall score should match recorded score");
+        assert_eq!(
+            report.metrics.get(0).unwrap().0,
+            metric_name,
+            "Metric name should match"
+        );
+        assert_eq!(
+            report.metrics.get(0).unwrap().1,
+            90u32,
+            "Metric score should match"
+        );
+        assert_eq!(
+            report.overall_score, 90u32,
+            "Overall score should match recorded score"
+        );
         assert_eq!(report.findings.len(), 0, "No findings for passing score");
-        assert_eq!(report.recommendations.len(), 0, "No recommendations for passing score");
+        assert_eq!(
+            report.recommendations.len(),
+            0,
+            "No recommendations for passing score"
+        );
     }
 
-// Test compliance failure due to low score
+    // Test compliance failure due to low score
     #[test]
     fn test_check_compliance_failure() {
         let (env, _, client, admin, farmer, inspector, authority) = setup_test();
@@ -163,9 +191,20 @@ mod test {
         let report = client.check_compliance(&cert_id, &inspector);
         assert_eq!(report.inspector, inspector, "Inspector should match");
         assert_eq!(report.metrics.len(), 1, "One metric should be recorded");
-        assert_eq!(report.metrics.get(0).unwrap().0, metric_name, "Metric name should match");
-        assert_eq!(report.metrics.get(0).unwrap().1, 0u32, "Metric score should be 0 due to Organic standard adjustment");
-        assert_eq!(report.overall_score, 0u32, "Overall score should be 0 due to failing score");
+        assert_eq!(
+            report.metrics.get(0).unwrap().0,
+            metric_name,
+            "Metric name should match"
+        );
+        assert_eq!(
+            report.metrics.get(0).unwrap().1,
+            0u32,
+            "Metric score should be 0 due to Organic standard adjustment"
+        );
+        assert_eq!(
+            report.overall_score, 0u32,
+            "Overall score should be 0 due to failing score"
+        );
         assert_eq!(
             report.findings.get(0).unwrap(),
             String::from_str(&env, "Score below minimum required threshold"),
@@ -177,6 +216,4 @@ mod test {
             "Recommendations should suggest improvement"
         );
     }
-    
-
 }

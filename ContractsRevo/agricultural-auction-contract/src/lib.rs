@@ -5,8 +5,13 @@ mod auction_core;
 mod datatype;
 mod price_oracle;
 mod product_listing;
-mod test;
 mod time_management;
+
+#[cfg(test)]
+mod original_tests;
+
+#[cfg(test)]
+mod tests;
 
 pub use datatype::*;
 

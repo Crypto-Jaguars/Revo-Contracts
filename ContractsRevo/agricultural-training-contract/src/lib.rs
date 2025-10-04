@@ -4,9 +4,9 @@ mod certification;
 mod error;
 mod participation;
 mod storage;
+mod test;
 mod training;
 mod utils;
-mod test;
 
 pub use error::ContractError;
 pub use storage::{ParticipantStatus, TrainingProgram};
@@ -100,13 +100,7 @@ impl AgriculturalTrainingContract {
         progress_percentage: u32,
     ) -> Result<(), ContractError> {
         instructor.require_auth();
-        participation::update_progress(
-            &env,
-            instructor,
-            program_id,
-            farmer_id,
-            progress_percentage,
-        )
+        participation::update_progress(&env, instructor, program_id, farmer_id, progress_percentage)
     }
 
     /// Issues a tokenized certificate and rewards loyalty points upon completion.

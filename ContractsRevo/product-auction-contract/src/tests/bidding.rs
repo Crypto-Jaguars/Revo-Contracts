@@ -83,9 +83,9 @@ fn test_bid_after_auction_ends() {
     env.mock_all_auths();
 
     let product_id = create_auction_with_product(&env, &client, &seller, 100);
-    
+
     env.ledger().set_timestamp(200);
-    
+
     let bidder = Address::generate(&env);
     client.place_bid(&product_id, &60u64, &bidder, &seller);
 }

@@ -84,7 +84,13 @@ pub fn create_premium_rewards(env: &Env) -> Vec<RedemptionOption> {
     rewards
 }
 
-pub fn create_single_reward(env: &Env, id: u32, name: &str, points: u32, quantity: u32) -> Vec<RedemptionOption> {
+pub fn create_single_reward(
+    env: &Env,
+    id: u32,
+    name: &str,
+    points: u32,
+    quantity: u32,
+) -> Vec<RedemptionOption> {
     let mut rewards = Vec::new(env);
     rewards.push_back(RedemptionOption {
         id,
@@ -127,10 +133,20 @@ pub fn assert_reward_not_exists(rewards: &Vec<RedemptionOption>, reward_id: u32)
     assert!(!exists, "Reward with ID {} should not exist", reward_id);
 }
 
-pub fn assert_reward_quantity(rewards: &Vec<RedemptionOption>, reward_id: u32, expected_quantity: u32) {
-    let reward = rewards.iter().find(|r| r.id == reward_id).expect("Reward not found");
-    assert_eq!(reward.available_quantity, expected_quantity,
-               "Reward {} should have {} quantity", reward_id, expected_quantity);
+pub fn assert_reward_quantity(
+    rewards: &Vec<RedemptionOption>,
+    reward_id: u32,
+    expected_quantity: u32,
+) {
+    let reward = rewards
+        .iter()
+        .find(|r| r.id == reward_id)
+        .expect("Reward not found");
+    assert_eq!(
+        reward.available_quantity, expected_quantity,
+        "Reward {} should have {} quantity",
+        reward_id, expected_quantity
+    );
 }
 
 // ============ CONTRACT WRAPPER FUNCTIONS ============
@@ -143,7 +159,12 @@ pub fn setup_loyalty_program(
     rewards: Vec<RedemptionOption>,
 ) {
     env.as_contract(contract_address, || {
-        LoyaltyContract::create_loyalty_program(env.clone(), program_id, points_per_transaction, rewards);
+        LoyaltyContract::create_loyalty_program(
+            env.clone(),
+            program_id,
+            points_per_transaction,
+            rewards,
+        );
     });
 }
 
@@ -176,7 +197,11 @@ pub fn redeem_reward_for_user(
     });
 }
 
-pub fn get_program_details(env: &Env, contract_address: &Address, program_id: BytesN<32>) -> LoyaltyProgram {
+pub fn get_program_details(
+    env: &Env,
+    contract_address: &Address,
+    program_id: BytesN<32>,
+) -> LoyaltyProgram {
     env.as_contract(contract_address, || {
         LoyaltyContract::get_program_info(env.clone(), program_id)
     })

@@ -27,7 +27,14 @@ fn test_add_product_with_different_conditions() {
         let weight = 10u64;
 
         let product_id = client.add_product(
-            &seller, &name, &description, &price, &condition, &stock, &images, &weight,
+            &seller,
+            &name,
+            &description,
+            &price,
+            &condition,
+            &stock,
+            &images,
+            &weight,
         );
 
         let product = client.get_product(&seller, &product_id);
@@ -53,7 +60,14 @@ fn test_add_product_maximum_description_length() {
     let weight = 10u64;
 
     let product_id = client.add_product(
-        &seller, &name, &description, &price, &condition, &stock, &images, &weight,
+        &seller,
+        &name,
+        &description,
+        &price,
+        &condition,
+        &stock,
+        &images,
+        &weight,
     );
 
     let product = client.get_product(&seller, &product_id);
@@ -79,7 +93,14 @@ fn test_add_product_description_too_long() {
     let weight = 10u64;
 
     client.add_product(
-        &seller, &name, &description, &price, &condition, &stock, &images, &weight,
+        &seller,
+        &name,
+        &description,
+        &price,
+        &condition,
+        &stock,
+        &images,
+        &weight,
     );
 }
 
@@ -91,7 +112,7 @@ fn test_update_stock_to_zero() {
     env.mock_all_auths();
 
     let product_id = create_test_product(&env, &client, &seller);
-    
+
     client.update_stock(&seller, &product_id, &0u32);
 
     let product = client.get_product(&seller, &product_id);
@@ -106,7 +127,7 @@ fn test_update_stock_large_value() {
     env.mock_all_auths();
 
     let product_id = create_test_product(&env, &client, &seller);
-    
+
     client.update_stock(&seller, &product_id, &999999u32);
 
     let product = client.get_product(&seller, &product_id);

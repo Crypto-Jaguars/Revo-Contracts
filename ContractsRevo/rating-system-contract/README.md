@@ -133,6 +133,34 @@ This contract ensures **trust, transparency, and accountability** in decentraliz
 - [Stellar Official Guide](https://developers.stellar.org/docs/)
 - [Rust Book](https://doc.rust-lang.org/book/)
 
+## 🧪 Testnet Deployment (QA Only)
+
+This contract has been deployed to Stellar Testnet for testing and QA purposes only. Not for production use.
+
+- Network: Testnet
+- Contract ID: `CCDY7KZYBVXRCXDRPMKX3KTHJGWFXDR6XG4S3WR7K543LXYGEOLQ4XVB`
+- WASM Hash: `5aa73b36d51d4a7a971edadc9b1e336828e00857c2f55b66e566e889f586066b`
+- Deployment Date: 2025-09-30
+
+### Verification
+
+You can verify the deployment using the Stellar CLI:
+
+```
+stellar contract bindings typescript \
+   --network testnet \
+   --id CCDY7KZYBVXRCXDRPMKX3KTHJGWFXDR6XG4S3WR7K543LXYGEOLQ4XVB \
+   --output /tmp/rating-system-bindings
+```
+
+Or fetch the WASM hash:
+
+```
+stellar contract inspect --network testnet --id CCDY7KZYBVXRCXDRPMKX3KTHJGWFXDR6XG4S3WR7K543LXYGEOLQ4XVB
+```
+
+If the returned hash matches the one above, the deployment is valid.
+
 ## 📌 Additional Notes
 - The documentation will be updated as the contract evolves.
 - Ensure all commands and examples are tested for accuracy before using them in a production environment.

@@ -1,5 +1,5 @@
 use crate::datatype::StabilizationError;
-use soroban_sdk::{Address, Env, Map, String, Vec, BytesN};
+use soroban_sdk::{Address, BytesN, Env, Map, String, Vec};
 
 #[allow(dead_code)]
 pub trait FundManagement {
@@ -54,16 +54,10 @@ pub trait PriceMonitoring {
     ) -> Result<(), StabilizationError>;
 
     /// Get the current market price for a crop type
-    fn get_market_price(
-        env: Env,
-        crop_type: String,
-    ) -> Result<(i128, u64), StabilizationError>;
+    fn get_market_price(env: Env, crop_type: String) -> Result<(i128, u64), StabilizationError>;
 
     /// Check if the current price is below the threshold
-    fn check_price_threshold(
-        env: Env,
-        fund_id: BytesN<32>,
-    ) -> Result<bool, StabilizationError>;
+    fn check_price_threshold(env: Env, fund_id: BytesN<32>) -> Result<bool, StabilizationError>;
 
     /// Register a Chainlink price feed for a specific crop type
     fn register_chainlink_feed(
@@ -76,10 +70,7 @@ pub trait PriceMonitoring {
     ) -> Result<(), StabilizationError>;
 
     /// Get the current price from Chainlink feed
-    fn get_chainlink_price(
-        env: Env,
-        crop_type: String,
-    ) -> Result<(i128, u64), StabilizationError>;
+    fn get_chainlink_price(env: Env, crop_type: String) -> Result<(i128, u64), StabilizationError>;
 
     /// Update price from Chainlink feed with validation
     fn update_chainlink_price(
@@ -104,11 +95,8 @@ pub trait DistributionManagement {
     ) -> Result<(), StabilizationError>;
 
     /// Register a farmer for the stabilization program
-    fn register_farmer(
-        env: Env,
-        admin: Address,
-        farmer: Address,
-    ) -> Result<(), StabilizationError>;
+    fn register_farmer(env: Env, admin: Address, farmer: Address)
+        -> Result<(), StabilizationError>;
 
     /// Register a farmer's crop production capacity
     fn register_farmer_crop(

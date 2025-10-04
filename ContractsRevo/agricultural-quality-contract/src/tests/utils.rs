@@ -1,10 +1,16 @@
-use soroban_sdk::{
-    testutils::{Address as _, Events as _, Ledger, LedgerInfo},
-    vec, Address, Bytes, BytesN, Env, String, Symbol, TryFromVal, symbol_short,
+use crate::{
+    AgricQualityContract, AgricQualityContractClient, CertificationData, CertificationStatus,
+    QualityStandard,
 };
-use crate::{AgricQualityContract, AgricQualityContractClient, CertificationData, CertificationStatus, QualityStandard};
-use certificate_management_contract::{CertificateManagementContract, CertificateManagementContractClient, CertStatus, Certification, DataKey};
-
+use certificate_management_contract::{
+    CertStatus, CertificateManagementContract, CertificateManagementContractClient, Certification,
+    DataKey,
+};
+use soroban_sdk::{
+    symbol_short,
+    testutils::{Address as _, Events as _, Ledger, LedgerInfo},
+    vec, Address, Bytes, BytesN, Env, String, Symbol, TryFromVal,
+};
 
 pub fn setup_test<'a>() -> (
     Env,
@@ -42,8 +48,6 @@ pub fn setup_test<'a>() -> (
     )
 }
 
-
-   
 // Helper function to setup both contracts
 pub fn setup_integration_test<'a>() -> (
     Env,
@@ -90,7 +94,13 @@ pub fn setup_integration_test<'a>() -> (
     )
 }
 
-pub fn setup_certification_test(env: &Env, agric_client: &AgricQualityContractClient, farmer: &Address, inspector: &Address, authority: &Address) -> (BytesN<32>, Symbol, u64) {
+pub fn setup_certification_test(
+    env: &Env,
+    agric_client: &AgricQualityContractClient,
+    farmer: &Address,
+    inspector: &Address,
+    authority: &Address,
+) -> (BytesN<32>, Symbol, u64) {
     // Authority registers quality metrics
     let standard = QualityStandard::Organic;
     let metric_name = symbol_short!("pesticide");

@@ -174,7 +174,7 @@ fn test_purchase_verification_storage() {
             .persistent()
             .get(&key)
             .expect("Verification data not found");
-        
+
         assert_eq!(verification_data.user, user);
         assert_eq!(verification_data.product_id, product_id);
         assert_eq!(verification_data.purchase_link, purchase_link);
@@ -190,10 +190,10 @@ fn test_purchase_verification_timestamp() {
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
     let before_verification = env.ledger().timestamp();
-    
+
     env.mock_all_auths();
     client.verify_purchase(&user, &product_id, &purchase_link);
-    
+
     let after_verification = env.ledger().timestamp();
 
     // Verify timestamp is within expected range
@@ -204,7 +204,7 @@ fn test_purchase_verification_timestamp() {
             .persistent()
             .get(&key)
             .expect("Verification data not found");
-        
+
         assert!(verification_data.timestamp >= before_verification);
         assert!(verification_data.timestamp <= after_verification);
     });
@@ -219,7 +219,7 @@ fn test_purchase_verification_multiple_products() {
     for product_id in 1..=3 {
         env.mock_all_auths();
         client.verify_purchase(&user, &product_id, &purchase_link);
-        
+
         assert!(client.is_purchase_verified(&user, &product_id));
     }
 }
@@ -235,7 +235,7 @@ fn test_purchase_verification_multiple_users() {
     for user in users.iter() {
         env.mock_all_auths();
         client.verify_purchase(&user, &product_id, &purchase_link);
-        
+
         assert!(client.is_purchase_verified(&user, &product_id));
     }
 }
@@ -248,10 +248,10 @@ fn test_purchase_verification_different_links() {
     // Verify purchases with different links
     for i in 1..=3 {
         let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
-        
+
         env.mock_all_auths();
         client.verify_purchase(&user, &product_id, &purchase_link);
-        
+
         assert!(client.is_purchase_verified(&user, &product_id));
     }
 }
@@ -263,12 +263,20 @@ fn test_purchase_verification_boundary_values() {
 
     // Test with minimum product ID
     env.mock_all_auths();
-    client.verify_purchase(&user, &boundary_data.min_product_id, &boundary_data.valid_purchase_link);
+    client.verify_purchase(
+        &user,
+        &boundary_data.min_product_id,
+        &boundary_data.valid_purchase_link,
+    );
     assert!(client.is_purchase_verified(&user, &boundary_data.min_product_id));
 
     // Test with maximum product ID
     env.mock_all_auths();
-    client.verify_purchase(&user, &boundary_data.max_product_id, &boundary_data.valid_purchase_link);
+    client.verify_purchase(
+        &user,
+        &boundary_data.max_product_id,
+        &boundary_data.valid_purchase_link,
+    );
     assert!(client.is_purchase_verified(&user, &boundary_data.max_product_id));
 }
 
@@ -280,7 +288,7 @@ fn test_purchase_verification_long_link() {
 
     env.mock_all_auths();
     client.verify_purchase(&user, &product_id, &long_purchase_link);
-    
+
     assert!(client.is_purchase_verified(&user, &product_id));
 }
 
@@ -288,11 +296,14 @@ fn test_purchase_verification_long_link() {
 fn test_purchase_verification_special_characters() {
     let (env, client, _, user) = setup_test();
     let product_id = 12345u64;
-    let special_char_link = String::from_str(&env, "https://example.com/purchase/12345?special=!@#$%^&*()_+-=[]{}|;':\",./<>?");
+    let special_char_link = String::from_str(
+        &env,
+        "https://example.com/purchase/12345?special=!@#$%^&*()_+-=[]{}|;':\",./<>?",
+    );
 
     env.mock_all_auths();
     client.verify_purchase(&user, &product_id, &special_char_link);
-    
+
     assert!(client.is_purchase_verified(&user, &product_id));
 }
 
@@ -300,11 +311,14 @@ fn test_purchase_verification_special_characters() {
 fn test_purchase_verification_unicode() {
     let (env, client, _, user) = setup_test();
     let product_id = 12345u64;
-    let unicode_link = String::from_str(&env, "https://example.com/purchase/12345?unicode=🚀🌟💫⭐️✨");
+    let unicode_link = String::from_str(
+        &env,
+        "https://example.com/purchase/12345?unicode=🚀🌟💫⭐️✨",
+    );
 
     env.mock_all_auths();
     client.verify_purchase(&user, &product_id, &unicode_link);
-    
+
     assert!(client.is_purchase_verified(&user, &product_id));
 }
 
@@ -355,7 +369,7 @@ fn test_purchase_verification_with_fragments() {
 
     env.mock_all_auths();
     client.verify_purchase(&user, &product_id, &fragment_link);
-    
+
     assert!(client.is_purchase_verified(&user, &product_id));
 }
 
@@ -367,7 +381,7 @@ fn test_purchase_verification_with_ports() {
 
     env.mock_all_auths();
     client.verify_purchase(&user, &product_id, &port_link);
-    
+
     assert!(client.is_purchase_verified(&user, &product_id));
 }
 
@@ -400,7 +414,7 @@ fn test_purchase_verification_high_volume() {
     for i in 0..100 {
         let product_id = base_product_id + i;
         let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
-        
+
         env.mock_all_auths();
         client.verify_purchase(&user, &product_id, &purchase_link);
         assert!(client.is_purchase_verified(&user, &product_id));

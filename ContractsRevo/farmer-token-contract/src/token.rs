@@ -165,12 +165,7 @@ pub fn transfer_from(
 }
 
 /// Approve an address to spend tokens on behalf of the owner
-pub fn approve(
-    env: Env,
-    owner: Address,
-    spender: Address,
-    amount: i128,
-) -> Result<(), TokenError> {
+pub fn approve(env: Env, owner: Address, spender: Address, amount: i128) -> Result<(), TokenError> {
     owner.require_auth();
 
     if amount < 0 {
@@ -180,10 +175,8 @@ pub fn approve(
     set_allowance(&env, &owner, &spender, amount);
 
     // Emit approval event
-    env.events().publish(
-        (Symbol::new(&env, "approve"), owner, spender),
-        amount,
-    );
+    env.events()
+        .publish((Symbol::new(&env, "approve"), owner, spender), amount);
 
     Ok(())
 }
@@ -253,9 +246,10 @@ fn set_allowance(env: &Env, owner: &Address, spender: &Address, allowance: i128)
             .persistent()
             .remove(&DataKey::Allowance(owner.clone(), spender.clone()));
     } else {
-        env.storage()
-            .persistent()
-            .set(&DataKey::Allowance(owner.clone(), spender.clone()), &allowance);
+        env.storage().persistent().set(
+            &DataKey::Allowance(owner.clone(), spender.clone()),
+            &allowance,
+        );
     }
 }
 
@@ -270,7 +264,7 @@ pub fn update_total_supply(env: &Env, new_supply: i128) {
     env.storage()
         .instance()
         .set(&DataKey::TotalSupply, &new_supply);
-    
+
     // Update metadata
     let mut metadata = token_metadata(env.clone());
     metadata.total_supply = new_supply;

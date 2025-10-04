@@ -1,8 +1,5 @@
 #![cfg(test)]
-use crate::{
-    tests::utils::TestContext,
-    CertStatus, IssueError, VerifyError,
-};
+use crate::{tests::utils::TestContext, CertStatus, IssueError, VerifyError};
 
 #[test]
 fn test_symbol_length_limits() {
@@ -12,7 +9,7 @@ fn test_symbol_length_limits() {
     let now = context.env.ledger().timestamp();
     let expiration = now + 31536000;
     let doc_hash = context.create_document_hash("Test document");
-    
+
     // Test with maximum reasonable symbol length (32 chars is typical limit)
     let max_length_type = "ORGANIC_FAIR_TRADE_NON_GMO_CERT";
 
@@ -174,10 +171,10 @@ fn test_revocation_race_conditions() {
 
     // Try to revoke and expire simultaneously
     context.env.mock_all_auths();
-    
+
     // First revoke
     client.revoke_certification(&context.issuer1, &context.recipient1, &cert_id);
-    
+
     // Then try to expire (should fail as it's already revoked)
     let result = client.try_expire_certification(&context.recipient1, &cert_id);
     assert!(result.is_err());
@@ -191,7 +188,7 @@ fn test_very_long_certificate_type() {
     let now = context.env.ledger().timestamp();
     let expiration = now + 31536000;
     let doc_hash = context.create_document_hash("Test document");
-    
+
     let long_type = "VERY_LONG_CERT_TYPE";
 
     context.env.mock_all_auths();
@@ -213,17 +210,13 @@ fn test_boundary_conditions_timestamp_filter() {
     let client = context.client();
 
     let initial_time = context.env.ledger().timestamp();
-    
+
     // Issue cert at exact time
     let _cert1 = context.issue_test_cert(&context.issuer1, &context.recipient1, "ORGANIC", 365);
-    
+
     // Filter with exact timestamp
-    let exact_match = client.generate_cert_audit_report(
-        &context.recipient1,
-        &None,
-        &None,
-        &Some(initial_time),
-    );
+    let exact_match =
+        client.generate_cert_audit_report(&context.recipient1, &None, &None, &Some(initial_time));
     assert_eq!(exact_match.len(), 1);
 
     // Filter with timestamp + 1 (should exclude the cert)
@@ -272,7 +265,7 @@ fn test_certificate_id_overflow_protection() {
         } else {
             "Standard document"
         };
-        
+
         client.issue_certification(
             &context.issuer1,
             &context.recipient1,
