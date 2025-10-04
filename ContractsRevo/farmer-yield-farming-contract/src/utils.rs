@@ -1,3 +1,5 @@
+#![cfg(test)]
+
 use crate::{FarmerYieldFarmingContract, FarmerYieldFarmingContractClient};
 use soroban_sdk::{
     testutils::{Address as _, Ledger, LedgerInfo},
@@ -23,11 +25,11 @@ pub fn setup_test<'a>() -> TestContext<'a> {
     let farmer2 = Address::generate(&env);
 
     // Register token contracts
-    let lp_token = env.register_stellar_asset_contract(admin.clone());
-    let reward_token = env.register_stellar_asset_contract(admin.clone());
+    let lp_token = env.register_stellar_asset_contract_v2(admin.clone());
+    let reward_token = env.register_stellar_asset_contract_v2(admin.clone());
 
     // Register farming contract
-    let contract_id = env.register_contract(None, FarmerYieldFarmingContract);
+    let contract_id = env.register(FarmerYieldFarmingContract, ());
     let client = FarmerYieldFarmingContractClient::new(&env, &contract_id);
 
     TestContext {
@@ -36,8 +38,8 @@ pub fn setup_test<'a>() -> TestContext<'a> {
         admin,
         farmer1,
         farmer2,
-        lp_token,
-        reward_token,
+        lp_token: lp_token.address(),
+        reward_token: reward_token.address(),
     }
 }
 
@@ -61,13 +63,13 @@ pub fn advance_ledger(env: &Env, blocks: u32) {
 }
 
 pub fn mint_lp_tokens(env: &Env, token: &Address, to: &Address, amount: i128) {
-    let token_admin = token::StellarAssetClient::new(env, token);
-    token_admin.mint(to, &amount);
+    let token_client = token::StellarAssetClient::new(env, token);
+    token_client.mint(to, &amount);
 }
 
 pub fn mint_reward_tokens(env: &Env, token: &Address, to: &Address, amount: i128) {
-    let token_admin = token::StellarAssetClient::new(env, token);
-    token_admin.mint(to, &amount);
+    let token_client = token::StellarAssetClient::new(env, token);
+    token_client.mint(to, &amount);
 }
 
 pub fn get_balance(env: &Env, token: &Address, account: &Address) -> i128 {
