@@ -1,15 +1,15 @@
 #![no_std]
 
 mod pool;
-mod staking;
 mod rewards;
+mod staking;
 mod utils;
 
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, Vec};
 
-pub use pool::{RewardPool, PoolError};
-pub use staking::{Stake, StakeError};
+pub use pool::{PoolError, RewardPool};
 pub use rewards::RewardError;
+pub use staking::{Stake, StakeError};
 pub use utils::ValidationError;
 
 /// Main contract for farmer staking functionality
@@ -37,7 +37,14 @@ impl FarmerStakingContract {
         min_stake_amount: i128,
         max_lock_period: u64,
     ) -> Result<BytesN<32>, PoolError> {
-        pool::initialize_pool(env, admin, token_address, reward_rate, min_stake_amount, max_lock_period)
+        pool::initialize_pool(
+            env,
+            admin,
+            token_address,
+            reward_rate,
+            min_stake_amount,
+            max_lock_period,
+        )
     }
 
     /// Stake farmer tokens with an optional lock period
@@ -200,11 +207,7 @@ impl FarmerStakingContract {
     ///
     /// # Returns
     /// * `Result<(), PoolError>`
-    pub fn pause_pool(
-        env: Env,
-        admin: Address,
-        pool_id: BytesN<32>,
-    ) -> Result<(), PoolError> {
+    pub fn pause_pool(env: Env, admin: Address, pool_id: BytesN<32>) -> Result<(), PoolError> {
         pool::pause_pool(env, admin, pool_id)
     }
 
@@ -216,11 +219,7 @@ impl FarmerStakingContract {
     ///
     /// # Returns
     /// * `Result<(), PoolError>`
-    pub fn unpause_pool(
-        env: Env,
-        admin: Address,
-        pool_id: BytesN<32>,
-    ) -> Result<(), PoolError> {
+    pub fn unpause_pool(env: Env, admin: Address, pool_id: BytesN<32>) -> Result<(), PoolError> {
         pool::unpause_pool(env, admin, pool_id)
     }
 }
@@ -228,7 +227,7 @@ impl FarmerStakingContract {
 #[cfg(test)]
 mod tests {
     pub mod pool;
-    pub mod staking;
     pub mod rewards;
+    pub mod staking;
     pub mod utils;
 }

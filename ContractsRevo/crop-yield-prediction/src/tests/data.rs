@@ -5,10 +5,7 @@ use soroban_sdk::{
     vec, Address, BytesN, Env, String, Vec,
 };
 
-use crate::{
-    CropYieldPredictionContractClient,
-    types::{DataSource},
-};
+use crate::{types::DataSource, CropYieldPredictionContractClient};
 
 use super::utils::*;
 
@@ -16,7 +13,7 @@ use super::utils::*;
 #[test]
 fn test_oracle_weather_data_integration() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -42,7 +39,7 @@ fn test_oracle_weather_data_integration() {
 #[test]
 fn test_oracle_soil_data_integration() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -68,7 +65,7 @@ fn test_oracle_soil_data_integration() {
 #[test]
 fn test_oracle_temperature_variations() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -76,11 +73,11 @@ fn test_oracle_temperature_variations() {
     client.register_crop(&crop_id, &name, &historical_yields);
 
     let region = create_test_region(&env, 1);
-    
+
     // Test different temperature ranges
     let test_temperatures = vec![&env, 15i32, 25i32, 35i32, 45i32];
     let mut prediction_yields = vec![&env];
-    
+
     for temp in test_temperatures.iter() {
         let data_source = DataSource {
             weather_data: String::from_str(&env, "Variable temperature"),
@@ -89,25 +86,28 @@ fn test_oracle_temperature_variations() {
             humidity: 60,
             rainfall: 100,
         };
-        
+
         let prediction_id = client.generate_prediction(&crop_id, &region, &data_source);
         let prediction = client.get_prediction(&prediction_id);
         prediction_yields.push_back(prediction.predicted_yield);
     }
-    
+
     // Verify yields vary across temperatures (or at least are valid)
     let first = prediction_yields.get(0).unwrap();
     let mut any_diff = false;
     for y in prediction_yields.iter() {
-        if y != first { any_diff = true; break; }
+        if y != first {
+            any_diff = true;
+            break;
+        }
     }
-    
+
     // If yields don't vary, that's also acceptable - contract might use fixed algorithm
     // Just ensure all yields are valid (non-negative)
     for y in prediction_yields.iter() {
         assert!(y >= 0, "All predicted yields should be non-negative");
     }
-    
+
     // Note: Temperature variation in yields depends on contract implementation
     // Some contracts might use fixed algorithms regardless of temperature
 }
@@ -116,7 +116,7 @@ fn test_oracle_temperature_variations() {
 #[test]
 fn test_oracle_humidity_variations() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -124,11 +124,11 @@ fn test_oracle_humidity_variations() {
     client.register_crop(&crop_id, &name, &historical_yields);
 
     let region = create_test_region(&env, 1);
-    
+
     // Test different humidity levels
     let test_humidities = vec![&env, 20i32, 40i32, 60i32, 80i32, 95i32];
     let mut prediction_yields = vec![&env];
-    
+
     for humidity in test_humidities.iter() {
         let data_source = DataSource {
             weather_data: String::from_str(&env, "Variable humidity"),
@@ -137,26 +137,32 @@ fn test_oracle_humidity_variations() {
             humidity: humidity,
             rainfall: 100,
         };
-        
+
         let prediction_id = client.generate_prediction(&crop_id, &region, &data_source);
         let prediction = client.get_prediction(&prediction_id);
         prediction_yields.push_back(prediction.predicted_yield);
     }
-    
+
     // Verify yields vary across humidity levels
     let first = prediction_yields.get(0).unwrap();
     let mut any_diff = false;
     for y in prediction_yields.iter() {
-        if y != first { any_diff = true; break; }
+        if y != first {
+            any_diff = true;
+            break;
+        }
     }
-    assert!(any_diff, "At least one prediction should differ across humidity levels");
+    assert!(
+        any_diff,
+        "At least one prediction should differ across humidity levels"
+    );
 }
 
 /// Test oracle data integration with rainfall variations
 #[test]
 fn test_oracle_rainfall_variations() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -164,11 +170,11 @@ fn test_oracle_rainfall_variations() {
     client.register_crop(&crop_id, &name, &historical_yields);
 
     let region = create_test_region(&env, 1);
-    
+
     // Test different rainfall amounts
     let test_rainfalls = vec![&env, 10i32, 50i32, 100i32, 200i32, 400i32];
     let mut prediction_yields = vec![&env];
-    
+
     for rainfall in test_rainfalls.iter() {
         let data_source = DataSource {
             weather_data: String::from_str(&env, "Variable rainfall"),
@@ -177,26 +183,32 @@ fn test_oracle_rainfall_variations() {
             humidity: 60,
             rainfall: rainfall,
         };
-        
+
         let prediction_id = client.generate_prediction(&crop_id, &region, &data_source);
         let prediction = client.get_prediction(&prediction_id);
         prediction_yields.push_back(prediction.predicted_yield);
     }
-    
+
     // Verify yields vary across rainfall levels
     let first = prediction_yields.get(0).unwrap();
     let mut any_diff = false;
     for y in prediction_yields.iter() {
-        if y != first { any_diff = true; break; }
+        if y != first {
+            any_diff = true;
+            break;
+        }
     }
-    assert!(any_diff, "At least one prediction should differ across rainfall levels");
+    assert!(
+        any_diff,
+        "At least one prediction should differ across rainfall levels"
+    );
 }
 
 /// Test oracle data integration with combined optimal conditions
 #[test]
 fn test_oracle_combined_optimal_conditions() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -215,16 +227,19 @@ fn test_oracle_combined_optimal_conditions() {
     let region = create_test_region(&env, 1);
     let prediction_id = client.generate_prediction(&crop_id, &region, &optimal_data);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // Optimal conditions should result in high yield
-    assert!(prediction.predicted_yield > 0, "Optimal conditions should produce positive yield");
+    assert!(
+        prediction.predicted_yield > 0,
+        "Optimal conditions should produce positive yield"
+    );
 }
 
 /// Test oracle data integration with combined poor conditions
 #[test]
 fn test_oracle_combined_poor_conditions() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -243,16 +258,19 @@ fn test_oracle_combined_poor_conditions() {
     let region = create_test_region(&env, 1);
     let prediction_id = client.generate_prediction(&crop_id, &region, &poor_data);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // Poor conditions should result in lower yield
-    assert!(prediction.predicted_yield >= 0, "Poor conditions should produce non-negative yield");
+    assert!(
+        prediction.predicted_yield >= 0,
+        "Poor conditions should produce non-negative yield"
+    );
 }
 
 /// Test oracle data integration with extreme conditions
 #[test]
 fn test_oracle_extreme_conditions() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -263,24 +281,27 @@ fn test_oracle_extreme_conditions() {
     let extreme_data = DataSource {
         weather_data: String::from_str(&env, "Extreme weather: Storm, flooding"),
         soil_data: String::from_str(&env, "Waterlogged soil, pH 4.0"),
-        temperature: 5,   // Too cold
-        humidity: 95,    // Too humid
-        rainfall: 500,   // Too much rain
+        temperature: 5, // Too cold
+        humidity: 95,   // Too humid
+        rainfall: 500,  // Too much rain
     };
 
     let region = create_test_region(&env, 1);
     let prediction_id = client.generate_prediction(&crop_id, &region, &extreme_data);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // Extreme conditions should result in very low yield
-    assert!(prediction.predicted_yield >= 0, "Extreme conditions should produce non-negative yield");
+    assert!(
+        prediction.predicted_yield >= 0,
+        "Extreme conditions should produce non-negative yield"
+    );
 }
 
 /// Test oracle data integration with missing data simulation
 #[test]
 fn test_oracle_missing_data_simulation() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -291,24 +312,27 @@ fn test_oracle_missing_data_simulation() {
     let incomplete_data = DataSource {
         weather_data: String::from_str(&env, "Data unavailable"),
         soil_data: String::from_str(&env, "Partial data"),
-        temperature: 0,  // Default/missing value
-        humidity: 0,      // Default/missing value
-        rainfall: 0,      // Default/missing value
+        temperature: 0, // Default/missing value
+        humidity: 0,    // Default/missing value
+        rainfall: 0,    // Default/missing value
     };
 
     let region = create_test_region(&env, 1);
     let prediction_id = client.generate_prediction(&crop_id, &region, &incomplete_data);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // Contract should handle missing data gracefully
-    assert!(prediction.predicted_yield >= 0, "Missing data should be handled gracefully");
+    assert!(
+        prediction.predicted_yield >= 0,
+        "Missing data should be handled gracefully"
+    );
 }
 
 /// Test oracle data integration with invalid data simulation
 #[test]
 fn test_oracle_invalid_data_simulation() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -327,16 +351,19 @@ fn test_oracle_invalid_data_simulation() {
     let region = create_test_region(&env, 1);
     let prediction_id = client.generate_prediction(&crop_id, &region, &invalid_data);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // Contract should handle invalid data gracefully
-    assert!(prediction.predicted_yield >= 0, "Invalid data should be handled gracefully");
+    assert!(
+        prediction.predicted_yield >= 0,
+        "Invalid data should be handled gracefully"
+    );
 }
 
 /// Test oracle data integration with off-chain data hash consistency
 #[test]
 fn test_oracle_off_chain_data_hash_consistency() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -345,15 +372,18 @@ fn test_oracle_off_chain_data_hash_consistency() {
 
     let region = create_test_region(&env, 1);
     let data_source = create_test_data_source(&env, 1);
-    
+
     // Generate prediction
     // Freeze timestamp for determinism
     env.ledger().with_mut(|l| l.timestamp = 1_700_000_000);
     let prediction_id = client.generate_prediction(&crop_id, &region, &data_source);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // Verify data hash was generated
-    assert!(prediction.data_hash.len() > 0, "Data hash should be generated");
+    assert!(
+        prediction.data_hash.len() > 0,
+        "Data hash should be generated"
+    );
 
     // Same timestamp + same data => same hash
     let prediction_id2 = client.generate_prediction(&crop_id, &region, &data_source);
@@ -361,14 +391,17 @@ fn test_oracle_off_chain_data_hash_consistency() {
 
     // Note: Due to timestamp differences, hashes might be different
     // But the data hash should be consistent for the same data source
-    assert_eq!(prediction.data_hash, prediction2.data_hash, "Same data should produce the same hash");
+    assert_eq!(
+        prediction.data_hash, prediction2.data_hash,
+        "Same data should produce the same hash"
+    );
 }
 
 /// Test oracle data integration with IPFS simulation
 #[test]
 fn test_oracle_ipfs_data_integration() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -387,16 +420,19 @@ fn test_oracle_ipfs_data_integration() {
     let region = create_test_region(&env, 1);
     let prediction_id = client.generate_prediction(&crop_id, &region, &ipfs_data);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // IPFS data should be processed successfully
-    assert!(prediction.predicted_yield > 0, "IPFS data should be processed successfully");
+    assert!(
+        prediction.predicted_yield > 0,
+        "IPFS data should be processed successfully"
+    );
 }
 
 /// Test oracle data integration with multiple data sources
 #[test]
 fn test_oracle_multiple_data_sources() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -404,7 +440,7 @@ fn test_oracle_multiple_data_sources() {
     client.register_crop(&crop_id, &name, &historical_yields);
 
     let region = create_test_region(&env, 1);
-    
+
     // Test multiple data sources for same crop/region
     let data_sources = vec![
         &env,
@@ -413,23 +449,27 @@ fn test_oracle_multiple_data_sources() {
         create_poor_data_source(&env),
         create_extreme_data_source(&env),
     ];
-    
+
     let mut prediction_ids = vec![&env];
     for data_source in data_sources.iter() {
         let prediction_id = client.generate_prediction(&crop_id, &region, &data_source);
         prediction_ids.push_back(prediction_id);
     }
-    
+
     // Verify all predictions were created
-    assert_eq!(prediction_ids.len(), 4, "Should have 4 predictions from different data sources");
-    
+    assert_eq!(
+        prediction_ids.len(),
+        4,
+        "Should have 4 predictions from different data sources"
+    );
+
     // Verify each prediction has different yields
     let mut yields = vec![&env];
     for prediction_id in prediction_ids.iter() {
         let prediction = client.get_prediction(&prediction_id);
         yields.push_back(prediction.predicted_yield);
     }
-    
+
     // Different data sources should produce different yields
     assert!(yields.len() == 4, "Should have 4 different yield values");
 }
@@ -438,7 +478,7 @@ fn test_oracle_multiple_data_sources() {
 #[test]
 fn test_oracle_real_time_data_updates() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -447,12 +487,12 @@ fn test_oracle_real_time_data_updates() {
 
     let region = create_test_region(&env, 1);
     let initial_data = create_test_data_source(&env, 1);
-    
+
     // Generate initial prediction
     let prediction_id = client.generate_prediction(&crop_id, &region, &initial_data);
     let initial_prediction = client.get_prediction(&prediction_id);
     let initial_yield = initial_prediction.predicted_yield;
-    
+
     // Update data source with new real-time data
     let updated_data = DataSource {
         weather_data: String::from_str(&env, "Updated: Rain started"),
@@ -461,21 +501,24 @@ fn test_oracle_real_time_data_updates() {
         humidity: 80,    // Changed humidity
         rainfall: 200,   // Changed rainfall
     };
-    
+
     let result = client.try_update_data_source(&prediction_id, &updated_data);
     assert!(result.is_ok(), "Real-time data update should succeed");
-    
+
     let updated_prediction = client.get_prediction(&prediction_id);
-    
+
     // Updated data should potentially change the prediction
-    assert!(updated_prediction.predicted_yield >= 0, "Updated prediction should be valid");
+    assert!(
+        updated_prediction.predicted_yield >= 0,
+        "Updated prediction should be valid"
+    );
 }
 
 /// Test oracle data integration with data validation
 #[test]
 fn test_oracle_data_validation() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -483,7 +526,7 @@ fn test_oracle_data_validation() {
     client.register_crop(&crop_id, &name, &historical_yields);
 
     let region = create_test_region(&env, 1);
-    
+
     // Test data validation with boundary values
     let boundary_data = DataSource {
         weather_data: String::from_str(&env, "Boundary test"),
@@ -492,19 +535,22 @@ fn test_oracle_data_validation() {
         humidity: i32::MIN,    // Minimum humidity
         rainfall: 0,           // No rainfall
     };
-    
+
     let prediction_id = client.generate_prediction(&crop_id, &region, &boundary_data);
     let prediction = client.get_prediction(&prediction_id);
-    
+
     // Boundary data should be handled gracefully
-    assert!(prediction.predicted_yield >= 0, "Boundary data should be handled gracefully");
+    assert!(
+        prediction.predicted_yield >= 0,
+        "Boundary data should be handled gracefully"
+    );
 }
 
 /// Test oracle data integration with data consistency checks
 #[test]
 fn test_oracle_data_consistency_checks() {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     // Register crop
     let crop_id = create_test_crop_id(&env, 1);
     let name = create_test_crop_name(&env, 1);
@@ -513,14 +559,17 @@ fn test_oracle_data_consistency_checks() {
 
     let region = create_test_region(&env, 1);
     let data_source = create_test_data_source(&env, 1);
-    
+
     // Generate multiple predictions with same data
     let prediction_id1 = client.generate_prediction(&crop_id, &region, &data_source);
     let prediction_id2 = client.generate_prediction(&crop_id, &region, &data_source);
-    
+
     let prediction1 = client.get_prediction(&prediction_id1);
     let prediction2 = client.get_prediction(&prediction_id2);
-    
+
     // Same data should produce same yield (ignoring timestamp differences)
-    assert_eq!(prediction1.predicted_yield, prediction2.predicted_yield, "Same data should produce same yield");
+    assert_eq!(
+        prediction1.predicted_yield, prediction2.predicted_yield,
+        "Same data should produce same yield"
+    );
 }

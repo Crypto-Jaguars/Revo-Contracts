@@ -14,7 +14,7 @@ pub enum ContractError {
     ForecastNotFound = 5,
     InvalidData = 6,
     RegionNotFound = 7,
-    
+
     // Hashing Errors
     HashError = 8,
 }

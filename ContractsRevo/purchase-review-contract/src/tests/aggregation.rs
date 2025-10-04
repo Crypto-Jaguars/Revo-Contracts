@@ -18,7 +18,7 @@ fn test_aggregate_reviews_single_product() {
     for (i, user) in test_data.users.iter().enumerate() {
         let review_text = test_data.review_texts.get(i as u32).unwrap();
         let purchase_link = test_data.purchase_links.get(i as u32).unwrap();
-        
+
         env.mock_all_auths();
         client.submit_review(&user, &product_id, &review_text, &purchase_link);
     }
@@ -27,7 +27,10 @@ fn test_aggregate_reviews_single_product() {
     for i in 0..5 {
         let review = client.get_review(&product_id, &i);
         assert_eq!(review.reviewer, test_data.users.get(i as u32).unwrap());
-        assert_eq!(review.review_text, test_data.review_texts.get(i as u32).unwrap());
+        assert_eq!(
+            review.review_text,
+            test_data.review_texts.get(i as u32).unwrap()
+        );
     }
 
     // Verify review count
@@ -53,7 +56,7 @@ fn test_aggregate_reviews_multiple_products() {
         for (user_idx, user) in users.iter().enumerate() {
             let review_text = String::from_str(&env, "Review for product");
             let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
-            
+
             env.mock_all_auths();
             client.submit_review(&user, product_id, &review_text, &purchase_link);
         }
@@ -124,7 +127,7 @@ fn test_aggregate_votes_multiple_reviews() {
     for (i, reviewer) in reviewers.iter().enumerate() {
         let review_text = String::from_str(&env, "Review");
         let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
-        
+
         env.mock_all_auths();
         client.submit_review(&reviewer, &product_id, &review_text, &purchase_link);
     }
@@ -175,7 +178,7 @@ fn test_aggregate_reports_single_review() {
                 .persistent()
                 .get(&report_key)
                 .expect("Report data not found");
-            
+
             assert_eq!(report_data.reporter, reporter);
             assert_eq!(report_data.reason, String::from_str(&env, reasons[i]));
         });
@@ -193,7 +196,7 @@ fn test_aggregate_reports_multiple_reviews() {
     for (i, reviewer) in reviewers.iter().enumerate() {
         let review_text = String::from_str(&env, "Review");
         let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
-        
+
         env.mock_all_auths();
         client.submit_review(&reviewer, &product_id, &review_text, &purchase_link);
     }
@@ -211,13 +214,14 @@ fn test_aggregate_reports_multiple_reviews() {
     for review_id in 0..3 {
         for (reporter_idx, reporter) in reporters.iter().enumerate() {
             env.as_contract(&client.address, || {
-                let report_key = DataKeys::UserReviewReport(product_id, review_id, reporter.clone());
+                let report_key =
+                    DataKeys::UserReviewReport(product_id, review_id, reporter.clone());
                 let report_data: crate::datatype::ReviewReportData = env
                     .storage()
                     .persistent()
                     .get(&report_key)
                     .expect("Report data not found");
-                
+
                 assert_eq!(report_data.reporter, reporter);
                 assert_eq!(report_data.product_id, product_id);
                 assert_eq!(report_data.review_id, review_id);
@@ -233,7 +237,11 @@ fn test_aggregate_product_ratings() {
     let users = create_test_users(&env, 5);
 
     // Submit ratings for different categories
-    let categories = [Category::Quality, Category::Shipping, Category::CustomerService];
+    let categories = [
+        Category::Quality,
+        Category::Shipping,
+        Category::CustomerService,
+    ];
     let ratings = [Rating::FiveStars, Rating::FourStars, Rating::ThreeStars];
 
     for (user_idx, user) in users.iter().enumerate() {
@@ -241,7 +249,7 @@ fn test_aggregate_product_ratings() {
             let rating = ratings[cat_idx % ratings.len()];
             let weight = (user_idx + 1) as u32;
             let attachment = String::from_str(&env, "Rating from user");
-            
+
             env.mock_all_auths();
             client.submit_rating(&user, &product_id, category, &rating, &weight, &attachment);
         }
@@ -282,9 +290,16 @@ fn test_aggregate_weighted_ratings() {
     for (user_idx, user) in users.iter().enumerate() {
         let weight = weights[user_idx];
         let attachment = String::from_str(&env, "Weighted rating");
-        
+
         env.mock_all_auths();
-        client.submit_rating(&user, &product_id, &Category::Quality, &rating, &weight, &attachment);
+        client.submit_rating(
+            &user,
+            &product_id,
+            &Category::Quality,
+            &rating,
+            &weight,
+            &attachment,
+        );
     }
 
     // Verify weighted ratings
@@ -336,7 +351,7 @@ fn test_aggregate_rating_retrieval() {
         let rating = Rating::FiveStars;
         let weight = 1u32;
         let attachment = String::from_str(&env, "Rating");
-        
+
         env.mock_all_auths();
         client.submit_rating(&user, &product_id, &category, &rating, &weight, &attachment);
     }
@@ -373,8 +388,15 @@ fn test_aggregate_rating_calculation_overflow() {
     let weight = u32::MAX; // Maximum weight to test overflow
 
     env.mock_all_auths();
-    let result = client.try_submit_rating(&user, &product_id, &category, &rating, &weight, &String::from_str(&env, "Overflow test"));
-    
+    let result = client.try_submit_rating(
+        &user,
+        &product_id,
+        &category,
+        &rating,
+        &weight,
+        &String::from_str(&env, "Overflow test"),
+    );
+
     // Should fail due to overflow
     assert!(result.is_err());
 }
@@ -391,7 +413,7 @@ fn test_aggregate_rating_high_volume() {
         let rating = Rating::FiveStars;
         let weight = 1u32;
         let attachment = String::from_str(&env, "High volume rating");
-        
+
         env.mock_all_auths();
         client.submit_rating(&user, &product_id, &category, &rating, &weight, &attachment);
     }
@@ -405,7 +427,11 @@ fn test_aggregate_rating_high_volume() {
 fn test_aggregate_rating_multiple_categories() {
     let (env, client, _, user) = setup_test();
     let product_id = 12345u64;
-    let categories = [Category::Quality, Category::Shipping, Category::CustomerService];
+    let categories = [
+        Category::Quality,
+        Category::Shipping,
+        Category::CustomerService,
+    ];
     let ratings = [Rating::FiveStars, Rating::FourStars, Rating::ThreeStars];
 
     // Submit ratings for all categories
@@ -413,7 +439,7 @@ fn test_aggregate_rating_multiple_categories() {
         let rating = ratings[i];
         let weight = 1u32;
         let attachment = String::from_str(&env, "Rating for category");
-        
+
         env.mock_all_auths();
         client.submit_rating(&user, &product_id, category, &rating, &weight, &attachment);
     }
@@ -441,16 +467,16 @@ fn test_aggregate_rating_timestamp_accuracy() {
     let attachment = String::from_str(&env, "Timestamp test");
 
     let before_submission = env.ledger().timestamp();
-    
+
     env.mock_all_auths();
     client.submit_rating(&user, &product_id, &category, &rating, &weight, &attachment);
-    
+
     let after_submission = env.ledger().timestamp();
 
     // Verify timestamp is within expected range
     let product_ratings = client.get_product_ratings(&product_id);
     let submitted_rating = product_ratings.ratings.get(0).unwrap();
-    
+
     assert!(submitted_rating.timestamp >= before_submission);
     assert!(submitted_rating.timestamp <= after_submission);
 }
@@ -470,7 +496,7 @@ fn test_aggregate_rating_attachment_storage() {
     // Verify attachment was stored
     let product_ratings = client.get_product_ratings(&product_id);
     let submitted_rating = product_ratings.ratings.get(0).unwrap();
-    
+
     assert_eq!(submitted_rating.attachment, attachment);
 }
 
@@ -486,7 +512,7 @@ fn test_aggregate_rating_user_association() {
         let rating = Rating::FiveStars;
         let weight = 1u32;
         let attachment = String::from_str(&env, "Rating from user");
-        
+
         env.mock_all_auths();
         client.submit_rating(&user, &product_id, &category, &rating, &weight, &attachment);
     }
@@ -515,7 +541,7 @@ fn test_aggregate_rating_weight_calculation() {
     // Verify weight calculation
     let product_ratings = client.get_product_ratings(&product_id);
     let submitted_rating = product_ratings.ratings.get(0).unwrap();
-    
+
     let expected_weight = (rating as u32) * weight; // 4 * 3 = 12
     assert_eq!(submitted_rating.weight, expected_weight);
 }
@@ -540,7 +566,7 @@ fn test_aggregate_rating_storage_persistence() {
             .persistent()
             .get(&key)
             .expect("Product ratings not found in persistent storage");
-        
+
         assert_eq!(stored_ratings.ratings.len(), 1);
         let stored_rating = stored_ratings.ratings.get(0).unwrap();
         assert_eq!(stored_rating.category, category);

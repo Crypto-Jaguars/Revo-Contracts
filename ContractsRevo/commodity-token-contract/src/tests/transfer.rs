@@ -61,7 +61,10 @@ fn transfer_redeem_requires_owner_and_balance() {
     });
     assert!(zero.is_ok());
     let inv_after = ctx.get_inventory("BEANS");
-    assert_eq!(inv_before, inv_after, "zero redemption must not change inventory");
+    assert_eq!(
+        inv_before, inv_after,
+        "zero redemption must not change inventory"
+    );
 }
 
 #[test]

@@ -44,10 +44,7 @@ mod tests {
 
             assert_eq!(stored_credit.project_id, project_id);
             assert_eq!(stored_credit.carbon_amount, STANDARD_CARBON_AMOUNT);
-            assert_eq!(
-                stored_credit.retirement_status,
-                RetirementStatus::Available
-            );
+            assert_eq!(stored_credit.retirement_status, RetirementStatus::Available);
         });
     }
 
@@ -234,9 +231,7 @@ mod tests {
                 .env
                 .storage()
                 .persistent()
-                .get::<_, soroban_sdk::Vec<BytesN<32>>>(&DataKey::ProjectCredits(
-                    project_id,
-                ))
+                .get::<_, soroban_sdk::Vec<BytesN<32>>>(&DataKey::ProjectCredits(project_id))
                 .unwrap();
 
             assert_eq!(project_credits.len(), 5);
@@ -343,9 +338,7 @@ mod tests {
                 .env
                 .storage()
                 .persistent()
-                .get::<_, soroban_sdk::Vec<BytesN<32>>>(&DataKey::ProjectCredits(
-                    project_id,
-                ))
+                .get::<_, soroban_sdk::Vec<BytesN<32>>>(&DataKey::ProjectCredits(project_id))
                 .unwrap();
 
             assert_eq!(project_credits.len(), 50);

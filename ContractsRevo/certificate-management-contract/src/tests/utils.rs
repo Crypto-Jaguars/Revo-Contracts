@@ -75,15 +75,21 @@ impl TestContext {
         });
     }
 
-    pub fn issue_test_cert(&self, issuer: &Address, recipient: &Address, cert_type: &str, days_valid: u64) -> u32 {
+    pub fn issue_test_cert(
+        &self,
+        issuer: &Address,
+        recipient: &Address,
+        cert_type: &str,
+        days_valid: u64,
+    ) -> u32 {
         let client = self.client();
         let now = self.env.ledger().timestamp();
         let expiration = now + (days_valid * 86400); // Convert days to seconds
-        
+
         // Create a simple document content
         let doc_content = match cert_type {
             "ORGANIC" => "Organic certification document",
-            "FAIRTRADE" => "Fair trade certification document", 
+            "FAIRTRADE" => "Fair trade certification document",
             "NON_GMO" => "Non-GMO certification document",
             _ => "Generic certification document",
         };
@@ -99,7 +105,9 @@ impl TestContext {
         );
 
         // Get the cert count to determine the ID
-        let count = client.generate_cert_audit_report(recipient, &None, &None, &None).len();
+        let count = client
+            .generate_cert_audit_report(recipient, &None, &None, &None)
+            .len();
         count as u32
     }
 }

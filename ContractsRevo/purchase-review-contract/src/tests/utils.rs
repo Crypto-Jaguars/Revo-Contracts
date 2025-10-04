@@ -3,7 +3,7 @@
 use super::super::*;
 use soroban_sdk::{
     testutils::{Address as _, Events, Ledger},
-    Address, Env, String, Vec, Symbol, FromVal,
+    Address, Env, FromVal, String, Symbol, Vec,
 };
 
 /// Test setup helper that initializes the contract with admin
@@ -156,7 +156,7 @@ pub fn simulate_high_volume_reviews(
         let user = Address::generate(env);
         let review_text = String::from_str(env, "Review number");
         let purchase_link = String::from_str(env, "https://example.com/purchase/123");
-        
+
         env.mock_all_auths();
         let _ = client.try_submit_review(&user, &product_id, &review_text, &purchase_link);
     }
@@ -200,12 +200,12 @@ impl AggregationTestData {
         let users = create_test_users(env, user_count);
         let mut review_texts = Vec::new(env);
         let mut purchase_links = Vec::new(env);
-        
+
         for i in 0..user_count {
             review_texts.push_back(String::from_str(env, "Review"));
             purchase_links.push_back(String::from_str(env, "https://example.com/purchase/123"));
         }
-        
+
         Self {
             product_id,
             users,

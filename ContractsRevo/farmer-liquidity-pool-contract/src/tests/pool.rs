@@ -1,6 +1,6 @@
-use soroban_sdk::{testutils::Address as _, testutils::Events, Env};
+use super::utils::setup_test_environment;
 use crate::{FarmerLiquidityPoolContract, FarmerLiquidityPoolContractClient};
-use super::utils::{setup_test_environment};
+use soroban_sdk::{testutils::Address as _, testutils::Events, Env};
 
 #[test]
 fn test_pool_initialization() {
@@ -97,14 +97,14 @@ fn test_pool_info_immutability_after_initialization() {
 #[test]
 fn test_pool_initialization_different_fee_rates() {
     let env = Env::default();
-    
+
     // Test various valid fee rates
     let fee_rates = [0, 1, 10, 30, 100, 500, 1000, 5000, 10000];
-    
+
     for fee_rate in fee_rates {
         let test_env = setup_test_environment(&env);
         test_env.initialize_pool(fee_rate);
-        
+
         let pool_info = test_env.get_pool_info();
         assert_eq!(pool_info.fee_rate, fee_rate);
     }
@@ -116,12 +116,9 @@ fn test_pool_initialization_with_different_admins() {
     let test_env = setup_test_environment(&env);
 
     // Initialize with user1 as admin instead of default admin
-    test_env.pool_contract.initialize(
-        &test_env.user1,
-        &test_env.token_a,
-        &test_env.token_b,
-        &30,
-    );
+    test_env
+        .pool_contract
+        .initialize(&test_env.user1, &test_env.token_a, &test_env.token_b, &30);
 
     let pool_info = test_env.get_pool_info();
     assert_eq!(pool_info.admin, test_env.user1);
@@ -139,7 +136,7 @@ fn test_pool_initialization_token_order_independence() {
     // Create another pool with reversed token order
     let contract_id_2 = env.register_contract(None, FarmerLiquidityPoolContract);
     let pool_contract_2 = FarmerLiquidityPoolContractClient::new(&env, &contract_id_2);
-    
+
     pool_contract_2.initialize(
         &test_env.admin,
         &test_env.token_b, // Reversed order

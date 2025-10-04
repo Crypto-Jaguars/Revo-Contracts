@@ -3,7 +3,8 @@
 use super::*;
 use crate::error::ContractError;
 use soroban_sdk::{
-    testutils::{Address as _, BytesN as _}, Address, BytesN, Env, IntoVal, String, Symbol
+    testutils::{Address as _, BytesN as _},
+    Address, BytesN, Env, IntoVal, String, Symbol,
 };
 
 // --- Mock Contracts for Testing Dependencies ---
@@ -22,7 +23,6 @@ impl CertificateManagementContract for MockCertificateContract {
         _expiration_date: u64,
         verification_hash: BytesN<32>,
     ) {
-        
         env.events().publish(
             (Symbol::new(&env, "cert_issued"), recipient),
             (issuer, cert_type, verification_hash),
@@ -147,7 +147,10 @@ fn test_enroll_farmer() {
         .get_participant_status(&program_id, &test.farmer);
 
     assert_eq!(status.progress, 0);
-    assert_eq!(status.certificate_id, BytesN::from_array(&test.env, &[0; 32]));
+    assert_eq!(
+        status.certificate_id,
+        BytesN::from_array(&test.env, &[0; 32])
+    );
 
     // Try to enroll again, should fail.
     let result = test.contract.try_enroll_farmer(&test.farmer, &program_id);
@@ -195,9 +198,9 @@ fn test_issue_certificate() {
     test.contract.enroll_farmer(&test.farmer, &program_id);
 
     // Try to issue before completion, should fail.
-    let result_not_completed = test
-        .contract
-        .try_issue_certificate(&test.instructor, &program_id, &test.farmer);
+    let result_not_completed =
+        test.contract
+            .try_issue_certificate(&test.instructor, &program_id, &test.farmer);
     assert_eq!(result_not_completed, Err(Ok(ContractError::NotCompleted)));
 
     // Complete the program
@@ -205,9 +208,9 @@ fn test_issue_certificate() {
         .update_progress(&test.instructor, &program_id, &test.farmer, &100);
 
     // Successfully issue certificate
-    let certificate_id = test
-        .contract
-        .issue_certificate(&test.instructor, &program_id, &test.farmer);
+    let certificate_id =
+        test.contract
+            .issue_certificate(&test.instructor, &program_id, &test.farmer);
 
     // Verify status
     let status = test
@@ -216,9 +219,9 @@ fn test_issue_certificate() {
     assert_eq!(status.certificate_id, certificate_id);
 
     // Try to issue again, should fail.
-    let result_already_certified = test
-        .contract
-        .try_issue_certificate(&test.instructor, &program_id, &test.farmer);
+    let result_already_certified =
+        test.contract
+            .try_issue_certificate(&test.instructor, &program_id, &test.farmer);
     assert_eq!(
         result_already_certified,
         Err(Ok(ContractError::AlreadyCertified))

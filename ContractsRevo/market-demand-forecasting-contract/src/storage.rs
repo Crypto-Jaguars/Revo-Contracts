@@ -1,5 +1,5 @@
-use soroban_sdk::{contracttype, Address, BytesN, Env, String, Vec};
 use crate::error::ContractError;
+use soroban_sdk::{contracttype, Address, BytesN, Env, String, Vec};
 
 // --- Data Structures ---
 
@@ -52,7 +52,11 @@ pub fn is_admin(env: &Env, address: &Address) -> bool {
     if !has_admin(env) {
         return false;
     }
-    env.storage().instance().get::<_, Address>(&StorageKey::Admin).unwrap() == *address
+    env.storage()
+        .instance()
+        .get::<_, Address>(&StorageKey::Admin)
+        .unwrap()
+        == *address
 }
 
 pub fn set_oracle(env: &Env, oracle: &Address) {
@@ -121,9 +125,10 @@ pub fn get_forecast(env: &Env, forecast_id: &BytesN<32>) -> Result<DemandForecas
 }
 
 pub fn set_forecast(env: &Env, forecast: &DemandForecast) {
-    env.storage()
-        .persistent()
-        .set(&StorageKey::Forecast(forecast.forecast_id.clone()), forecast);
+    env.storage().persistent().set(
+        &StorageKey::Forecast(forecast.forecast_id.clone()),
+        forecast,
+    );
 }
 
 // --- Region-based Forecast Indexing ---

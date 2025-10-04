@@ -14,7 +14,7 @@ fn test_create_auction_with_zero_reserve_price() {
     let auction_end_time = env.ledger().timestamp() + 1000;
 
     client.create_auction(&seller, &reserve_price, &auction_end_time, &product_id);
-    
+
     let auction = client.get_auction(&seller, &product_id);
     assert_eq!(auction.reserve_price, 0);
 }
@@ -68,7 +68,7 @@ fn test_auction_expiry_boundary() {
     client.create_auction(&seller, &reserve_price, &auction_end_time, &product_id);
 
     env.ledger().set_timestamp(auction_end_time);
-    
+
     let auction = client.get_auction(&seller, &product_id);
     assert_eq!(auction.auction_end_time, auction_end_time);
 }

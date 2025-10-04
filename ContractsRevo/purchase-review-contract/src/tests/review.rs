@@ -96,7 +96,7 @@ fn test_submit_multiple_reviews_same_product() {
     for (i, user) in users.iter().enumerate() {
         let review_text = String::from_str(&env, "Review from user");
         let purchase_link = String::from_str(&env, "https://example.com/purchase/123");
-        
+
         env.mock_all_auths();
         client.submit_review(&user, &product_id, &review_text, &purchase_link);
     }
@@ -271,7 +271,7 @@ fn test_get_review_details_success() {
 
     // Get review details
     let review = client.get_review(&product_id, &0);
-    
+
     // Verify all details
     assert_eq!(review.review_text, review_text);
     assert_eq!(review.reviewer, user);
@@ -290,10 +290,10 @@ fn test_review_timestamp_accuracy() {
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
     let before_submission = env.ledger().timestamp();
-    
+
     env.mock_all_auths();
     client.submit_review(&user, &product_id, &review_text, &purchase_link);
-    
+
     let after_submission = env.ledger().timestamp();
 
     let review = client.get_review(&product_id, &0);
@@ -348,7 +348,7 @@ fn test_review_storage_persistence() {
             .persistent()
             .get(&review_key)
             .expect("Review not found in persistent storage");
-        
+
         assert_eq!(stored_review.review_text, review_text);
         assert_eq!(stored_review.reviewer, user);
     });
@@ -363,7 +363,12 @@ fn test_review_submission_with_boundary_values() {
 
     // Test with minimum valid review text
     env.mock_all_auths();
-    client.submit_review(&user, &product_id, &boundary_data.min_review_text, &purchase_link);
+    client.submit_review(
+        &user,
+        &product_id,
+        &boundary_data.min_review_text,
+        &purchase_link,
+    );
 
     let review = client.get_review(&product_id, &0);
     assert_eq!(review.review_text, boundary_data.min_review_text);
@@ -371,7 +376,12 @@ fn test_review_submission_with_boundary_values() {
     // Test with maximum valid review text
     let product_id_2 = 12346u64;
     env.mock_all_auths();
-    client.submit_review(&user, &product_id_2, &boundary_data.max_review_text, &purchase_link);
+    client.submit_review(
+        &user,
+        &product_id_2,
+        &boundary_data.max_review_text,
+        &purchase_link,
+    );
 
     let review_2 = client.get_review(&product_id_2, &0);
     assert_eq!(review_2.review_text, boundary_data.max_review_text);
@@ -401,7 +411,10 @@ fn test_review_submission_high_volume() {
 fn test_review_submission_with_special_characters() {
     let (env, client, _, user) = setup_test();
     let product_id = 12345u64;
-    let review_text = String::from_str(&env, "Review with special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?");
+    let review_text = String::from_str(
+        &env,
+        "Review with special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?",
+    );
     let purchase_link = String::from_str(&env, "https://example.com/purchase/12345");
 
     env.mock_all_auths();

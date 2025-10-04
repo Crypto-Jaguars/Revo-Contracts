@@ -1,14 +1,8 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address, BytesN, Env,
-};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env};
 
-use crate::{
-    WaterManagementContract,
-    WaterManagementContractClient,
-};
+use crate::{WaterManagementContract, WaterManagementContractClient};
 
 use super::utils::*;
 
@@ -164,7 +158,7 @@ fn test_reward_calculation_efficiency_levels() {
 
     for (i, (volume, expected_reward)) in test_cases.iter().enumerate() {
         let usage_id = create_test_usage_id(&env, (i + 1) as u8);
-        
+
         // Record usage
         client.record_usage(&usage_id, &farmer, &parcel_id, volume, &data_hash);
 
@@ -197,7 +191,7 @@ fn test_get_farmer_incentives() {
     for i in 1..=3 {
         let usage_id = create_test_usage_id(&env, i);
         let volume = 2000i128; // Efficient usage
-        
+
         client.record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
         let _ = client.try_issue_incentive(&usage_id, &base_reward);
         // Note: Incentive might be created automatically or manually
@@ -234,7 +228,7 @@ fn test_calculate_farmer_rewards() {
     for i in 1..=3 {
         let usage_id = create_test_usage_id(&env, i);
         let volume = 2000i128; // Efficient usage
-        
+
         client.record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
         let _ = client.try_issue_incentive(&usage_id, &base_reward);
         // Note: Incentive might be created automatically or manually
@@ -246,14 +240,14 @@ fn test_calculate_farmer_rewards() {
 
     // Calculate total rewards
     let current_time = env.ledger().timestamp();
-    let start_time = if current_time > 86400 { current_time - 86400 } else { 0 };
+    let start_time = if current_time > 86400 {
+        current_time - 86400
+    } else {
+        0
+    };
     let end_time = current_time + 86400;
 
-    let total_rewards = client.calculate_farmer_rewards(
-        &farmer,
-        &start_time,
-        &end_time,
-    );
+    let total_rewards = client.calculate_farmer_rewards(&farmer, &start_time, &end_time);
 
     assert_eq!(total_rewards, expected_total);
 }
@@ -276,7 +270,7 @@ fn test_calculate_farmer_rewards_time_filtered() {
     for i in 1..=3 {
         let usage_id = create_test_usage_id(&env, i);
         let volume = 2000i128;
-        
+
         client.record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
         let _ = client.try_issue_incentive(&usage_id, &base_reward);
         // Note: Incentive might be created automatically or manually
@@ -287,11 +281,7 @@ fn test_calculate_farmer_rewards_time_filtered() {
     let future_start = current_time + 1000;
     let future_end = current_time + 2000;
 
-    let future_rewards = client.calculate_farmer_rewards(
-        &farmer,
-        &future_start,
-        &future_end,
-    );
+    let future_rewards = client.calculate_farmer_rewards(&farmer, &future_start, &future_end);
 
     assert_eq!(future_rewards, 0i128);
 }
@@ -371,7 +361,7 @@ fn test_incentive_edge_cases() {
     let base_reward = 100i128;
 
     client.record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
-    
+
     // This should qualify for incentive (80% or less)
     let result = client.try_issue_incentive(&usage_id, &base_reward);
     // Note: This might succeed or fail depending on automatic processing
@@ -381,7 +371,7 @@ fn test_incentive_edge_cases() {
     let volume2 = 4005i128; // 80.1% of 5000
 
     client.record_usage(&usage_id2, &farmer, &parcel_id, &volume2, &data_hash);
-    
+
     let result2 = client.try_issue_incentive(&usage_id2, &base_reward);
     assert!(result2.is_err());
 }
@@ -390,7 +380,7 @@ fn test_incentive_edge_cases() {
 fn test_incentive_unauthorized_access() {
     let (env, client, admin, farmer) = setup_test_environment();
     let unauthorized_farmer = Address::generate(&env);
-    
+
     env.mock_all_auths();
 
     client.initialize(&admin);
