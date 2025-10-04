@@ -1,14 +1,14 @@
 #![no_std]
 use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol};
 
-mod token;
-mod mint;
 mod burn;
+mod mint;
+mod token;
 mod utils;
 
-pub use token::*;
-pub use mint::*;
 pub use burn::*;
+pub use mint::*;
+pub use token::*;
 pub use utils::*;
 
 #[contract]
@@ -40,12 +40,7 @@ impl FarmerTokenContract {
     }
 
     /// Transfer tokens from one address to another
-    pub fn transfer(
-        env: Env,
-        from: Address,
-        to: Address,
-        amount: i128,
-    ) -> Result<(), TokenError> {
+    pub fn transfer(env: Env, from: Address, to: Address, amount: i128) -> Result<(), TokenError> {
         token::transfer(env, from, to, amount)
     }
 

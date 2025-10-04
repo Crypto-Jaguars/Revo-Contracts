@@ -76,12 +76,8 @@ fn duplicate_rating_is_allowed_currently() {
 
     let (rating_key, _, _) = ctx.seller_keys(&seller);
     ctx.env.as_contract(&ctx.contract_id, || {
-        let ratings: soroban_sdk::Vec<crate::rating::Rating> = ctx
-            .env
-            .storage()
-            .instance()
-            .get(&rating_key)
-            .unwrap();
+        let ratings: soroban_sdk::Vec<crate::rating::Rating> =
+            ctx.env.storage().instance().get(&rating_key).unwrap();
         assert_eq!(ratings.len(), 2);
     });
 }

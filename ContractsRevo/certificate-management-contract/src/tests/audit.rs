@@ -1,8 +1,5 @@
 #![cfg(test)]
-use crate::{
-    tests::utils::TestContext,
-    CertStatus, AuditError,
-};
+use crate::{tests::utils::TestContext, AuditError, CertStatus};
 
 #[test]
 fn test_audit_report_all_certifications() {
@@ -97,21 +94,13 @@ fn test_audit_report_by_timestamp() {
     let _cert2 = context.issue_test_cert(&context.issuer1, &context.recipient1, "FAIRTRADE", 365);
 
     // Get certs after initial time (should get both)
-    let all_certs = client.generate_cert_audit_report(
-        &context.recipient1,
-        &None,
-        &None,
-        &Some(initial_time),
-    );
+    let all_certs =
+        client.generate_cert_audit_report(&context.recipient1, &None, &None, &Some(initial_time));
     assert_eq!(all_certs.len(), 2);
 
     // Get certs after mid time (should get only second)
-    let recent_certs = client.generate_cert_audit_report(
-        &context.recipient1,
-        &None,
-        &None,
-        &Some(mid_time),
-    );
+    let recent_certs =
+        client.generate_cert_audit_report(&context.recipient1, &None, &None, &Some(mid_time));
     assert_eq!(recent_certs.len(), 1);
 }
 
@@ -202,9 +191,9 @@ fn test_scalability_high_volume_operations() {
         let doc_content = if i % 2 == 0 {
             "Document type A content"
         } else {
-            "Document type B content" 
+            "Document type B content"
         };
-        
+
         client.issue_certification(
             &context.issuer1,
             &context.recipient1,

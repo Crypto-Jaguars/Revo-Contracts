@@ -124,8 +124,12 @@ mod tests {
                     _ => test_env.admin.clone(),
                 };
 
-                EnvironmentalContract::retire_credit(&test_env.env, credit_id.clone(), retiree.clone())
-                    .unwrap();
+                EnvironmentalContract::retire_credit(
+                    &test_env.env,
+                    credit_id.clone(),
+                    retiree.clone(),
+                )
+                .unwrap();
 
                 let status =
                     EnvironmentalContract::get_credit_status(&test_env.env, credit_id).unwrap();
@@ -204,10 +208,7 @@ mod tests {
             let status =
                 EnvironmentalContract::get_retirement_status(&test_env.env, credit_id).unwrap();
 
-            assert_eq!(
-                status,
-                RetirementStatus::Retired(test_env.admin.clone())
-            );
+            assert_eq!(status, RetirementStatus::Retired(test_env.admin.clone()));
         });
     }
 
@@ -241,12 +242,8 @@ mod tests {
                 assert!(result.is_ok());
 
                 let status =
-                    EnvironmentalContract::get_retirement_status(&test_env.env, credit_id)
-                        .unwrap();
-                assert_eq!(
-                    status,
-                    RetirementStatus::Retired(test_env.user1.clone())
-                );
+                    EnvironmentalContract::get_retirement_status(&test_env.env, credit_id).unwrap();
+                assert_eq!(status, RetirementStatus::Retired(test_env.user1.clone()));
             }
         });
     }
@@ -280,10 +277,7 @@ mod tests {
                 let status =
                     EnvironmentalContract::get_retirement_status(&test_env.env, credit_id.clone())
                         .unwrap();
-                assert_eq!(
-                    status,
-                    RetirementStatus::Retired(test_env.user1.clone())
-                );
+                assert_eq!(status, RetirementStatus::Retired(test_env.user1.clone()));
             }
         });
     }

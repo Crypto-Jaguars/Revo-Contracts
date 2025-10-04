@@ -1,14 +1,8 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address, BytesN, Env, String, Vec,
-};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, String, Vec};
 
-use crate::{
-    WaterManagementContract,
-    WaterManagementContractClient,
-};
+use crate::{WaterManagementContract, WaterManagementContractClient};
 
 use super::utils::*;
 
@@ -202,14 +196,22 @@ fn test_usage_report_farmer_wide() {
     // Record usages across multiple parcels
     for i in 1..=3 {
         let usage_id = create_test_usage_id(&env, i);
-        let parcel_id = if i % 2 == 0 { parcel_id1.clone() } else { parcel_id2.clone() };
+        let parcel_id = if i % 2 == 0 {
+            parcel_id1.clone()
+        } else {
+            parcel_id2.clone()
+        };
         let volume = 1000i128 * i as i128;
         let _ = client.try_record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
     }
 
     // Get farmer-wide usage report
     let current_time = env.ledger().timestamp();
-    let start_time = if current_time > 86400 { current_time - 86400 } else { 0 };
+    let start_time = if current_time > 86400 {
+        current_time - 86400
+    } else {
+        0
+    };
     let end_time = current_time + 86400;
 
     let report = client.get_usage_report(
@@ -238,22 +240,26 @@ fn test_usage_report_parcel_specific() {
     // Record usages across multiple parcels
     for i in 1..=3 {
         let usage_id = create_test_usage_id(&env, i);
-        let parcel_id = if i % 2 == 0 { parcel_id1.clone() } else { parcel_id2.clone() };
+        let parcel_id = if i % 2 == 0 {
+            parcel_id1.clone()
+        } else {
+            parcel_id2.clone()
+        };
         let volume = 1000i128 * i as i128;
         let _ = client.try_record_usage(&usage_id, &farmer, &parcel_id, &volume, &data_hash);
     }
 
     // Get parcel-specific usage report
     let current_time = env.ledger().timestamp();
-    let start_time = if current_time > 86400 { current_time - 86400 } else { 0 };
+    let start_time = if current_time > 86400 {
+        current_time - 86400
+    } else {
+        0
+    };
     let end_time = current_time + 86400;
 
-    let report = client.get_usage_report(
-        &farmer,
-        &Some(parcel_id1.clone()),
-        &start_time,
-        &end_time,
-    );
+    let report =
+        client.get_usage_report(&farmer, &Some(parcel_id1.clone()), &start_time, &end_time);
 
     assert_eq!(report.farmer_id, farmer);
     assert_eq!(report.parcel_id, parcel_id1);
@@ -273,12 +279,7 @@ fn test_usage_report_invalid_time_range() {
     let start_time = current_time + 1000; // Start time in the future
     let end_time = current_time;
 
-    let result = client.try_get_usage_report(
-        &farmer,
-        &None,
-        &start_time,
-        &end_time,
-    );
+    let result = client.try_get_usage_report(&farmer, &None, &start_time, &end_time);
     assert!(result.is_err());
 }
 
@@ -293,12 +294,7 @@ fn test_usage_report_empty_period() {
     let start_time = current_time + 1000; // Future start time
     let end_time = current_time + 2000; // Future end time
 
-    let report = client.get_usage_report(
-        &farmer,
-        &None,
-        &start_time,
-        &end_time,
-    );
+    let report = client.get_usage_report(&farmer, &None, &start_time, &end_time);
 
     assert_eq!(report.farmer_id, farmer);
     assert_eq!(report.total_usage, 0i128);

@@ -1,5 +1,5 @@
 #![cfg(test)]
-pub mod utils;
+mod balance;
 mod token;
 mod transfer;
-mod balance;
+pub mod utils;

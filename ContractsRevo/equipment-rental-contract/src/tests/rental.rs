@@ -2,9 +2,7 @@
 
 use crate::{equipment::MaintenanceStatus, rental::RentalStatus};
 
-use super::utils::{register_basic_equipment, setup_test, create_standard_rental};
-
-
+use super::utils::{create_standard_rental, register_basic_equipment, setup_test};
 
 #[test]
 fn test_create_rental_success() {
@@ -15,7 +13,13 @@ fn test_create_rental_success() {
     let end_date = start_date + (3 * 86400);
     let total_price = 3000;
 
-    client.create_rental(&equipment_id, &renter1, &start_date, &end_date, &total_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
 
     let rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(rental.equipment_id, equipment_id);
@@ -39,7 +43,13 @@ fn test_create_rental_unavailable_equipment() {
     let end_date = start_date + (3 * 86400);
     let total_price = 3000;
 
-    client.create_rental(&equipment_id, &renter1, &start_date, &end_date, &total_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
 }
 
 #[test]
@@ -55,7 +65,13 @@ fn test_create_rental_equipment_under_maintenance() {
     let end_date = start_date + (3 * 86400);
     let total_price = 3000;
 
-    client.create_rental(&equipment_id, &renter1, &start_date, &end_date, &total_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
 }
 
 #[test]
@@ -68,9 +84,21 @@ fn test_create_rental_double_booking() {
     let end_date = start_date + (3 * 86400);
     let total_price = 3000;
 
-    client.create_rental(&equipment_id, &renter1, &start_date, &end_date, &total_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
     // Attempt double booking
-    client.create_rental(&equipment_id, &renter1, &start_date, &end_date, &total_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
 }
 
 // ============================================================================
@@ -127,7 +155,7 @@ fn test_complete_rental_not_active() {
     let equipment_id = register_basic_equipment(&client, &env, "tractor_001", 1000);
 
     create_standard_rental(&client, &env, &equipment_id, &renter1, 3);
-    
+
     // Try to complete without confirming first
     client.complete_rental(&equipment_id);
 }
@@ -152,9 +180,15 @@ fn test_cancel_rental_success() {
     let new_start_date = env.ledger().timestamp() + (10 * 86400);
     let new_end_date = new_start_date + (2 * 86400);
     let new_total_price = 2000;
-    
-    client.create_rental(&equipment_id, &renter1, &new_start_date, &new_end_date, &new_total_price);
-    
+
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &new_start_date,
+        &new_end_date,
+        &new_total_price,
+    );
+
     let new_rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(new_rental.status, RentalStatus::Pending);
 }
@@ -190,14 +224,20 @@ fn test_rental_history_by_equipment() {
     let start_date2 = env.ledger().timestamp() + (10 * 86400);
     let end_date2 = start_date2 + (2 * 86400);
     let total_price2 = 2000;
-    client.create_rental(&equipment_id, &renter2, &start_date2, &end_date2, &total_price2);
+    client.create_rental(
+        &equipment_id,
+        &renter2,
+        &start_date2,
+        &end_date2,
+        &total_price2,
+    );
 
     let history = client.get_rental_history_by_equipment(&equipment_id);
     assert_eq!(history.len(), 2);
-    
+
     let first_rental = history.get(0).unwrap();
     let second_rental = history.get(1).unwrap();
-    
+
     assert_eq!(first_rental.renter, renter1);
     assert_eq!(first_rental.status, RentalStatus::Completed);
     assert_eq!(second_rental.renter, renter2);
@@ -237,8 +277,9 @@ fn test_complete_rental_lifecycle() {
     assert_eq!(equipment.maintenance_status, MaintenanceStatus::Good);
 
     // 2. Create rental
-    let (_start_date, _end_date, total_price) = create_standard_rental(&client, &env, &equipment_id, &renter1, 3);
-    
+    let (_start_date, _end_date, total_price) =
+        create_standard_rental(&client, &env, &equipment_id, &renter1, 3);
+
     let rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(rental.status, RentalStatus::Pending);
     assert_eq!(rental.total_price, total_price);

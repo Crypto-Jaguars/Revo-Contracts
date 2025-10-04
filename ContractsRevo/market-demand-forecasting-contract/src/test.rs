@@ -3,7 +3,8 @@
 use super::*;
 use crate::error::ContractError;
 use soroban_sdk::{
-    testutils::{Address as _, BytesN as _, Ledger as _}, vec, Address, BytesN, Env, IntoVal, String
+    testutils::{Address as _, BytesN as _, Ledger as _},
+    vec, Address, BytesN, Env, IntoVal, String,
 };
 
 // --- Test Struct and Setup ---
@@ -64,9 +65,7 @@ fn test_register_product() {
 
     let name = String::from_str(&test.env, "Wheat");
     let historical_demand = vec![&test.env, 1000, 1200, 1100];
-    let product_id = test
-        .contract
-        .register_product(&name, &historical_demand);
+    let product_id = test.contract.register_product(&name, &historical_demand);
 
     let product = test.contract.get_product(&product_id);
     assert_eq!(product.name, name);
@@ -79,7 +78,9 @@ fn test_register_product_invalid_data() {
 
     let name = String::from_str(&test.env, ""); // Empty name
     let historical_demand = vec![&test.env, 1000, 1200, 1100];
-    let result = test.contract.try_register_product(&name, &historical_demand);
+    let result = test
+        .contract
+        .try_register_product(&name, &historical_demand);
     assert_eq!(result, Err(Ok(ContractError::InvalidData)));
 }
 
@@ -151,19 +152,43 @@ fn test_list_forecasts() {
     let test = ForecastingTest::setup();
 
     // Register products
-    let p1_id = test.contract.register_product(&"P1".into_val(&test.env), &vec![&test.env, 100]);
-    let p2_id = test.contract.register_product(&"P2".into_val(&test.env), &vec![&test.env, 200]);
+    let p1_id = test
+        .contract
+        .register_product(&"P1".into_val(&test.env), &vec![&test.env, 100]);
+    let p2_id = test
+        .contract
+        .register_product(&"P2".into_val(&test.env), &vec![&test.env, 200]);
 
     // Generate forecasts
-    test.contract.generate_forecast(&test.oracle, &p1_id, &"North".into_val(&test.env), &150, &BytesN::random(&test.env));
-    test.contract.generate_forecast(&test.oracle, &p2_id, &"North".into_val(&test.env), &250, &BytesN::random(&test.env));
-    test.contract.generate_forecast(&test.oracle, &p1_id, &"South".into_val(&test.env), &180, &BytesN::random(&test.env));
+    test.contract.generate_forecast(
+        &test.oracle,
+        &p1_id,
+        &"North".into_val(&test.env),
+        &150,
+        &BytesN::random(&test.env),
+    );
+    test.contract.generate_forecast(
+        &test.oracle,
+        &p2_id,
+        &"North".into_val(&test.env),
+        &250,
+        &BytesN::random(&test.env),
+    );
+    test.contract.generate_forecast(
+        &test.oracle,
+        &p1_id,
+        &"South".into_val(&test.env),
+        &180,
+        &BytesN::random(&test.env),
+    );
 
     // Test listing all
     assert_eq!(test.contract.list_forecasts(&None, &None).len(), 3);
 
     // Test filtering by region
-    let north_forecasts = test.contract.list_forecasts(&None, &Some("North".into_val(&test.env)));
+    let north_forecasts = test
+        .contract
+        .list_forecasts(&None, &Some("North".into_val(&test.env)));
     assert_eq!(north_forecasts.len(), 2);
 
     // Test filtering by product
@@ -171,7 +196,9 @@ fn test_list_forecasts() {
     assert_eq!(p1_forecasts.len(), 2);
 
     // Test filtering by both
-    let p1_north_forecasts = test.contract.list_forecasts(&Some(p1_id), &Some("North".into_val(&test.env)));
+    let p1_north_forecasts = test
+        .contract
+        .list_forecasts(&Some(p1_id), &Some("North".into_val(&test.env)));
     assert_eq!(p1_north_forecasts.len(), 1);
 }
 
@@ -183,8 +210,12 @@ fn test_generate_recommendation_with_recency_and_averaging() {
     let region = String::from_str(&test.env, "Midwest");
     let seven_days = 7;
 
-    let corn_id = test.contract.register_product(&"Corn".into_val(&test.env), &vec![&test.env, 0]);
-    let wheat_id = test.contract.register_product(&"Wheat".into_val(&test.env), &vec![&test.env, 0]);
+    let corn_id = test
+        .contract
+        .register_product(&"Corn".into_val(&test.env), &vec![&test.env, 0]);
+    let wheat_id = test
+        .contract
+        .register_product(&"Wheat".into_val(&test.env), &vec![&test.env, 0]);
 
     // --- Simulate Time and Forecasts ---
 
@@ -192,23 +223,47 @@ fn test_generate_recommendation_with_recency_and_averaging() {
     test.env.ledger().with_mut(|li| {
         li.timestamp = 10_000;
     });
-    test.contract.generate_forecast(&test.oracle, &wheat_id, &region, &9999, &BytesN::random(&test.env));
+    test.contract.generate_forecast(
+        &test.oracle,
+        &wheat_id,
+        &region,
+        &9999,
+        &BytesN::random(&test.env),
+    );
 
     // 2. Recent forecasts for Corn (average should be 1100)
     test.env.ledger().with_mut(|li| {
         li.timestamp = current_time() - (60 * 60 * 24 * 2); // 2 days ago
     });
-    test.contract.generate_forecast(&test.oracle, &corn_id, &region, &1000, &BytesN::random(&test.env));
+    test.contract.generate_forecast(
+        &test.oracle,
+        &corn_id,
+        &region,
+        &1000,
+        &BytesN::random(&test.env),
+    );
     test.env.ledger().with_mut(|li| {
         li.timestamp = current_time() - (60 * 60 * 24 * 1); // 1 day ago
     });
-    test.contract.generate_forecast(&test.oracle, &corn_id, &region, &1200, &BytesN::random(&test.env));
+    test.contract.generate_forecast(
+        &test.oracle,
+        &corn_id,
+        &region,
+        &1200,
+        &BytesN::random(&test.env),
+    );
 
     // 3. Recent forecast for Wheat (average should be 2000)
     test.env.ledger().with_mut(|li| {
         li.timestamp = current_time() - (60 * 60 * 24 * 3); // 3 days ago
     });
-    test.contract.generate_forecast(&test.oracle, &wheat_id, &region, &2000, &BytesN::random(&test.env));
+    test.contract.generate_forecast(
+        &test.oracle,
+        &wheat_id,
+        &region,
+        &2000,
+        &BytesN::random(&test.env),
+    );
 
     // Set ledger time back to current for the recommendation call
     test.env.ledger().with_mut(|li| {
@@ -225,7 +280,6 @@ fn test_generate_recommendation_with_recency_and_averaging() {
     assert_eq!(recommendations.get(0).unwrap().product_id, wheat_id);
     assert_eq!(recommendations.get(1).unwrap().product_id, corn_id);
 }
-
 
 #[test]
 fn test_generate_recommendation_region_not_found() {

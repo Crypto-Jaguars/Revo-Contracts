@@ -1,5 +1,5 @@
+use super::utils::setup_test_environment;
 use soroban_sdk::{testutils::Address as _, testutils::Events, Env};
-use super::utils::{setup_test_environment};
 
 #[test]
 fn test_fee_accumulation_during_swaps() {
@@ -19,7 +19,7 @@ fn test_fee_accumulation_during_swaps() {
     // First swap: 1000 * 1% = 10 tokens fee
     // Second swap: 1000 * 1% = 10 tokens fee
     // Total fees should be 20 tokens (10 of each type)
-    
+
     // Note: In this implementation, fees are collected but not yet distributed
     // The fee distribution mechanism would need to be implemented separately
 }
@@ -118,7 +118,9 @@ fn test_fee_calculation_share() {
 
     // Calculate fee share for different amounts
     let total_fees = 100;
-    let fee_share = test_env.pool_contract.calculate_fee_share(&test_env.user1, &total_fees);
+    let fee_share = test_env
+        .pool_contract
+        .calculate_fee_share(&test_env.user1, &total_fees);
 
     // Since user1 is the only LP provider, they should get all fees
     assert_eq!(fee_share, total_fees);
@@ -135,13 +137,17 @@ fn test_fee_calculation_share_multiple_providers() {
     let lp_tokens_2 = test_env.add_liquidity(&test_env.user2, 2000, 4000);
 
     let total_fees = 300;
-    
+
     // User1 should get 1/3 of fees (1000/3000)
-    let fee_share_1 = test_env.pool_contract.calculate_fee_share(&test_env.user1, &total_fees);
+    let fee_share_1 = test_env
+        .pool_contract
+        .calculate_fee_share(&test_env.user1, &total_fees);
     assert_eq!(fee_share_1, 100);
 
     // User2 should get 2/3 of fees (2000/3000)
-    let fee_share_2 = test_env.pool_contract.calculate_fee_share(&test_env.user2, &total_fees);
+    let fee_share_2 = test_env
+        .pool_contract
+        .calculate_fee_share(&test_env.user2, &total_fees);
     assert_eq!(fee_share_2, 200);
 }
 
@@ -156,7 +162,7 @@ fn test_fee_claim_events() {
 
     // Claim fees - this should not panic
     let (fees_a, fees_b) = test_env.claim_fees(&test_env.user1);
-    
+
     // Verify that fee claiming works (even if no fees to claim)
     assert!(fees_a >= 0);
     assert!(fees_b >= 0);
@@ -173,7 +179,7 @@ fn test_fee_distribution_events() {
 
     // Distribute fees - this should not panic
     test_env.pool_contract.distribute_fees();
-    
+
     // Verify that fee distribution works (even if no fees to distribute)
     // This test ensures the function can be called without errors
 }
@@ -198,7 +204,7 @@ fn test_fee_accumulation_after_multiple_swaps() {
 
     // Check that fees were accumulated
     let (fees_a, fees_b) = test_env.get_accumulated_fees(&test_env.user1);
-    
+
     // Should have accumulated some fees from the swaps
     // Note: The exact amount depends on the fee distribution implementation
     assert!(fees_a >= 0);
@@ -219,7 +225,9 @@ fn test_fee_calculation_with_zero_lp_tokens() {
 
     // Don't add any liquidity
     let total_fees = 100;
-    let fee_share = test_env.pool_contract.calculate_fee_share(&test_env.user1, &total_fees);
+    let fee_share = test_env
+        .pool_contract
+        .calculate_fee_share(&test_env.user1, &total_fees);
 
     // Should return 0 since there are no LP tokens
     assert_eq!(fee_share, 0);
@@ -248,23 +256,23 @@ fn test_fee_claim_after_liquidity_removal() {
 #[test]
 fn test_fee_distribution_with_different_fee_rates() {
     let env = Env::default();
-    
+
     // Test fee distribution with different fee rates
     let fee_rates = [0, 10, 30, 100, 500];
-    
+
     for fee_rate in fee_rates {
         let test_env = setup_test_environment(&env);
         test_env.initialize_pool(fee_rate);
-        
+
         // Add liquidity
         test_env.add_liquidity(&test_env.user1, 10000, 20000);
-        
+
         // Perform swap
         test_env.swap(&test_env.user2, &test_env.token_a, 1000);
-        
+
         // Distribute fees
         test_env.pool_contract.distribute_fees();
-        
+
         // Should not panic regardless of fee rate
         let (fees_a, fees_b) = test_env.get_accumulated_fees(&test_env.user1);
         assert!(fees_a >= 0);

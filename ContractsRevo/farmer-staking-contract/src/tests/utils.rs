@@ -1,6 +1,38 @@
+use crate::utils::*;
+use soroban_sdk::{
+    testutils::{Address as _, Ledger},
+    Address, Bytes, BytesN, Env,
+};
+
+/// Test helper to create a test environment
+pub fn create_test_env() -> Env {
+    Env::default()
+}
+
+/// Test helper to create test addresses
+pub fn create_test_addresses(env: &Env) -> (Address, Address, Address) {
+    let admin = Address::generate(env);
+    let farmer = Address::generate(env);
+    let token_address = Address::generate(env);
+    (admin, farmer, token_address)
+}
+
+/// Test helper to set up time
+pub fn setup_time(env: &Env, timestamp: u64) {
+    env.ledger().with_mut(|li| {
+        li.timestamp = timestamp;
+    });
+}
+
+/// Test helper to create a fake pool ID
+pub fn create_fake_pool_id(env: &Env) -> BytesN<32> {
+    let data = Bytes::from_array(env, &[1u8; 32]);
+    env.crypto().sha256(&data).into()
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::utils::*;
+    use super::*;
 
     #[test]
     fn test_calculate_percentage() {
@@ -75,5 +107,34 @@ mod tests {
         assert!(validate_lock_period(100, 1000).is_ok());
         assert!(validate_lock_period(1000, 1000).is_ok());
         assert!(validate_lock_period(1001, 1000).is_err());
+    }
+
+    #[test]
+    fn test_is_time_past() {
+        let env = create_test_env();
+        setup_time(&env, 1000);
+
+        assert!(is_time_past(&env, 999));
+        assert!(is_time_past(&env, 1000));
+        assert!(!is_time_past(&env, 1001));
+    }
+
+    #[test]
+    fn test_get_current_timestamp() {
+        let env = create_test_env();
+        setup_time(&env, 12345);
+
+        assert_eq!(get_current_timestamp(&env), 12345);
+    }
+
+    #[test]
+    fn test_create_test_addresses() {
+        let env = create_test_env();
+        let (admin, farmer, token) = create_test_addresses(&env);
+
+        // Addresses should be different
+        assert_ne!(admin, farmer);
+        assert_ne!(admin, token);
+        assert_ne!(farmer, token);
     }
 }

@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, contracterror, Address, String, BytesN};
+use soroban_sdk::{contracterror, contracttype, Address, BytesN, String};
 
 #[derive(Debug)]
 #[contracterror]

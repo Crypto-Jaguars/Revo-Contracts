@@ -48,5 +48,8 @@ fn transfer_exceeding_available_balance_blocked() {
         )
     });
 
-    assert_eq!(res.unwrap_err(), crate::issue::IssueError::InsufficientInventory);
+    assert_eq!(
+        res.unwrap_err(),
+        crate::issue::IssueError::InsufficientInventory
+    );
 }
