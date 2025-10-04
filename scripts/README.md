@@ -9,7 +9,12 @@ This directory contains automated deployment scripts for Revo Contracts.
 - [`deploy_crop_yield_prediction.zsh`](#crop-yield-prediction-contract-deployment) - Crop Yield Prediction Contract
 - [`deploy_agricultural_quality.zsh`](#agricultural-quality-contract-deployment) - Agricultural Quality Contract
 - [`deploy_transaction_nft_contract.zsh`](#transaction-nft-contract-deployment) - Transaction NFT Contract
+feat/equipment-rental-contract
+- [`deploy_crowdfunding_farmer.zsh`](#crowdfunding-farmer-contract-deployment) - Crowdfunding Farmer Contract
+- [`deploy_equipment_rental.zsh`](#equipment-rental-contract-deployment) - Equipment Rental Contract
+
 - [`deploy_certificate_management_contract.zsh`](#certificate-management-contract-deployment) - Certificate Management Contract
+ main
 
 
 ## Transaction NFT Contract Deployment
@@ -123,6 +128,148 @@ The `deploy_agricultural_quality.zsh` script automates building, uploading, and 
 ### Documentation
 
 See `ContractsRevo/agricultural-quality-contract/DEPLOYMENT.md` for the complete usage guide.
+
+---
+
+## Crowdfunding Farmer Contract Deployment
+
+The `deploy_crowdfunding_farmer.zsh` script automates the complete deployment process for the crowdfunding farmer contract to Stellar networks.
+
+### Features
+
+- ✅ Automated build, upload, and deploy process
+- ✅ Network selection (testnet/mainnet)
+- ✅ Identity-based deployment
+- ✅ Comprehensive error handling and validation
+- ✅ Detailed logging with timestamps
+- ✅ JSON and text result files
+- ✅ Colored output for better readability
+- ✅ Prerequisites validation
+
+### Usage
+
+```bash
+./deploy_crowdfunding_farmer.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet with default identity
+./deploy_crowdfunding_farmer.zsh testnet
+
+# Deploy to testnet with specific identity
+./deploy_crowdfunding_farmer.zsh testnet alice
+
+# Deploy to mainnet with production identity
+./deploy_crowdfunding_farmer.zsh mainnet production
+
+# View help
+./deploy_crowdfunding_farmer.zsh --help
+```
+
+### Contract Functions
+
+The deployed contract provides the following functions:
+- `create_campaign(farmer, goal, duration, description)` - Create new crowdfunding campaign
+- `contribute(campaign_id, amount)` - Contribute to a campaign
+- `distribute_rewards(campaign_id)` - Distribute rewards to contributors
+- `get_campaign(campaign_id)` - Retrieve campaign information
+- `get_contributions(campaign_id)` - Get campaign contributions
+
+### Output Files
+
+The script creates several files in `ContractsRevo/crowdfunding-farmer-contract/logs/`:
+
+- `deployment_YYYYMMDD_HHMMSS.log` - Detailed deployment log
+- `deployment_results.json` - JSON file with deployment metadata
+- `latest_deployment.txt` - Human-readable summary
+
+### Documentation
+
+See `ContractsRevo/crowdfunding-farmer-contract/DEPLOYMENT_GUIDE.md` for the complete usage guide.
+
+---
+
+## Equipment Rental Contract Deployment
+
+The `deploy_equipment_rental.zsh` script automates the complete deployment process for the equipment rental contract to Stellar networks.
+
+### Features
+
+- ✅ Automated build, upload, and deploy process
+- ✅ Network selection (testnet/mainnet)
+- ✅ Identity-based deployment
+- ✅ Comprehensive error handling and validation
+- ✅ Detailed logging with timestamps
+- ✅ JSON and text result files
+- ✅ Colored output for better readability
+- ✅ Prerequisites validation
+- ✅ Cross-platform support (Windows PowerShell wrapper included)
+
+### Usage
+
+```bash
+./deploy_equipment_rental.zsh [network] [identity]
+```
+
+**Parameters:**
+- `network` (required): `testnet` or `mainnet`
+- `identity` (optional): Stellar identity name (defaults to `default`)
+
+**Examples:**
+```bash
+# Deploy to testnet with default identity
+./deploy_equipment_rental.zsh testnet
+
+# Deploy to testnet with specific identity
+./deploy_equipment_rental.zsh testnet alice
+
+# Deploy to mainnet with production identity
+./deploy_equipment_rental.zsh mainnet production
+
+# View help
+./deploy_equipment_rental.zsh --help
+```
+
+### Windows Support
+
+**PowerShell Wrapper:**
+```powershell
+.\deploy_equipment_rental.ps1 testnet alice
+```
+
+**Manual PowerShell Script:**
+```powershell
+.\deploy_equipment_rental_manual.ps1 -Network testnet -Identity alice
+```
+
+### Contract Functions
+
+The deployed contract provides the following functions:
+- `register_equipment` - Register new equipment to the platform
+- `update_availability` - Change equipment availability status
+- `rent_equipment` - Rent equipment for specified duration
+- `return_equipment` - Return rented equipment
+- `schedule_maintenance` - Schedule equipment maintenance
+- `update_maintenance_status` - Update maintenance completion
+- `get_equipment_details` - Retrieve equipment information
+- `get_rental_history` - Get equipment rental history
+
+### Output Files
+
+The script creates several files in `ContractsRevo/equipment-rental-contract/logs/`:
+
+- `deployment_YYYYMMDD_HHMMSS.log` - Detailed deployment log
+- `deployment_results.json` - JSON file with deployment metadata
+- `latest_deployment.txt` - Human-readable summary
+
+### Documentation
+
+See `ContractsRevo/equipment-rental-contract/DEPLOYMENT_GUIDE.md` for the complete usage guide.
 
 ---
 
