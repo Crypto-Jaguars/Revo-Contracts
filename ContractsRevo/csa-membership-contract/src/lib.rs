@@ -95,4 +95,7 @@ pub mod types;
 pub mod validate;
 
 #[cfg(test)]
+mod test;
+
+#[cfg(test)]
 mod tests;

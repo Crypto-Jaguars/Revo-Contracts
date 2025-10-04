@@ -125,6 +125,34 @@ The contract includes comprehensive error handling for:
 - Supporting commodity-backed financial instruments
 - Facilitating transparent pricing and market access
 
+## 🧪 Testnet Deployment (QA Only)
+
+This contract has been deployed to Stellar Testnet for testing and QA purposes only. Not for production use.
+
+- Network: Testnet
+- Contract ID: `CDTSHXWZGKRCJQBE5PJQUZL3GM4OESHQKOONQ7J72XLVXH2UI2VSSU5N`
+- WASM Hash: `ad90b7be41faadca656a5fd6c5989895715b8b125a55801bada34ce4baea581c `
+- Deployment Date: 2025-09-30
+
+### Verification
+
+You can verify the deployment using the Stellar CLI:
+
+```
+stellar contract bindings typescript \
+   --network testnet \
+   --id CDTSHXWZGKRCJQBE5PJQUZL3GM4OESHQKOONQ7J72XLVXH2UI2VSSU5N \
+   --output /tmp/rating-system-bindings
+```
+
+Or fetch the WASM hash:
+
+```
+stellar contract inspect --network testnet --id CDTSHXWZGKRCJQBE5PJQUZL3GM4OESHQKOONQ7J72XLVXH2UI2VSSU5N
+```
+
+If the returned hash matches the one above, the deployment is valid.
+
 ## 📚 References
 - [Stellar Official Guide](https://developers.stellar.org/docs/)
 - [Soroban Documentation](https://soroban.stellar.org/)

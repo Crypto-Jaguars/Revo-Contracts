@@ -79,7 +79,7 @@ fn test_finalize_multiple_auctions() {
     client.place_bid(&product_id_2, &70u64, &bidder2, &seller);
 
     env.ledger().set_timestamp(200);
-    
+
     client.finalize_auction(&seller, &product_id_1);
     client.finalize_auction(&seller, &product_id_2);
 
@@ -99,7 +99,7 @@ fn test_finalize_with_single_stock_twice() {
     env.mock_all_auths();
 
     let product_id = create_test_product(&env, &client, &seller);
-    
+
     client.update_stock(&seller, &product_id, &1u32);
 
     let reserve_price = 50u64;
@@ -115,7 +115,7 @@ fn test_finalize_with_single_stock_twice() {
     client.finalize_auction(&seller, &product_id);
 
     client.create_auction(&seller, &reserve_price, &auction_end_time_2, &product_id);
-    
+
     let bidder2 = Address::generate(&env);
     client.place_bid(&product_id, &70u64, &bidder2, &seller);
 

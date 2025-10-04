@@ -5,7 +5,7 @@ extern crate std;
 use crate::equipment::MaintenanceStatus;
 use soroban_sdk::String;
 
-use super::utils::{register_basic_equipment, setup_test, create_standard_rental};
+use super::utils::{create_standard_rental, register_basic_equipment, setup_test};
 
 // ============================================================================
 // EQUIPMENT AVAILABILITY TESTS
@@ -63,11 +63,17 @@ fn test_maintenance_status_transitions() {
     // Test all status transitions
     client.update_maintenance_status(&equipment_id, &MaintenanceStatus::NeedsService);
     let equipment = client.get_equipment(&equipment_id).unwrap();
-    assert_eq!(equipment.maintenance_status, MaintenanceStatus::NeedsService);
+    assert_eq!(
+        equipment.maintenance_status,
+        MaintenanceStatus::NeedsService
+    );
 
     client.update_maintenance_status(&equipment_id, &MaintenanceStatus::UnderMaintenance);
     let equipment = client.get_equipment(&equipment_id).unwrap();
-    assert_eq!(equipment.maintenance_status, MaintenanceStatus::UnderMaintenance);
+    assert_eq!(
+        equipment.maintenance_status,
+        MaintenanceStatus::UnderMaintenance
+    );
 
     client.update_maintenance_status(&equipment_id, &MaintenanceStatus::Good);
     let equipment = client.get_equipment(&equipment_id).unwrap();
@@ -88,7 +94,13 @@ fn test_maintenance_blocks_rental_creation() {
     let total_price = 2000;
 
     // Should panic when trying to create rental
-    client.create_rental(&equipment_id, &renter1, &start_date, &end_date, &total_price);
+    client.create_rental(
+        &equipment_id,
+        &renter1,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
 }
 
 #[test]
@@ -139,8 +151,14 @@ fn test_scheduling_conflict_with_active_rental() {
     let start_date = env.ledger().timestamp() + (5 * 86400);
     let end_date = start_date + (2 * 86400);
     let total_price = 2000;
-    
-    client.create_rental(&equipment_id, &renter2, &start_date, &end_date, &total_price);
+
+    client.create_rental(
+        &equipment_id,
+        &renter2,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
 }
 
 #[test]
@@ -157,9 +175,15 @@ fn test_scheduling_after_rental_completion() {
     let start_date = env.ledger().timestamp() + (10 * 86400);
     let end_date = start_date + (2 * 86400);
     let total_price = 2000;
-    
-    client.create_rental(&equipment_id, &renter2, &start_date, &end_date, &total_price);
-    
+
+    client.create_rental(
+        &equipment_id,
+        &renter2,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
+
     let rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(rental.renter, renter2);
     assert_eq!(rental.total_price, total_price);
@@ -178,9 +202,15 @@ fn test_scheduling_after_rental_cancellation() {
     let start_date = env.ledger().timestamp() + (10 * 86400);
     let end_date = start_date + (2 * 86400);
     let total_price = 2000;
-    
-    client.create_rental(&equipment_id, &renter2, &start_date, &end_date, &total_price);
-    
+
+    client.create_rental(
+        &equipment_id,
+        &renter2,
+        &start_date,
+        &end_date,
+        &total_price,
+    );
+
     let rental = client.get_rental(&equipment_id).unwrap();
     assert_eq!(rental.renter, renter2);
     assert_eq!(rental.total_price, total_price);
@@ -198,7 +228,12 @@ fn test_maintenance_logging() {
     let timestamp = env.ledger().timestamp();
     let notes = Some(String::from_str(&env, "Regular maintenance check"));
 
-    client.log_maintenance(&equipment_id, &MaintenanceStatus::NeedsService, &timestamp, &notes);
+    client.log_maintenance(
+        &equipment_id,
+        &MaintenanceStatus::NeedsService,
+        &timestamp,
+        &notes,
+    );
 
     let history = client.get_maintenance_history(&Some(equipment_id.clone()));
     assert_eq!(history.len(), 1);
@@ -219,8 +254,18 @@ fn test_maintenance_history_filtering() {
     let timestamp = env.ledger().timestamp();
 
     // Log maintenance for both equipment
-    client.log_maintenance(&equipment_id1, &MaintenanceStatus::NeedsService, &timestamp, &None);
-    client.log_maintenance(&equipment_id2, &MaintenanceStatus::UnderMaintenance, &timestamp, &None);
+    client.log_maintenance(
+        &equipment_id1,
+        &MaintenanceStatus::NeedsService,
+        &timestamp,
+        &None,
+    );
+    client.log_maintenance(
+        &equipment_id2,
+        &MaintenanceStatus::UnderMaintenance,
+        &timestamp,
+        &None,
+    );
 
     // Test filtered history
     let history1 = client.get_maintenance_history(&Some(equipment_id1.clone()));
@@ -243,7 +288,7 @@ fn test_maintenance_history_filtering() {
 #[test]
 fn test_multiple_equipment_availability() {
     let (env, _contract_id, client, _owner, _renter1, _renter2) = setup_test();
-    
+
     // Register multiple pieces of equipment
     let eq1 = register_basic_equipment(&client, &env, "equipment_0", 1000);
     let eq2 = register_basic_equipment(&client, &env, "equipment_1", 1100);
@@ -253,11 +298,11 @@ fn test_multiple_equipment_availability() {
     client.update_availability(&eq1, &true);
     client.update_availability(&eq2, &false);
     client.update_availability(&eq3, &true);
-        
+
     let equipment1 = client.get_equipment(&eq1).unwrap();
     let equipment2 = client.get_equipment(&eq2).unwrap();
     let equipment3 = client.get_equipment(&eq3).unwrap();
-    
+
     assert_eq!(equipment1.available, true);
     assert_eq!(equipment2.available, false);
     assert_eq!(equipment3.available, true);

@@ -30,11 +30,11 @@ pub fn burn_tokens(
             .persistent()
             .get::<_, i128>(&DataKey::Allowance(from.clone(), burner.clone()))
             .unwrap_or(0);
-        
+
         if allowance < amount {
             return Err(BurnError::Unauthorized);
         }
-        
+
         // Update allowance
         let new_allowance = allowance - amount;
         if new_allowance == 0 {
@@ -42,9 +42,10 @@ pub fn burn_tokens(
                 .persistent()
                 .remove(&DataKey::Allowance(from.clone(), burner.clone()));
         } else {
-            env.storage()
-                .persistent()
-                .set(&DataKey::Allowance(from.clone(), burner.clone()), &new_allowance);
+            env.storage().persistent().set(
+                &DataKey::Allowance(from.clone(), burner.clone()),
+                &new_allowance,
+            );
         }
     }
 
@@ -93,7 +94,7 @@ pub fn burn_tokens(
         .instance()
         .get::<_, i128>(&DataKey::TotalSupply)
         .unwrap_or(0);
-    
+
     let new_supply = current_supply - amount;
     update_total_supply(&env, new_supply);
 
@@ -161,7 +162,7 @@ pub fn burn_for_redemption(
         .instance()
         .get::<_, i128>(&DataKey::TotalSupply)
         .unwrap_or(0);
-    
+
     let new_supply = current_supply - amount;
     update_total_supply(&env, new_supply);
 
@@ -173,7 +174,11 @@ pub fn burn_for_redemption(
 
     // Emit redemption-specific event
     env.events().publish(
-        (Symbol::new(&env, "redemption_burn"), farmer, redemption_type),
+        (
+            Symbol::new(&env, "redemption_burn"),
+            farmer,
+            redemption_type,
+        ),
         amount,
     );
 
@@ -197,7 +202,7 @@ pub fn burn_as_penalty(
         .instance()
         .get::<_, Address>(&DataKey::Admin)
         .ok_or(BurnError::Unauthorized)?;
-    
+
     if admin != stored_admin {
         return Err(BurnError::Unauthorized);
     }
@@ -232,13 +237,18 @@ pub fn burn_as_penalty(
         .instance()
         .get::<_, i128>(&DataKey::TotalSupply)
         .unwrap_or(0);
-    
+
     let new_supply = current_supply - amount;
     update_total_supply(&env, new_supply);
 
     // Emit penalty burn event
     env.events().publish(
-        (Symbol::new(&env, "penalty_burn"), admin, from.clone(), reason),
+        (
+            Symbol::new(&env, "penalty_burn"),
+            admin,
+            from.clone(),
+            reason,
+        ),
         amount,
     );
 
