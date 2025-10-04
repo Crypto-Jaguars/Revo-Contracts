@@ -1,9 +1,6 @@
-use soroban_sdk::{
-    contracttype, Address, BytesN, Env, Symbol, Vec,
-    contracterror,
-};
+use soroban_sdk::{contracterror, contracttype, Address, BytesN, Env, Symbol, Vec};
 
-use crate::pool::{get_pool_info, update_total_staked, update_epoch, is_pool_paused};
+use crate::pool::{get_pool_info, is_pool_paused, update_epoch, update_total_staked};
 use crate::rewards::{calculate_pending_rewards, update_reward_debt};
 use crate::utils::{transfer_from_user, transfer_to_user};
 
@@ -57,13 +54,10 @@ pub fn stake(
     farmer.require_auth();
 
     // Get pool info
-    let pool = get_pool_info(env.clone(), pool_id.clone())
-        .map_err(|_| StakeError::PoolNotFound)?;
+    let pool = get_pool_info(env.clone(), pool_id.clone()).map_err(|_| StakeError::PoolNotFound)?;
 
     // Check if pool is paused
-    if is_pool_paused(env.clone(), pool_id.clone())
-        .map_err(|_| StakeError::PoolError)?
-    {
+    if is_pool_paused(env.clone(), pool_id.clone()).map_err(|_| StakeError::PoolError)? {
         return Err(StakeError::PoolPaused);
     }
 
@@ -89,31 +83,25 @@ pub fn stake(
         pool.token_address.clone(),
         farmer.clone(),
         amount,
-    ).map_err(|_| StakeError::TransferFailed)?;
+    )
+    .map_err(|_| StakeError::TransferFailed)?;
 
     // Get or create stake
     let stake_key = StakeStorageKey::Stake(farmer.clone(), pool_id.clone());
-    let mut stake: Stake = env
-        .storage()
-        .persistent()
-        .get(&stake_key)
-        .unwrap_or(Stake {
-            farmer_id: farmer.clone(),
-            pool_id: pool_id.clone(),
-            amount: 0,
-            stake_time: current_time,
-            lock_period,
-            unlock_time,
-            reward_debt: 0,
-        });
+    let mut stake: Stake = env.storage().persistent().get(&stake_key).unwrap_or(Stake {
+        farmer_id: farmer.clone(),
+        pool_id: pool_id.clone(),
+        amount: 0,
+        stake_time: current_time,
+        lock_period,
+        unlock_time,
+        reward_debt: 0,
+    });
 
     // Calculate and claim any pending rewards before updating stake
     if stake.amount > 0 {
-        let pending_rewards = calculate_pending_rewards(
-            env.clone(),
-            stake.clone(),
-            pool.clone(),
-        ).unwrap_or(0);
+        let pending_rewards =
+            calculate_pending_rewards(env.clone(), stake.clone(), pool.clone()).unwrap_or(0);
 
         if pending_rewards > 0 {
             transfer_to_user(
@@ -121,7 +109,8 @@ pub fn stake(
                 pool.token_address.clone(),
                 farmer.clone(),
                 pending_rewards,
-            ).map_err(|_| StakeError::TransferFailed)?;
+            )
+            .map_err(|_| StakeError::TransferFailed)?;
         }
     }
 
@@ -139,9 +128,7 @@ pub fn stake(
     stake.reward_debt = update_reward_debt(stake.amount, pool.clone());
 
     // Store updated stake
-    env.storage()
-        .persistent()
-        .set(&stake_key, &stake);
+    env.storage().persistent().set(&stake_key, &stake);
 
     // Add to staker list if new staker
     let staker_list_key = StakeStorageKey::StakerList(pool_id.clone());
@@ -167,12 +154,10 @@ pub fn stake(
     }
 
     // Update pool total staked
-    update_total_staked(env.clone(), pool_id.clone(), amount)
-        .map_err(|_| StakeError::PoolError)?;
+    update_total_staked(env.clone(), pool_id.clone(), amount).map_err(|_| StakeError::PoolError)?;
 
     // Update epoch
-    update_epoch(env.clone(), pool_id.clone())
-        .map_err(|_| StakeError::PoolError)?;
+    update_epoch(env.clone(), pool_id.clone()).map_err(|_| StakeError::PoolError)?;
 
     // Log event
     env.events().publish(
@@ -193,8 +178,7 @@ pub fn unstake(
     farmer.require_auth();
 
     // Get pool info
-    let pool = get_pool_info(env.clone(), pool_id.clone())
-        .map_err(|_| StakeError::PoolNotFound)?;
+    let pool = get_pool_info(env.clone(), pool_id.clone()).map_err(|_| StakeError::PoolNotFound)?;
 
     // Get stake
     let stake_key = StakeStorageKey::Stake(farmer.clone(), pool_id.clone());
@@ -216,11 +200,8 @@ pub fn unstake(
     }
 
     // Calculate and transfer pending rewards
-    let pending_rewards = calculate_pending_rewards(
-        env.clone(),
-        stake.clone(),
-        pool.clone(),
-    ).unwrap_or(0);
+    let pending_rewards =
+        calculate_pending_rewards(env.clone(), stake.clone(), pool.clone()).unwrap_or(0);
 
     let total_transfer = amount.checked_add(pending_rewards).unwrap_or(amount);
 
@@ -229,7 +210,8 @@ pub fn unstake(
         pool.token_address.clone(),
         farmer.clone(),
         total_transfer,
-    ).map_err(|_| StakeError::TransferFailed)?;
+    )
+    .map_err(|_| StakeError::TransferFailed)?;
 
     // Update stake
     stake.amount = stake.amount.checked_sub(amount).unwrap_or(0);
@@ -248,8 +230,7 @@ pub fn unstake(
         .map_err(|_| StakeError::PoolError)?;
 
     // Update epoch
-    update_epoch(env.clone(), pool_id.clone())
-        .map_err(|_| StakeError::PoolError)?;
+    update_epoch(env.clone(), pool_id.clone()).map_err(|_| StakeError::PoolError)?;
 
     // Log event
     env.events().publish(
@@ -270,8 +251,7 @@ pub fn emergency_unstake(
     farmer.require_auth();
 
     // Get pool info
-    let pool = get_pool_info(env.clone(), pool_id.clone())
-        .map_err(|_| StakeError::PoolNotFound)?;
+    let pool = get_pool_info(env.clone(), pool_id.clone()).map_err(|_| StakeError::PoolNotFound)?;
 
     // Get stake
     let stake_key = StakeStorageKey::Stake(farmer.clone(), pool_id.clone());
@@ -297,7 +277,8 @@ pub fn emergency_unstake(
         pool.token_address.clone(),
         farmer.clone(),
         amount_after_penalty,
-    ).map_err(|_| StakeError::TransferFailed)?;
+    )
+    .map_err(|_| StakeError::TransferFailed)?;
 
     // Penalty stays in contract as additional rewards for other stakers
 
@@ -316,8 +297,7 @@ pub fn emergency_unstake(
         .map_err(|_| StakeError::PoolError)?;
 
     // Update epoch
-    update_epoch(env.clone(), pool_id.clone())
-        .map_err(|_| StakeError::PoolError)?;
+    update_epoch(env.clone(), pool_id.clone()).map_err(|_| StakeError::PoolError)?;
 
     // Log event
     env.events().publish(
@@ -341,8 +321,7 @@ pub fn get_stake_info(
         .get(&stake_key)
         .ok_or(StakeError::NoStakeFound)?;
 
-    let pool = get_pool_info(env.clone(), pool_id)
-        .map_err(|_| StakeError::PoolNotFound)?;
+    let pool = get_pool_info(env.clone(), pool_id).map_err(|_| StakeError::PoolNotFound)?;
 
     let pending_rewards = calculate_pending_rewards(env, stake.clone(), pool).unwrap_or(0);
 

@@ -98,6 +98,12 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | CDSBCHNYOIO4H3RWUJMQN42NJ25PFXNS2MHJXIB7KVF4D6P4QWT3NKN2 | testnet | 2025-09-28 | done | Environmental Impact Tracking Contract |
 
+## Environmental Impact Tracking Contract
+### Testnet Deployments
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CA7LI7UFQCIP7YSA6JYLIHW4NX5FPLVOUDBIFBXC57N53Q4BPBKS7RMC | testnet | 2025-10-02 | done | Environmental Impact Tracking Contract |
+
 ## Transaction NFT Contract
 
 ### Testnet Deployments
@@ -172,13 +178,38 @@ This document tracks all deployed contracts across different networks.
 |-------------|---------|---------------|--------|-------|
 | TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
 
+
+## Commodity Token Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDTSHXWZGKRCJQBE5PJQUZL3GM4OESHQKOONQ7J72XLVXH2UI2VSSU5N | Testnet | 2025-09-30 | Successful | Deployer - GGABV2M4GWVINA6KJQSICFWOA6Y4HF5HNGZTIBQBQQ3N6T2DBVXUIZBZD |
+
 ## Cooperative Management Contract
 
 ### Testnet Deployments
 
 | Contract ID | Network | Deployed Date | Status | Notes |
 |-------------|---------|---------------|--------|-------|
-| CAYKKIE7WW45UI5EPK43B3NFR4SI2BU2JSOB33ZPWDFKTQOQAVS2CVBM | Testnet | 2025-09-30 | Successful | Deployer - GCHC7NIC7CB2ED4PMUTPNONPQEPN2OL7S6MWWNM53WPCHKB3TYKY4EK6 |
+| CB4GCOEMWDGRBV2WVTVJKX6OMPJTGF3KSD5WK7QWDEA34EBG527ZUGIP | Testnet | 2025-10-2 | Successful | 
+
+
+### Mainnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| TBD | mainnet | TBD | pending | Not yet deployed to mainnet |
+
+
+## Commodity Token Contract
+
+### Testnet Deployments
+
+| Contract ID | Network | Deployed Date | Status | Notes |
+|-------------|---------|---------------|--------|-------|
+| CDTSHXWZGKRCJQBE5PJQUZL3GM4OESHQKOONQ7J72XLVXH2UI2VSSU5N | Testnet | 2025-09-30 | Successful | Deployer - GGABV2M4GWVINA6KJQSICFWOA6Y4HF5HNGZTIBQBQQ3N6T2DBVXUIZBZD |
 
 ### Mainnet Deployments
 

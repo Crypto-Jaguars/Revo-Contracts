@@ -30,12 +30,8 @@ mod tests {
             )
             .unwrap();
 
-            EnvironmentalContract::retire_credit(
-                &test_env.env,
-                credit_id,
-                test_env.user1.clone(),
-            )
-            .unwrap();
+            EnvironmentalContract::retire_credit(&test_env.env, credit_id, test_env.user1.clone())
+                .unwrap();
 
             // Generate report
             let total_offset =
@@ -157,7 +153,9 @@ mod tests {
                 EnvironmentalContract::generate_impact_report(&test_env.env, project_id);
 
             // Should only count retired credits: 1000 + 2000 + 3000 = 6000
-            let expected = STANDARD_CARBON_AMOUNT + (STANDARD_CARBON_AMOUNT * 2) + (STANDARD_CARBON_AMOUNT * 3);
+            let expected = STANDARD_CARBON_AMOUNT
+                + (STANDARD_CARBON_AMOUNT * 2)
+                + (STANDARD_CARBON_AMOUNT * 3);
             assert_eq!(total_offset, expected);
         });
     }
@@ -172,10 +170,8 @@ mod tests {
                 let project_id = create_project_id(&test_env.env, project_num);
 
                 for credit_num in 1..=project_num {
-                    let credit_id = create_credit_id(
-                        &test_env.env,
-                        (project_num - 1) * 10 + credit_num,
-                    );
+                    let credit_id =
+                        create_credit_id(&test_env.env, (project_num - 1) * 10 + credit_num);
 
                     EnvironmentalContract::issue_carbon_credit(
                         &test_env.env,
@@ -280,8 +276,7 @@ mod tests {
                 .unwrap();
             }
 
-            let offset2 =
-                EnvironmentalContract::generate_impact_report(&test_env.env, project_id);
+            let offset2 = EnvironmentalContract::generate_impact_report(&test_env.env, project_id);
             assert_eq!(offset2, STANDARD_CARBON_AMOUNT * 4);
         });
     }

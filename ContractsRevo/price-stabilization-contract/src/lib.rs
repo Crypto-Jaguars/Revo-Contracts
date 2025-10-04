@@ -3,11 +3,11 @@
 use soroban_sdk::{contract, contractimpl, Address, Env};
 
 mod datatype;
-mod fund;
-mod pricing;
 mod distribution;
-mod utils;
+mod fund;
 mod interface;
+mod pricing;
+mod utils;
 
 use crate::datatype::DataKey;
 

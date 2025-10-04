@@ -1,8 +1,5 @@
 #![cfg(test)]
-use crate::{
-    tests::utils::TestContext,
-    CertStatus, VerifyError,
-};
+use crate::{tests::utils::TestContext, CertStatus, VerifyError};
 
 #[test]
 fn test_successful_document_verification() {

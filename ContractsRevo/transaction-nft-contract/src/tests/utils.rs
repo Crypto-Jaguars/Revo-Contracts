@@ -11,27 +11,29 @@ pub fn setup_test() -> (Env, Address, TransactionNFTContractClient<'static>) {
     let env = Env::default();
     env.mock_all_auths();
     env.cost_estimate().budget().reset_unlimited();
-    
+
     // Set a consistent ledger timestamp for testing
     env.ledger().set(create_ledger_info(12345));
-    
+
     let contract_id = env.register(TransactionNFTContract, ());
     let client = TransactionNFTContractClient::new(&env, &contract_id);
-    
+
     (env, contract_id, client)
 }
 
 /// Create a test environment with a specific timestamp
-pub fn setup_test_with_timestamp(timestamp: u64) -> (Env, Address, TransactionNFTContractClient<'static>) {
+pub fn setup_test_with_timestamp(
+    timestamp: u64,
+) -> (Env, Address, TransactionNFTContractClient<'static>) {
     let env = Env::default();
     env.mock_all_auths();
     env.cost_estimate().budget().reset_unlimited();
-    
+
     env.ledger().set(create_ledger_info(timestamp));
-    
+
     let contract_id = env.register(TransactionNFTContract, ());
     let client = TransactionNFTContractClient::new(&env, &contract_id);
-    
+
     (env, contract_id, client)
 }
 
@@ -80,12 +82,15 @@ pub fn create_standard_transaction(env: &Env) -> (Address, Address, u64, BytesN<
     let seller = create_seller(env);
     let amount = 1000_u64;
     let product = create_product_id(env, 1);
-    
+
     (buyer, seller, amount, product)
 }
 
 /// Create multiple standard transactions for bulk testing
-pub fn create_multiple_transactions(env: &Env, count: usize) -> std::vec::Vec<(Address, Address, u64, BytesN<32>)> {
+pub fn create_multiple_transactions(
+    env: &Env,
+    count: usize,
+) -> std::vec::Vec<(Address, Address, u64, BytesN<32>)> {
     (0..count)
         .map(|i| {
             let buyer = create_buyer(env);
@@ -113,7 +118,7 @@ pub fn create_invalid_transaction_data(env: &Env) -> (Address, Address, u64, Byt
     let seller = buyer.clone(); // Same address - invalid
     let amount = 0_u64; // Zero amount - invalid
     let product = create_product_id(env, 255);
-    
+
     (buyer, seller, amount, product)
 }
 
@@ -126,24 +131,45 @@ pub fn verify_nft_metadata(
     expected_product: &BytesN<32>,
     expected_min_timestamp: u64,
 ) {
-    assert_eq!(&metadata.buyer, expected_buyer, "Buyer mismatch in NFT metadata");
-    assert_eq!(&metadata.seller, expected_seller, "Seller mismatch in NFT metadata");
-    assert_eq!(metadata.amount, expected_amount, "Amount mismatch in NFT metadata");
-    assert_eq!(&metadata.product, expected_product, "Product mismatch in NFT metadata");
-    assert!(metadata.timestamp >= expected_min_timestamp, "Timestamp should be at least the expected minimum");
+    assert_eq!(
+        &metadata.buyer, expected_buyer,
+        "Buyer mismatch in NFT metadata"
+    );
+    assert_eq!(
+        &metadata.seller, expected_seller,
+        "Seller mismatch in NFT metadata"
+    );
+    assert_eq!(
+        metadata.amount, expected_amount,
+        "Amount mismatch in NFT metadata"
+    );
+    assert_eq!(
+        &metadata.product, expected_product,
+        "Product mismatch in NFT metadata"
+    );
+    assert!(
+        metadata.timestamp >= expected_min_timestamp,
+        "Timestamp should be at least the expected minimum"
+    );
 }
 
 /// Create transaction with specific amount for price testing
-pub fn create_transaction_with_amount(env: &Env, amount: u64) -> (Address, Address, u64, BytesN<32>) {
+pub fn create_transaction_with_amount(
+    env: &Env,
+    amount: u64,
+) -> (Address, Address, u64, BytesN<32>) {
     let buyer = create_buyer(env);
     let seller = create_seller(env);
     let product = create_product_id(env, 1);
-    
+
     (buyer, seller, amount, product)
 }
 
 /// Helper to create large-volume test data
-pub fn create_high_volume_test_data(env: &Env, volume: usize) -> std::vec::Vec<(Address, Address, u64, BytesN<32>)> {
+pub fn create_high_volume_test_data(
+    env: &Env,
+    volume: usize,
+) -> std::vec::Vec<(Address, Address, u64, BytesN<32>)> {
     (0..volume)
         .map(|i| {
             let buyer = create_buyer(env);

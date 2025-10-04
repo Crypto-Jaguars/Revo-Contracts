@@ -1,5 +1,5 @@
 use crate::datatypes::*;
-use soroban_sdk::{vec, symbol_short, Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{symbol_short, vec, Address, BytesN, Env, String, Symbol, Vec};
 
 // Helper function to verify authority
 fn verify_authority(env: &Env, authority: &Address) -> Result<(), AgricQualityError> {
@@ -33,7 +33,7 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
                 &Env::default(),
                 symbol_short!("food_safe"), //food_safety
                 symbol_short!("traceabil"), // traceability
-                symbol_short!("environm"), // environmental
+                symbol_short!("environm"),  // environmental
                 symbol_short!("worker_sa"), // worker_safety
             ],
         ),
@@ -42,9 +42,9 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
             vec![
                 &Env::default(),
                 symbol_short!("pes_free"), // pesticide_free
-                symbol_short!("s_health"),   // soil_health
-                symbol_short!("bio_div"),  //biodiversity 
-                symbol_short!("gmo_free"),  // gmo_free
+                symbol_short!("s_health"), // soil_health
+                symbol_short!("bio_div"),  //biodiversity
+                symbol_short!("gmo_free"), // gmo_free
             ],
         ),
         QualityStandard::Fairtrade => (
@@ -53,8 +53,8 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
                 &Env::default(),
                 symbol_short!("fairprice"), // fair_price
                 symbol_short!("work_cond"), // working_conditions
-                symbol_short!("com_dev"), // community_development
-                symbol_short!("env_prot"), // environmental_protection
+                symbol_short!("com_dev"),   // community_development
+                symbol_short!("env_prot"),  // environmental_protection
             ],
         ),
         QualityStandard::UTZ => (
@@ -62,9 +62,9 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
             vec![
                 &Env::default(),
                 symbol_short!("farm_prac"), // farming_practices
-                symbol_short!("soc_cond"), // social_conditions
-                symbol_short!("env_man"), // environmental_management
-                symbol_short!("farm_man"), // farm_management
+                symbol_short!("soc_cond"),  // social_conditions
+                symbol_short!("env_man"),   // environmental_management
+                symbol_short!("farm_man"),  // farm_management
             ],
         ),
         QualityStandard::NonGMO => (
@@ -73,7 +73,7 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
                 &Env::default(),
                 symbol_short!("gmo_test"), // gmo_testing
                 symbol_short!("segregat"), //segregation
-                symbol_short!("traceab"), // traceability
+                symbol_short!("traceab"),  // traceability
                 symbol_short!("risk_man"), //risk_management
             ],
         ),
@@ -81,7 +81,7 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
             90,
             vec![
                 &Env::default(),
-                symbol_short!("orig_ver"), // origin_verification
+                symbol_short!("orig_ver"),  // origin_verification
                 symbol_short!("trad_meth"), //traditional_methods
                 symbol_short!("qual_char"), // quality_characteristics
                 symbol_short!("local_ing"), //local_ingredients
@@ -91,10 +91,10 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
             100,
             vec![
                 &Env::default(),
-                symbol_short!("ingr_ver"), // ingredients_verification
+                symbol_short!("ingr_ver"),  // ingredients_verification
                 symbol_short!("process_c"), // process_compliance
-                symbol_short!("equip_st"), //equipment_standards
-                symbol_short!("supervis"), //supervision
+                symbol_short!("equip_st"),  //equipment_standards
+                symbol_short!("supervis"),  //supervision
             ],
         ),
         QualityStandard::GOTS => (
@@ -102,9 +102,9 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
             vec![
                 &Env::default(),
                 symbol_short!("org_fiber"), // organic_fiber
-                symbol_short!("process"), //processing
-                symbol_short!("soc_cri"), // social_criteria
-                symbol_short!("che_inp"), // chemical_inputs
+                symbol_short!("process"),   //processing
+                symbol_short!("soc_cri"),   // social_criteria
+                symbol_short!("che_inp"),   // chemical_inputs
             ],
         ),
         QualityStandard::Demeter => (
@@ -112,9 +112,9 @@ fn get_standard_requirements(standard: &QualityStandard) -> (u32, Vec<Symbol>) {
             vec![
                 &Env::default(),
                 symbol_short!("biodynami"), //biodynamic_practices
-                symbol_short!("biodiver"), // biodiversity
+                symbol_short!("biodiver"),  // biodiversity
                 symbol_short!("soil_fert"), // soil_fertility
-                symbol_short!("an_wel"), // animal_welfare
+                symbol_short!("an_wel"),    // animal_welfare
             ],
         ),
         QualityStandard::Custom(_) => (
@@ -269,8 +269,9 @@ pub fn check_compliance(
         .get(&DataKey::Certification(certification_id.clone()))
         .ok_or(AgricQualityError::NotFound)?;
 
-        // Get standard requirements
-    let (_min_overall_score, _required_metrics) = get_standard_requirements(&certification.standard);
+    // Get standard requirements
+    let (_min_overall_score, _required_metrics) =
+        get_standard_requirements(&certification.standard);
 
     // Get metrics for the standard
     let metrics = get_standard_metrics(env, &certification.standard)?;
@@ -362,7 +363,7 @@ fn calculate_metric_score(
     // Apply time decay factor (reduce score by 1% per day after certification)
     let days_since_cert = (env.ledger().timestamp() - certification.issue_date) / (24 * 60 * 60);
     let time_factor = if days_since_cert > 0 {
-        let decay = (days_since_cert) * (1/ 100); // 1% per day
+        let decay = (days_since_cert) * (1 / 100); // 1% per day
         if decay >= 1 {
             0
         } else {

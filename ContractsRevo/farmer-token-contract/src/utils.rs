@@ -28,7 +28,7 @@ pub fn is_minter(env: Env, address: Address) -> bool {
         .persistent()
         .get::<_, Minters>(&DataKey::Minters)
         .unwrap_or(Map::new(&env));
-    
+
     minters.get(address).unwrap_or(false)
 }
 
@@ -59,10 +59,8 @@ pub fn add_minter(env: Env, admin: Address, minter: Address) -> Result<(), Admin
     env.storage().persistent().set(&DataKey::Minters, &minters);
 
     // Emit event
-    env.events().publish(
-        (Symbol::new(&env, "add_minter"), admin, minter),
-        (),
-    );
+    env.events()
+        .publish((Symbol::new(&env, "add_minter"), admin, minter), ());
 
     Ok(())
 }
@@ -94,10 +92,8 @@ pub fn remove_minter(env: Env, admin: Address, minter: Address) -> Result<(), Ad
     env.storage().persistent().set(&DataKey::Minters, &minters);
 
     // Emit event
-    env.events().publish(
-        (Symbol::new(&env, "remove_minter"), admin, minter),
-        (),
-    );
+    env.events()
+        .publish((Symbol::new(&env, "remove_minter"), admin, minter), ());
 
     Ok(())
 }
@@ -118,7 +114,7 @@ pub fn pause(env: Env, admin: Address) -> Result<(), AdminError> {
         .instance()
         .get::<_, bool>(&DataKey::Paused)
         .unwrap_or(false);
-    
+
     if is_paused {
         return Err(AdminError::AlreadyPaused);
     }
@@ -127,10 +123,8 @@ pub fn pause(env: Env, admin: Address) -> Result<(), AdminError> {
     env.storage().instance().set(&DataKey::Paused, &true);
 
     // Emit event
-    env.events().publish(
-        (Symbol::new(&env, "pause"), admin),
-        (),
-    );
+    env.events()
+        .publish((Symbol::new(&env, "pause"), admin), ());
 
     Ok(())
 }
@@ -151,7 +145,7 @@ pub fn unpause(env: Env, admin: Address) -> Result<(), AdminError> {
         .instance()
         .get::<_, bool>(&DataKey::Paused)
         .unwrap_or(false);
-    
+
     if !is_paused {
         return Err(AdminError::NotPaused);
     }
@@ -160,10 +154,8 @@ pub fn unpause(env: Env, admin: Address) -> Result<(), AdminError> {
     env.storage().instance().set(&DataKey::Paused, &false);
 
     // Emit event
-    env.events().publish(
-        (Symbol::new(&env, "unpause"), admin),
-        (),
-    );
+    env.events()
+        .publish((Symbol::new(&env, "unpause"), admin), ());
 
     Ok(())
 }
@@ -196,7 +188,7 @@ pub fn calculate_reward_amount(
 ) -> i128 {
     let quality_factor = quality_multiplier.max(100); // minimum 100% (1.0x)
     let quantity_factor = quantity_multiplier.max(100);
-    
+
     // Calculate reward with multipliers (basis points)
     (base_amount * quality_factor as i128 * quantity_factor as i128) / 10000
 }

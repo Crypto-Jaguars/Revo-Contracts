@@ -15,12 +15,7 @@ pub enum MintError {
 
 /// Mint new tokens to a farmer's address
 /// Only authorized minters can mint tokens
-pub fn mint_tokens(
-    env: Env,
-    minter: Address,
-    to: Address,
-    amount: i128,
-) -> Result<(), MintError> {
+pub fn mint_tokens(env: Env, minter: Address, to: Address, amount: i128) -> Result<(), MintError> {
     minter.require_auth();
 
     // Check if the minter is authorized
@@ -62,7 +57,7 @@ pub fn mint_tokens(
         .instance()
         .get::<_, i128>(&DataKey::TotalSupply)
         .unwrap_or(0);
-    
+
     let new_supply = current_supply + amount;
     update_total_supply(&env, new_supply);
 
@@ -125,7 +120,7 @@ pub fn mint_for_milestone(
         .instance()
         .get::<_, i128>(&DataKey::TotalSupply)
         .unwrap_or(0);
-    
+
     let new_supply = current_supply + amount;
     update_total_supply(&env, new_supply);
 
@@ -204,15 +199,13 @@ pub fn batch_mint(
         .instance()
         .get::<_, i128>(&DataKey::TotalSupply)
         .unwrap_or(0);
-    
+
     let new_supply = current_supply + total_minted;
     update_total_supply(&env, new_supply);
 
     // Emit batch mint event
-    env.events().publish(
-        (Symbol::new(&env, "batch_mint"), minter),
-        total_minted,
-    );
+    env.events()
+        .publish((Symbol::new(&env, "batch_mint"), minter), total_minted);
 
     Ok(())
 }

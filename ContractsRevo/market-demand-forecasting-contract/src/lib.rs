@@ -5,15 +5,13 @@ mod error;
 mod forecasting;
 mod recommendations;
 mod storage;
-mod utils;
 mod test;
+mod utils;
 
 pub use error::ContractError;
 pub use storage::{DemandForecast, Product};
 
-use soroban_sdk::{
-    contract, contractimpl, Address, BytesN, Env, String, Vec,
-};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Vec};
 
 #[contract]
 pub struct MarketDemandForecastingContract;
@@ -57,9 +55,8 @@ impl MarketDemandForecastingContract {
         product_id: BytesN<32>,
         region: String,
         predicted_demand: i128, // The forecast is provided by the oracle.
-        data_hash: BytesN<32>, 
+        data_hash: BytesN<32>,
     ) -> Result<BytesN<32>, ContractError> {
-        
         oracle.require_auth();
         if storage::get_oracle(&env)? != oracle {
             return Err(ContractError::Unauthorized);
@@ -68,7 +65,10 @@ impl MarketDemandForecastingContract {
     }
 
     /// Retrieves a specific demand forecast by its ID.
-    pub fn get_forecast(env: Env, forecast_id: BytesN<32>) -> Result<DemandForecast, ContractError> {
+    pub fn get_forecast(
+        env: Env,
+        forecast_id: BytesN<32>,
+    ) -> Result<DemandForecast, ContractError> {
         storage::get_forecast(&env, &forecast_id)
     }
 

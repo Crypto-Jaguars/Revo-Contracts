@@ -1,7 +1,4 @@
-use soroban_sdk::{
-    contracttype, Address, Bytes, BytesN, Env, Symbol, Vec,
-    contracterror,
-};
+use soroban_sdk::{contracterror, contracttype, Address, Bytes, BytesN, Env, Symbol, Vec};
 
 /// Errors that can occur in pool operations
 #[contracterror]
@@ -128,10 +125,8 @@ pub fn initialize_pool(
         .set(&PoolStorageKey::PoolCount, &(pool_count + 1));
 
     // Log event
-    env.events().publish(
-        (Symbol::new(&env, "pool_created"), admin),
-        pool_id.clone(),
-    );
+    env.events()
+        .publish((Symbol::new(&env, "pool_created"), admin), pool_id.clone());
 
     Ok(pool_id)
 }
@@ -219,7 +214,10 @@ pub fn update_epoch(env: Env, pool_id: BytesN<32>) -> Result<(), PoolError> {
     let epochs_passed = time_elapsed / 86400;
 
     if epochs_passed > 0 {
-        pool.current_epoch = pool.current_epoch.checked_add(epochs_passed).unwrap_or(pool.current_epoch);
+        pool.current_epoch = pool
+            .current_epoch
+            .checked_add(epochs_passed)
+            .unwrap_or(pool.current_epoch);
         pool.last_reward_update = current_time;
 
         env.storage()
@@ -231,11 +229,7 @@ pub fn update_epoch(env: Env, pool_id: BytesN<32>) -> Result<(), PoolError> {
 }
 
 /// Pause a pool (admin only)
-pub fn pause_pool(
-    env: Env,
-    admin: Address,
-    pool_id: BytesN<32>,
-) -> Result<(), PoolError> {
+pub fn pause_pool(env: Env, admin: Address, pool_id: BytesN<32>) -> Result<(), PoolError> {
     admin.require_auth();
 
     let mut pool = get_pool_info(env.clone(), pool_id.clone())?;
@@ -254,20 +248,14 @@ pub fn pause_pool(
         .instance()
         .set(&PoolStorageKey::Pool(pool_id.clone()), &pool);
 
-    env.events().publish(
-        (Symbol::new(&env, "pool_paused"), admin),
-        pool_id,
-    );
+    env.events()
+        .publish((Symbol::new(&env, "pool_paused"), admin), pool_id);
 
     Ok(())
 }
 
 /// Unpause a pool (admin only)
-pub fn unpause_pool(
-    env: Env,
-    admin: Address,
-    pool_id: BytesN<32>,
-) -> Result<(), PoolError> {
+pub fn unpause_pool(env: Env, admin: Address, pool_id: BytesN<32>) -> Result<(), PoolError> {
     admin.require_auth();
 
     let mut pool = get_pool_info(env.clone(), pool_id.clone())?;
@@ -286,10 +274,8 @@ pub fn unpause_pool(
         .instance()
         .set(&PoolStorageKey::Pool(pool_id.clone()), &pool);
 
-    env.events().publish(
-        (Symbol::new(&env, "pool_unpaused"), admin),
-        pool_id,
-    );
+    env.events()
+        .publish((Symbol::new(&env, "pool_unpaused"), admin), pool_id);
 
     Ok(())
 }
