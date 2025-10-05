@@ -9,10 +9,15 @@ This directory contains automated deployment scripts for Revo Contracts.
 - [`deploy_crop_yield_prediction.zsh`](#crop-yield-prediction-contract-deployment) - Crop Yield Prediction Contract
 - [`deploy_agricultural_quality.zsh`](#agricultural-quality-contract-deployment) - Agricultural Quality Contract
 - [`deploy_transaction_nft_contract.zsh`](#transaction-nft-contract-deployment) - Transaction NFT Contract
+ feat/deploy-the-crowdfunding-farmer-contract
+ feat/deploy-the-crowdfunding-farmer-contract
+- [`deploy_crowdfunding_farmer.zsh`](#crowdfunding-farmer-contract-deployment) - Crowdfunding Farmer Contract
+
 feat/equipment-rental-contract
 - [`deploy_crowdfunding_farmer.zsh`](#crowdfunding-farmer-contract-deployment) - Crowdfunding Farmer Contract
 - [`deploy_equipment_rental.zsh`](#equipment-rental-contract-deployment) - Equipment Rental Contract
 
+ main
 - [`deploy_certificate_management_contract.zsh`](#certificate-management-contract-deployment) - Certificate Management Contract
  main
 
@@ -194,6 +199,8 @@ See `ContractsRevo/crowdfunding-farmer-contract/DEPLOYMENT_GUIDE.md` for the com
 
 ---
 
+ feat/deploy-the-crowdfunding-farmer-contract
+
 ## Equipment Rental Contract Deployment
 
 The `deploy_equipment_rental.zsh` script automates the complete deployment process for the equipment rental contract to Stellar networks.
@@ -273,6 +280,7 @@ See `ContractsRevo/equipment-rental-contract/DEPLOYMENT_GUIDE.md` for the comple
 
 ---
 
+ main
 ## Water Management Contract Deployment
 
 The `deploy_water_management.zsh` script automates the complete deployment process for the water management contract to Stellar networks.
