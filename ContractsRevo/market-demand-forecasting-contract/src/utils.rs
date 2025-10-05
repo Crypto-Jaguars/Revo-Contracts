@@ -1,5 +1,5 @@
-use soroban_sdk::{BytesN, Env, IntoVal, Val};
 use soroban_sdk::xdr::ToXdr;
+use soroban_sdk::{BytesN, Env, IntoVal, Val};
 
 /// Contains shared utility functions for the contract.
 pub mod utils {

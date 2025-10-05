@@ -1,5 +1,5 @@
-use soroban_sdk::{contracttype, Address, BytesN, Env, Map, String};
 use crate::error::ContractError;
+use soroban_sdk::{contracttype, Address, BytesN, Env, Map, String};
 
 // --- Data Structures ---
 
@@ -46,29 +46,43 @@ pub fn set_admin(env: &Env, admin: &Address) {
 }
 
 pub fn set_certificate_contract(env: &Env, contract_id: &Address) {
-    env.storage().instance().set(&StorageKey::CertificateContract, contract_id);
+    env.storage()
+        .instance()
+        .set(&StorageKey::CertificateContract, contract_id);
 }
 
 pub fn get_certificate_contract(env: &Env) -> Address {
-    env.storage().instance().get(&StorageKey::CertificateContract).unwrap()
+    env.storage()
+        .instance()
+        .get(&StorageKey::CertificateContract)
+        .unwrap()
 }
 
 pub fn set_loyalty_token(env: &Env, token_id: &Address) {
-    env.storage().instance().set(&StorageKey::LoyaltyToken, token_id);
+    env.storage()
+        .instance()
+        .set(&StorageKey::LoyaltyToken, token_id);
 }
 
 pub fn get_loyalty_token(env: &Env) -> Address {
-    env.storage().instance().get(&StorageKey::LoyaltyToken).unwrap()
+    env.storage()
+        .instance()
+        .get(&StorageKey::LoyaltyToken)
+        .unwrap()
 }
 
 pub fn set_loyalty_program(env: &Env, program_id: &BytesN<32>) {
-    env.storage().instance().set(&StorageKey::LoyaltyProgram, program_id);
+    env.storage()
+        .instance()
+        .set(&StorageKey::LoyaltyProgram, program_id);
 }
 
 pub fn get_loyalty_program(env: &Env) -> BytesN<32> {
-    env.storage().instance().get(&StorageKey::LoyaltyProgram).unwrap()
+    env.storage()
+        .instance()
+        .get(&StorageKey::LoyaltyProgram)
+        .unwrap()
 }
-
 
 // --- Program Management ---
 

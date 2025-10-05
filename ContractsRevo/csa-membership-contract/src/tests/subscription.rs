@@ -176,7 +176,10 @@ fn test_multiple_subscriptions_overwrites() {
 
     // Only latest subscription data exists
     let membership = client.get_membership_metadata(&token_id2).unwrap();
-    assert_eq!(membership.season, String::from_str(&test_env.env, "Fall 2025"));
+    assert_eq!(
+        membership.season,
+        String::from_str(&test_env.env, "Fall 2025")
+    );
     assert_eq!(membership.share_size, ShareSize::Large);
 }
 
@@ -269,7 +272,10 @@ fn test_subscription_renewal_workflow() {
     assert_eq!(token_id1, token_id2);
     // New subscription should exist with updated data
     let membership = client.get_membership_metadata(&token_id2).unwrap();
-    assert_eq!(membership.season, String::from_str(&test_env.env, "Fall 2025"));
+    assert_eq!(
+        membership.season,
+        String::from_str(&test_env.env, "Fall 2025")
+    );
     assert_eq!(membership.share_size, ShareSize::Large);
 }
 

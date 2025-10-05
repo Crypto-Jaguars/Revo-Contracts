@@ -17,11 +17,11 @@ pub fn reputation_score_calculate(env: Env, seller: Address) -> u32 {
     // Determine the reputation score based on the rating range
     // Since the rating is scaled by 100, we compare against scaled values
     match weighted_rating_scaled {
-        x if x <= 100 => 1,  // <= 1.0
-        x if x <= 200 => 2,  // <= 2.0
-        x if x <= 300 => 3,  // <= 3.0
-        x if x <= 400 => 4,  // <= 4.0
-        _ => 5,              // > 4.0
+        x if x <= 100 => 1, // <= 1.0
+        x if x <= 200 => 2, // <= 2.0
+        x if x <= 300 => 3, // <= 3.0
+        x if x <= 400 => 4, // <= 4.0
+        _ => 5,             // > 4.0
     }
 }
 

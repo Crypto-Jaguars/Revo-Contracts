@@ -74,7 +74,7 @@ fn test_initialize_already_initialized() {
     let (_, client, admin, _, _, _) = setup_test();
     let name = String::from_str(&client.env, "New Token");
     let symbol = String::from_str(&client.env, "NEW");
-    
+
     let result = client.try_initialize(&admin, &name, &symbol, &7);
     assert_eq!(result, Err(Ok(TokenError::AlreadyInitialized)));
 }
@@ -82,7 +82,7 @@ fn test_initialize_already_initialized() {
 #[test]
 fn test_mint_tokens() {
     let (_, client, admin, farmer1, _, _) = setup_test();
-    
+
     let amount = 1000_0000000i128; // 1000 tokens with 7 decimals
 
     // Mint tokens as admin (who is a minter)
@@ -98,7 +98,7 @@ fn test_mint_tokens() {
 #[test]
 fn test_mint_unauthorized() {
     let (_, client, _, farmer1, farmer2, _) = setup_test();
-    
+
     let amount = 100_0000000i128;
 
     // Try to mint without being a minter
@@ -109,7 +109,7 @@ fn test_mint_unauthorized() {
 #[test]
 fn test_mint_invalid_amount() {
     let (_, client, admin, farmer1, _, _) = setup_test();
-    
+
     // Try to mint zero
     let result = client.try_mint(&admin, &farmer1, &0);
     assert_eq!(result, Err(Ok(MintError::InvalidAmount)));
@@ -122,7 +122,7 @@ fn test_mint_invalid_amount() {
 #[test]
 fn test_transfer() {
     let (_, client, admin, farmer1, farmer2, _) = setup_test();
-    
+
     let mint_amount = 1000_0000000i128;
     let transfer_amount = 250_0000000i128;
 
@@ -143,7 +143,7 @@ fn test_transfer() {
 #[test]
 fn test_transfer_insufficient_balance() {
     let (_, client, _, farmer1, farmer2, _) = setup_test();
-    
+
     let result = client.try_transfer(&farmer1, &farmer2, &100);
     assert_eq!(result, Err(Ok(TokenError::InsufficientBalance)));
 }
@@ -151,7 +151,7 @@ fn test_transfer_insufficient_balance() {
 #[test]
 fn test_approve_and_transfer_from() {
     let (_, client, admin, farmer1, farmer2, minter) = setup_test();
-    
+
     let mint_amount = 1000_0000000i128;
     let approved_amount = 300_0000000i128;
     let transfer_amount = 200_0000000i128;
@@ -173,13 +173,16 @@ fn test_approve_and_transfer_from() {
     assert_eq!(client.balance(&farmer2), transfer_amount);
 
     // Check remaining allowance
-    assert_eq!(client.allowance(&farmer1, &minter), approved_amount - transfer_amount);
+    assert_eq!(
+        client.allowance(&farmer1, &minter),
+        approved_amount - transfer_amount
+    );
 }
 
 #[test]
 fn test_transfer_from_insufficient_allowance() {
     let (_, client, admin, farmer1, farmer2, minter) = setup_test();
-    
+
     let mint_amount = 1000_0000000i128;
     let approved_amount = 100_0000000i128;
     let transfer_amount = 200_0000000i128;
@@ -194,7 +197,7 @@ fn test_transfer_from_insufficient_allowance() {
 #[test]
 fn test_burn_tokens() {
     let (_, client, admin, farmer1, _, _) = setup_test();
-    
+
     let mint_amount = 1000_0000000i128;
     let burn_amount = 250_0000000i128;
 
@@ -212,7 +215,7 @@ fn test_burn_tokens() {
 #[test]
 fn test_burn_insufficient_balance() {
     let (_, client, admin, farmer1, _, _) = setup_test();
-    
+
     let mint_amount = 100_0000000i128;
     let burn_amount = 200_0000000i128;
 
@@ -225,7 +228,7 @@ fn test_burn_insufficient_balance() {
 #[test]
 fn test_add_remove_minter() {
     let (_, client, admin, _, _, minter) = setup_test();
-    
+
     // Add minter
     client.add_minter(&admin, &minter);
     assert!(client.is_minter(&minter));
@@ -238,7 +241,7 @@ fn test_add_remove_minter() {
 #[test]
 fn test_add_minter_unauthorized() {
     let (_, client, _, farmer1, _, minter) = setup_test();
-    
+
     let result = client.try_add_minter(&farmer1, &minter);
     assert_eq!(result, Err(Ok(AdminError::Unauthorized)));
 }
@@ -246,9 +249,9 @@ fn test_add_minter_unauthorized() {
 #[test]
 fn test_pause_unpause() {
     let (_, client, admin, farmer1, farmer2, _) = setup_test();
-    
+
     let amount = 100_0000000i128;
-    
+
     // Mint tokens first
     client.mint(&admin, &farmer1, &amount);
 
@@ -275,7 +278,7 @@ fn test_pause_unpause() {
 #[test]
 fn test_pause_unauthorized() {
     let (_, client, _, farmer1, _, _) = setup_test();
-    
+
     let result = client.try_pause(&farmer1);
     assert_eq!(result, Err(Ok(AdminError::Unauthorized)));
 }
@@ -283,7 +286,7 @@ fn test_pause_unauthorized() {
 #[test]
 fn test_batch_mint() {
     let (env, client, admin, farmer1, farmer2, minter) = setup_test();
-    
+
     // Add minter
     client.add_minter(&admin, &minter);
 
@@ -315,7 +318,7 @@ fn test_batch_mint() {
 #[test]
 fn test_milestone_mint() {
     let (_, client, admin, farmer1, _, _) = setup_test();
-    
+
     let amount = 500_0000000i128;
     let milestone = Symbol::new(&client.env, "harvest_complete");
 
@@ -329,7 +332,7 @@ fn test_milestone_mint() {
 #[test]
 fn test_burn_for_redemption() {
     let (_, client, admin, farmer1, _, _) = setup_test();
-    
+
     let mint_amount = 1000_0000000i128;
     let redeem_amount = 400_0000000i128;
     let redemption_type = Symbol::new(&client.env, "equipment");
@@ -347,7 +350,7 @@ fn test_burn_for_redemption() {
 #[test]
 fn test_burn_as_penalty() {
     let (_, client, admin, farmer1, _, _) = setup_test();
-    
+
     let mint_amount = 1000_0000000i128;
     let penalty_amount = 100_0000000i128;
     let reason = Symbol::new(&client.env, "violation");
@@ -361,4 +364,3 @@ fn test_burn_as_penalty() {
     // Check balance
     assert_eq!(client.balance(&farmer1), mint_amount - penalty_amount);
 }
-

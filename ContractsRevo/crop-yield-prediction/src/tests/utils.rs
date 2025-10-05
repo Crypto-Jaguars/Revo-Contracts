@@ -6,8 +6,8 @@ use soroban_sdk::{
 };
 
 use crate::{
-    CropYieldPredictionContract, CropYieldPredictionContractClient,
     types::{Crop, DataSource, YieldPrediction},
+    CropYieldPredictionContract, CropYieldPredictionContractClient,
 };
 
 /// Setup test environment with contract initialization
@@ -152,7 +152,7 @@ pub fn create_extreme_data_source(env: &Env) -> DataSource {
     DataSource {
         weather_data: String::from_str(env, "Storm"),
         soil_data: String::from_str(env, "Flooded"),
-        temperature: 5,  // Too cold
+        temperature: 5, // Too cold
         humidity: 95,   // Too humid
         rainfall: 500,  // Too much rain
     }
@@ -200,10 +200,7 @@ pub fn validate_data_hash_consistency(
 }
 
 /// Create multiple test crops for scalability testing
-pub fn create_multiple_test_crops(
-    env: &Env,
-    count: u32,
-) -> Vec<(BytesN<32>, String, Vec<i128>)> {
+pub fn create_multiple_test_crops(env: &Env, count: u32) -> Vec<(BytesN<32>, String, Vec<i128>)> {
     let mut crops = vec![env];
     for i in 1..=count {
         let crop_id = create_test_crop_id(env, i as u8);
@@ -246,9 +243,9 @@ pub fn create_edge_case_data(env: &Env) -> DataSource {
     DataSource {
         weather_data: String::from_str(env, ""), // Empty string
         soil_data: String::from_str(env, "X".repeat(1000).as_str()), // Very long string
-        temperature: i32::MAX, // Maximum temperature
-        humidity: i32::MIN,    // Minimum humidity
-        rainfall: 0,           // No rainfall
+        temperature: i32::MAX,                   // Maximum temperature
+        humidity: i32::MIN,                      // Minimum humidity
+        rainfall: 0,                             // No rainfall
     }
 }
 
@@ -272,7 +269,7 @@ pub fn create_comprehensive_test_scenario(
     Vec<DataSource>,
 ) {
     let (env, client, admin, _, _) = setup_test_environment();
-    
+
     let crops = create_multiple_test_crops(&env, 5);
     let mut data_sources = vec![&env];
     data_sources.push_back(create_optimal_data_source(&env));

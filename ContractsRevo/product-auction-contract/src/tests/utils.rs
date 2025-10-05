@@ -59,7 +59,7 @@ pub fn create_auction_with_product(
     let product_id = create_test_product(env, client, seller);
     let reserve_price = 50u64;
     let auction_end_time = env.ledger().timestamp() + end_time_offset;
-    
+
     client.create_auction(seller, &reserve_price, &auction_end_time, &product_id);
     product_id
 }

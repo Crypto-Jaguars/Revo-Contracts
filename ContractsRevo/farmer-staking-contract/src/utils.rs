@@ -1,7 +1,4 @@
-use soroban_sdk::{
-    symbol_short, Address, Env, IntoVal,
-    contracterror,
-};
+use soroban_sdk::{contracterror, symbol_short, Address, Env, IntoVal};
 
 /// Errors that can occur in validation and utility operations
 #[contracterror]

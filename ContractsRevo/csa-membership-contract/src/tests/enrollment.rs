@@ -200,7 +200,10 @@ fn test_duplicate_enrollment_same_member() {
 
     // Only the latest membership data should exist
     let membership = client.get_membership_metadata(&token_id2).unwrap();
-    assert_eq!(membership.season, String::from_str(&test_env.env, "Fall 2025"));
+    assert_eq!(
+        membership.season,
+        String::from_str(&test_env.env, "Fall 2025")
+    );
     assert_eq!(membership.share_size, ShareSize::Large);
 }
 

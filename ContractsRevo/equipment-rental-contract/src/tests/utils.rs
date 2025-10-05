@@ -54,12 +54,7 @@ pub fn register_basic_equipment(
     let equipment_type = String::from_str(env, "Agricultural Tractor");
     let location = String::from_str(env, "Farm Location A");
 
-    client.register_equipment(
-        &equipment_id,
-        &equipment_type,
-        &price_per_day,
-        &location,
-    );
+    client.register_equipment(&equipment_id, &equipment_type, &price_per_day, &location);
 
     equipment_id
 }
