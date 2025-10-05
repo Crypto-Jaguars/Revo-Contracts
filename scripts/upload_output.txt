@@ -1,2 +1,0 @@
-ℹ️  Skipping install because wasm already installed
-1fb45412686e0e6c6156cfc4badc61d639d83881b82769a04f110fb0dae2f3e5
