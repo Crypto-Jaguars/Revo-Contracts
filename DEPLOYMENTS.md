@@ -55,6 +55,7 @@ This document tracks all deployed contracts across different networks.
 | Contract ID | Network | Deployed Date | Status | Notes |
 |-------------|---------|---------------|--------|-------|
 | CAVZIYLTAFKJNTT3A5USHFB56JDAQ56YCQRYQMYF4T2M5PWC5LEANNKP | testnet | 2025-09-28 | done | Farmer Insurance Contract |
+| CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG | testnet | 2025-10-01 | Test Only | Deployed via automated script - Deployer: GDCLDPFHDMNBYBCDIWAF4EAT6YQLCSPN2LRQOCND3675F27QCWQGLCGI |
 
 ## CSA Membership Contract
 ### Testnet Deployments

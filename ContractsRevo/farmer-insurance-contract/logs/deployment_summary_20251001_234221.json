@@ -1,0 +1,12 @@
+﻿{
+    "log_file":  "C:\\Users\\hp\\Desktop\\rev\\Revo-Contracts\\ContractsRevo\\farmer-insurance-contract\\logs\\deployment_20251001_234221.log",
+    "wasm_path":  "C:\\Users\\hp\\Desktop\\rev\\Revo-Contracts\\target\\wasm32v1-none\\release\\farmer_insurance_contract.wasm",
+    "wasm_size_bytes":  7169,
+    "source_identity":  "alice",
+    "profile":  "default",
+    "deployment_timestamp":  "2025-10-01 23:42:36 UTC",
+    "contract_id":  "CAJRMWQK3QDMMLFZK4ZPBBG45L3CKSZODSDHVNA7F6O4IOYHXCMXGWRG",
+    "wasm_hash":  "4cd6f325d4abc31bbb8823a4f9469424be8fa9636b2b2ea50558541abdf9705c",
+    "network":  "testnet",
+    "contract_name":  "farmer-insurance-contract"
+}
